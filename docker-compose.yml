@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+    # db:
+    #   build:
+    #     context: ./db
+    #   image: db:transcendence
+    #   container_name: db
+    #   tty: true
+    #   ports:
+    #     - "5432:5432"
+    #   volumes:
+    #     - ./db/dbdata:/var/lib/postgresql/data
+    backend:
+      build:
+        context: ./backend
+      image: backend:transcendence
+      container_name: backend
+      volumes:
+        - backend:/home/node/app
+      environment:
+        - POSTGRES_PASSWORD=docker
+        - POSTGRES_DB=transcendence
+      expose:
+        - "3000"
+      ports:
+        - "3000:3000"
+      # depends_on:
+      # - db
+    frontend:
+      build:
+        context: ./frontend
+      image: frontend:transcendence
+      container_name: frontend
+      volumes:
+        - frontend:/home/node/app
+      ports:
+        - "3002:3002"
+      depends_on:
+        - backend
+
+volumes:
+    backend:
+        external: true
+    frontend:
+        external: true
