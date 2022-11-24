@@ -11,36 +11,59 @@ services:
     #     - "5432:5432"
     #   volumes:
     #     - ./db/dbdata:/var/lib/postgresql/data
+    postgres:
+        image: postgres
+        container_name: postgres
+        build: ./postgres
+        ports:
+            - "5432:5432"
+        networks:
+            - pong_network
+        volumes:
+            - ./postgres-entrypoint:/docker-entrypoint-initdb.d
+        environment:
+            - POSTGRES_PASSWORD=root
+            - POSTGRES_DB=imroot
     backend:
-      build:
-        context: ./backend
-      image: backend:transcendence
-      container_name: backend
-      volumes:
-        - backend:/home/node/app
-      environment:
-        - POSTGRES_PASSWORD=docker
-        - POSTGRES_DB=transcendence
-      expose:
-        - "3000"
-      ports:
-        - "3000:3000"
-      # depends_on:
-      # - db
+        build:
+            context: ./backend
+        image: backend:transcendence
+        container_name: backend
+        volumes:
+            - backend_volume:/home/node/app
+        environment:
+            - POSTGRES_PASSWORD=root
+            - POSTGRES_DB=imroot
+        expose:
+            - "3000"
+            - "8080"
+        ports:
+            - "3000:3000"
+            - "8080:8080"
+        networks:
+            - pong_network
+          # depends_on:
+          # - db
     frontend:
-      build:
-        context: ./frontend
-      image: frontend:transcendence
-      container_name: frontend
-      volumes:
-        - frontend:/home/node/app
-      ports:
-        - "3002:3002"
-      depends_on:
-        - backend
+        build:
+            context: ./frontend
+        image: frontend:transcendence
+        container_name: frontend
+        volumes:
+            - frontend_volume:/home/node/app
+        ports:
+            - "3002:3002"
+        depends_on:
+            - backend
+        networks:
+            - pong_network
+
+networks:
+    pong_network:
+        driver: bridge
 
 volumes:
-    backend:
+    backend_volume:
         external: true
-    frontend:
+    frontend_volume:
         external: true
