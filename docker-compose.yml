@@ -22,8 +22,9 @@ services:
         volumes:
             - ./postgres-entrypoint:/docker-entrypoint-initdb.d
         environment:
-            - POSTGRES_PASSWORD=root
-            - POSTGRES_DB=imroot
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=imroot
+              #- POSTGRES_DB=imroot
     backend:
         build:
             context: ./backend
@@ -33,8 +34,9 @@ services:
             #- backend_volume:/home/node/app
             - /home/user42/transcendence/backend/transcendence:/home/node/app
         environment:
-            - POSTGRES_PASSWORD=root
-            - POSTGRES_DB=imroot
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=imroot
+              #- POSTGRES_DB=imroot
         expose:
             - "3000"
             - "8080"
