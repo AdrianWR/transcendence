@@ -30,7 +30,8 @@ services:
         image: backend:transcendence
         container_name: backend
         volumes:
-            - backend_volume:/home/node/app
+            #- backend_volume:/home/node/app
+            - /home/user42/transcendence/backend/transcendence:/home/node/app
         environment:
             - POSTGRES_PASSWORD=root
             - POSTGRES_DB=imroot
@@ -50,7 +51,8 @@ services:
         image: frontend:transcendence
         container_name: frontend
         volumes:
-            - frontend_volume:/home/node/app
+            #- frontend_volume:/home/node/app
+            - /home/user42/transcendence/frontend/transcendence:/home/node/app
         ports:
             - "3002:3002"
         depends_on:
@@ -62,8 +64,8 @@ networks:
     pong_network:
         driver: bridge
 
-volumes:
-    backend_volume:
-        external: true
-    frontend_volume:
-        external: true
+#volumes:
+#   backend_volume:
+#       external: true
+#   frontend_volume:
+#       external: true

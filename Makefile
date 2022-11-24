@@ -11,9 +11,9 @@ VOLUMES = $(addprefix $(VOLUMES_PATH)/, $(VOLUMES_DIR))
 all: down build
 
 build:
-	echo "Creating Volumes ..."
-	docker volume create --name=backend_volume
-	docker volume create --name=frontend_volume
+	#echo "Creating Volumes ..."
+	#docker volume create --name=backend_volume
+	#docker volume create --name=frontend_volume
 	echo "Building ..."
 	docker-compose build
 	#docker-compose up --build back postgres
