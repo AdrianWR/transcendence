@@ -33,6 +33,7 @@ services:
         volumes:
             #- backend_volume:/home/node/app
             - /home/user42/transcendence/backend/transcendence:/home/node/app
+            - /home/user42/transcendence/teste:/home/node/teste
         environment:
             - POSTGRES_USER=root
             - POSTGRES_PASSWORD=imroot

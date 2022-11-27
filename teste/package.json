@@ -1,0 +1,19 @@
+{
+  "name": "teste",
+  "version": "1.0.0",
+  "description": "teste de coneccao typeorm postgres",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "pg": "^8.8.0",
+    "typeorm": "^0.3.10"
+  }
+}
