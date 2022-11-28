@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("reflect-metadata");
 const typeorm_1 = require("typeorm");
 const person_1 = require("./person");
 const person_repository_1 = require("./person-repository");
@@ -40,7 +41,7 @@ const person_repository_1 = require("./person-repository");
     // Change the person's full name.
     yield personRepository.updateName(existingPerson.id, "Jane Johnson");
     // Remove the person from the database.
-    yield personRepository.remove(existingPerson);
+    //await personRepository.remove(existingPerson);
     // Clean up our connection pool so we can exit.
     yield connection.close();
 }))();
