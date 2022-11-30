@@ -1,16 +1,19 @@
 version: '3'
 
 services:
-    # db:
-    #   build:
-    #     context: ./db
-    #   image: db:transcendence
-    #   container_name: db
-    #   tty: true
-    #   ports:
-    #     - "5432:5432"
-    #   volumes:
-    #     - ./db/dbdata:/var/lib/postgresql/data
+    db:
+      build:
+        context: ./db
+      image: db:transcendence
+      container_name: db
+      tty: true
+      ports:
+        - "5432:5432"
+      volumes:
+        - ./db/dbdata:/var/lib/postgresql/data
+      environment:
+        - POSTGRES_PASSWORD=transcendence
+        - POSTGRES_DB=transcendence
     backend:
       build:
         context: ./backend
