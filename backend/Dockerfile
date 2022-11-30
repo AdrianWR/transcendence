@@ -11,5 +11,5 @@ USER node
 
 WORKDIR /home/node/app
 
-#CMD [ "npm", "run", "start:dbackendev", "--prefix","transcendence" ]
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+CMD [ "npm", "run", "start:dev", "--prefix","transcendence" ]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]

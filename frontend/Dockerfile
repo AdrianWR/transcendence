@@ -9,5 +9,5 @@ USER node
 
 WORKDIR /home/node/app
 
-#CMD [ "npm", "run", "dev", "--prefix","transcendence" ]
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+CMD [ "npm", "run", "dev", "--prefix","transcendence" ]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]

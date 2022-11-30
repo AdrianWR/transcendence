@@ -32,7 +32,7 @@ services:
         container_name: backend
         volumes:
             #- backend_volume:/home/node/app
-            - /home/user42/transcendence/backend/transcendence:/home/node/app
+            - /home/user42/transcendence/backend:/home/node/app
             - /home/user42/transcendence/teste:/home/node/teste
         environment:
             - POSTGRES_USER=root
@@ -55,7 +55,7 @@ services:
         container_name: frontend
         volumes:
             #- frontend_volume:/home/node/app
-            - /home/user42/transcendence/frontend/transcendence:/home/node/app
+            - /home/user42/transcendence/frontend:/home/node/app
         ports:
             - "3002:3002"
         depends_on:
