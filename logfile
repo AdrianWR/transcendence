@@ -1,0 +1,75 @@
+BACKEND:
+
+> transcendence@0.0.1 start:dev
+> nest start --watch
+
+c[[90m12:47:04 AM[0m] Starting compilation in watch mode...
+
+[[90m12:47:08 AM[0m] Found 0 errors. Watching for file changes.
+
+[32m[Nest] 28  - [39m12/01/2022, 12:47:08 AM [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 28  - [39m12/01/2022, 12:47:08 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +29ms[39m
+[32m[Nest] 28  - [39m12/01/2022, 12:47:08 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 28  - [39m12/01/2022, 12:47:08 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAppController {/}:[39m[38;5;3m +6ms[39m
+[32m[Nest] 28  - [39m12/01/2022, 12:47:08 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/, GET} route[39m[38;5;3m +5ms[39m
+[32m[Nest] 28  - [39m12/01/2022, 12:47:08 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/user/signup, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 28  - [39m12/01/2022, 12:47:08 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mUserController {/user}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 28  - [39m12/01/2022, 12:47:08 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/user, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 28  - [39m12/01/2022, 12:47:08 AM [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +5ms[39m
+
+FRONTEND:
+
+> transcendence@0.1.0 dev
+> next dev -p 3002
+
+ready - started server on 0.0.0.0:3002, url: http://localhost:3002
+event - compiled client and server successfully in 857 ms (154 modules)
+POSTGRES:
+The files belonging to this database system will be owned by user "postgres".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "en_US.utf8".
+The default database encoding has accordingly been set to "UTF8".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+fixing permissions on existing directory /var/lib/postgresql/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default max_connections ... 100
+selecting default shared_buffers ... 128MB
+selecting default time zone ... UTC
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+
+
+Success. You can now start the database server using:
+
+    pg_ctl -D /var/lib/postgresql/data -l logfile start
+
+waiting for server to start....2022-12-01 00:47:03.393 UTC [36] LOG:  starting PostgreSQL 15.0 on x86_64-pc-linux-musl, compiled by gcc (Alpine 11.2.1_git20220219) 11.2.1 20220219, 64-bit
+2022-12-01 00:47:03.396 UTC [36] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2022-12-01 00:47:03.411 UTC [39] LOG:  database system was shut down at 2022-12-01 00:47:02 UTC
+2022-12-01 00:47:03.416 UTC [36] LOG:  database system is ready to accept connections
+ done
+server started
+CREATE DATABASE
+
+
+/usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+
+2022-12-01 00:47:03.659 UTC [36] LOG:  received fast shutdown request
+waiting for server to shut down....2022-12-01 00:47:03.662 UTC [36] LOG:  aborting any active transactions
+2022-12-01 00:47:03.665 UTC [36] LOG:  background worker "logical replication launcher" (PID 42) exited with exit code 1
+2022-12-01 00:47:03.666 UTC [37] LOG:  shutting down
+2022-12-01 00:47:03.670 UTC [37] LOG:  checkpoint starting: shutdown immediate
+2022-12-01 00:47:03.815 UTC [37] LOG:  checkpoint complete: wrote 918 buffers (5.6%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.042 s, sync=0.097 s, total=0.149 s; sync files=250, longest=0.007 s, average=0.001 s; distance=4221 kB, estimate=4221 kB
+2022-12-01 00:47:03.822 UTC [36] LOG:  database system is shut down
+ done
+server stopped
+
+PostgreSQL init process complete; ready for start up.
+

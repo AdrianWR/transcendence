@@ -5,7 +5,7 @@ FROM node:18.12.0-alpine3.16
 RUN apk update && apk upgrade && apk add bash && apk add vim
 RUN apk add sudo
 
-USER node
+USER root
 
 WORKDIR /home/node/app
 

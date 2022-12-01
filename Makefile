@@ -1,4 +1,4 @@
-.PHONY: all build buildno up down clean fclean ps back
+.PHONY: all build buildno up down clean fclean ps back log
 
 YML= -f ./srcs/docker-compose.yml
 ENV= --env-file ./srcs/.env
@@ -45,6 +45,16 @@ up:
 #	docker-compose $(YML) $(ENV) ps -a
 
 back:
-	docker exec -it backend bash
+	docker exec -u root -it backend bash
 	#docker container rm lixo
 	#docker run -it --name lixo -v ~/transcendence/back:/back back /bin/bash
+
+log:
+	rm -f logfile
+	echo -n "BACKEND:\n" > logfile
+	docker logs backend >> logfile
+	echo -n "FRONTEND:\n" >> logfile
+	docker logs frontend >> logfile
+	echo -n "POSTGRES:\n" >> logfile
+	docker logs postgres >> logfile
+	cat logfile

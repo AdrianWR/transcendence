@@ -9,4 +9,9 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('/user/signup')
+  user_signup(@Body()): string {
+    return this.appService.user_signup();
+  }
 }
