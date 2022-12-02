@@ -28,8 +28,8 @@ services:
         - "3000"
       ports:
         - "3000:3000"
-      # depends_on:
-      # - db
+      depends_on:
+        - db
     frontend:
       build:
         context: ./frontend
