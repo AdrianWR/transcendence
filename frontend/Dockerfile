@@ -6,4 +6,4 @@ USER node
 
 WORKDIR /home/node/app
 
-CMD [ "npm", "run", "dev" ]
+CMD [ "npm", "run", "start" ]
