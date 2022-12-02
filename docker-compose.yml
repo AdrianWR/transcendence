@@ -7,6 +7,8 @@ services:
       image: db:transcendence
       container_name: db
       tty: true
+      networks:
+        - pong_network
       ports:
         - "5432:5432"
       volumes:
@@ -21,6 +23,10 @@ services:
       container_name: backend
       volumes:
         - backend:/home/node/app
+      networks:
+        - pong_network
+          #volumes:
+          #- backend:/home/node/app
       environment:
         - POSTGRES_PASSWORD=docker
         - POSTGRES_DB=transcendence
@@ -37,13 +43,36 @@ services:
       container_name: frontend
       volumes:
         - frontend:/home/node/app
+      networks:
+        - pong_network
+          #volumes:
+          #- frontend:/home/node/app
       ports:
         - "3002:3002"
       depends_on:
         - backend
 
+          #volumes:
+          #    backend:
+          #      name: backend
+          #      driver: local
+          #      driver_opts:
+          #        o: bind
+          #        type: none
+          #        device: /home/user42/transcendence/backend
+          #    frontend:
+          #      name: frontend
+          #      driver: local
+          #      driver_opts:
+          #        o: bind
+          #        type: none
+          #        device: /home/user42/transcendence/frontend
 volumes:
     backend:
-        external: true
+      external: true
     frontend:
-        external: true
+      external: true
+
+networks:
+    pong_network:
+      driver: bridge
