@@ -34,11 +34,11 @@ fclean: down
 	docker system prune -f -a --volumes
 	docker volume rm backend frontend
 
-re: fclean build up
+re: fclean up
 
 up:
-	docker volume create --name backend --opt type=none --opt device=/home/user42/transcendence/backend --opt o=bind
-	docker volume create --name frontend --opt type=none --opt device=/home/user42/transcendence/frontend --opt o=bind
+	#docker volume create --name backend --opt type=none --opt device=/home/user42/transcendence/backend --opt o=bind
+	#docker volume create --name frontend --opt type=none --opt device=/home/user42/transcendence/frontend --opt o=bind
 	docker-compose up
 	#docker run -it -v ~/transcendence:/app/ -p 3000:3000 --name node_c node_img
 	#docker-compose $(YML) $(ENV) up -d 
@@ -59,5 +59,5 @@ log:
 	echo -n "FRONTEND:\n" >> logfile
 	docker logs frontend >> logfile
 	echo -n "POSTGRES:\n" >> logfile
-	docker logs postgres >> logfile
+	docker logs db >> logfile
 	cat logfile

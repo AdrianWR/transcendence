@@ -52,26 +52,26 @@ services:
       depends_on:
         - backend
 
-          #volumes:
-          #    backend:
-          #      name: backend
-          #      driver: local
-          #      driver_opts:
-          #        o: bind
-          #        type: none
-          #        device: /home/user42/transcendence/backend
-          #    frontend:
-          #      name: frontend
-          #      driver: local
-          #      driver_opts:
-          #        o: bind
-          #        type: none
-          #        device: /home/user42/transcendence/frontend
 volumes:
     backend:
-      external: true
+      name: backend
+      driver: local
+      driver_opts:
+        o: bind
+        type: none
+        device: /home/user42/transcendence/backend
     frontend:
-      external: true
+      name: frontend
+      driver: local
+      driver_opts:
+        o: bind
+        type: none
+        device: /home/user42/transcendence/frontend
+          #volumes:
+          #    backend:
+          #      external: true
+          #    frontend:
+          #      external: true
 
 networks:
     pong_network:
