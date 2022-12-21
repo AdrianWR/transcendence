@@ -1,78 +1,54 @@
 version: '3'
 
 services:
-    db:
-      build:
-        context: ./db
-      image: db:transcendence
-      container_name: db
-      tty: true
-      networks:
-        - pong_network
-      ports:
-        - "5432:5432"
-      volumes:
-        - ./db/dbdata:/var/lib/postgresql/data
-      environment:
-        - POSTGRES_PASSWORD=transcendence
-        - POSTGRES_DB=transcendence
-    backend:
-      build:
-        context: ./backend
-      image: backend:transcendence
-      container_name: backend
-      volumes:
-        - backend:/home/node/app
-      networks:
-        - pong_network
-          #volumes:
-          #- backend:/home/node/app
-      environment:
-        - POSTGRES_PASSWORD=docker
-        - POSTGRES_DB=transcendence
-      expose:
-        - "3000"
-      ports:
-        - "3000:3000"
-      depends_on:
-        - db
-    frontend:
-      build:
-        context: ./frontend
-      image: frontend:transcendence
-      container_name: frontend
-      volumes:
-        - frontend:/home/node/app
-      networks:
-        - pong_network
-          #volumes:
-          #- frontend:/home/node/app
-      ports:
-        - "3002:3002"
-      depends_on:
-        - backend
+  db:
+    image: postgres
+    container_name: db
+    tty: true
+    networks:
+      - pong_network
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+  backend:
+    build:
+      context: ./backend
+    image: backend:transcendence
+    container_name: backend
+    networks:
+      - pong_network
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=db
+    expose:
+      - "3000"
+    ports:
+      - "8080:3000"
+    depends_on:
+      - db
+  frontend:
+    build:
+      context: ./frontend
+    image: frontend:transcendence
+    container_name: frontend
+    networks:
+      - pong_network
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
-    backend:
-      name: backend
-      driver: local
-      driver_opts:
-        o: bind
-        type: none
-        device: /home/user42/transcendence/backend
-    frontend:
-      name: frontend
-      driver: local
-      driver_opts:
-        o: bind
-        type: none
-        device: /home/user42/transcendence/frontend
-          #volumes:
-          #    backend:
-          #      external: true
-          #    frontend:
-          #      external: true
+  postgres:
+
 
 networks:
-    pong_network:
-      driver: bridge
+  pong_network:
+    driver: bridge
