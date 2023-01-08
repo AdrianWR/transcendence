@@ -1,11 +1,28 @@
-FROM node:18.12.0-alpine3.16
+FROM node:19-alpine AS build
 
-RUN apk update && apk upgrade && apk add bash vim 
+WORKDIR /usr/src/app
 
-RUN npm install -g @nestjs/cli
+COPY package*.json ./
 
-USER node
+RUN npm install 
 
-WORKDIR /home/node/app
+COPY . .
 
-CMD [ "npm", "run", "start" ]
+RUN npm run build
+
+FROM node:19-alpine
+
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN npm install --only=production
+
+COPY . .
+
+COPY --from=build /usr/src/app/dist ./dist
+
+CMD ["node", "dist/main"]
