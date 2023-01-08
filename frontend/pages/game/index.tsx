@@ -1,36 +1,13 @@
-import { GetStaticProps } from "next"
-import Link from "next/link"
-import { Key } from "react"
-import styles from "../../styles/Games.module.css"
-import { NextPageWithLayout } from "../_app"
+import GameComponent from "../../components/game";
+import { NextPageWithLayout } from "../_app";
 
-interface Game {
-    id: Key,
-    name: String
-}
-
-export const getStaticProps: GetStaticProps = async (context) => {
-    const res: Response = await fetch("https://jsonplaceholder.typicode.com/users")
-    const data: Array<Game> = await res.json()
-
-    return {
-        props: { games: data }
-    }
-
-}
-
-const Users: NextPageWithLayout = ({ games }: { games: Array<Game> }) => {
+const Game: NextPageWithLayout = () => {
     return (
         <div>
-            <h1>All Games</h1>
-            {games.map(game => (
-                <Link href={`game/${game.id}`} key={game.id} className={styles.single}>
-                    <h3>{game.name}</h3>
-                </Link>
-
-            ))}
+            <h1>Game</h1>
+            <GameComponent />
         </div>
-    );
+    )
 }
 
-export default Users
+export default Game

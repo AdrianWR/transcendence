@@ -5,14 +5,14 @@ import { DataSource } from 'typeorm';
 export const databaseProviders = [
   {
     provide: 'DATA_SOURCE',
-    useFactory: async (configService: ConfigService) => {
+    useFactory: async (config: ConfigService) => {
       const dataSource = new DataSource({
         type: 'postgres',
-        host: configService.get<string>('POSTGRES_HOST', 'localhost'),
-        port: +configService.get<number>('POSTGRES_PORT', 5432),
-        username: configService.get<string>('POSTGRES_USER'),
-        password: configService.get<string>('POSTGRES_PASSWORD'),
-        database: configService.get<string>('POSTGRES_DB'),
+        host: config.get<string>('POSTGRES_HOST', 'localhost'),
+        port: +config.get<number>('POSTGRES_PORT', 5432),
+        username: config.get<string>('POSTGRES_USER'),
+        password: config.get<string>('POSTGRES_PASSWORD'),
+        database: config.get<string>('POSTGRES_DB'),
         entities: [__dirname + '/../**/*.entity.js'],
         synchronize: true,
       });
