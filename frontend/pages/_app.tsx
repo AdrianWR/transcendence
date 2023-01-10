@@ -1,3 +1,4 @@
+import { MantineProvider } from '@mantine/core'
 import type { NextPage } from 'next'
 import type { AppProps } from 'next/app'
 import type { ReactElement, ReactNode } from 'react'
@@ -20,5 +21,17 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     </Layout></>
   )
 
-  return getLayout(<Component {...pageProps} />)
+  return getLayout(
+    <MantineProvider
+      withGlobalStyles
+      withNormalizeCSS
+      theme={{
+        /** Put your mantine theme override here */
+        colorScheme: 'light',
+      }}
+    >
+      <Component {...pageProps} />
+    </MantineProvider>
+  )
 }
+
