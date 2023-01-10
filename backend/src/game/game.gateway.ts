@@ -1,9 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@Injectable()
-@WebSocketGateway(9000, {
+@WebSocketGateway({
   transports: ['websocket'],
   cors: {
     origin: "http://localhost:3000",
@@ -13,13 +12,13 @@ import { Server, Socket } from 'socket.io';
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private positions = {}
   private readonly frameRate = 30;
-  private readonly logger = new Logger(GameGateway.name, { timestamp: true });
+  private readonly logger: Logger = new Logger(GameGateway.name);
 
   @WebSocketServer()
   server: Server;
 
   handleConnection(@ConnectedSocket() client: Socket) {
-    this.logger.log(`Client connected: ${client.id}`);
+    this.logger.debug(`Client connected: ${client.id}`);
     this.positions[client.id] = { x: 0.5, y: 0.5 };
 
     setInterval(() => {
@@ -28,15 +27,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    this.logger.log(`Client disconnected: ${client.id}`);
+    this.logger.debug(`Client disconnected: ${client.id}`);
     delete this.positions[client.id];
   }
 
   @SubscribeMessage('updatePosition')
   updatePositions(client: Socket, payload: any): void {
+    this.logger.debug(`Update position for socket: ${client.id}`)
     this.positions[client.id].x = payload.x;
     this.positions[client.id].y = payload.y;
-    this.logger.log(`Update position for socket: ${client.id}`)
   }
 
 }
