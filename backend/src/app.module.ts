@@ -5,7 +5,7 @@ import { AppService } from './app.service';
 import { ChatModule } from './chat/chat.module';
 import { DatabaseModule } from './database/database.module';
 import { GameModule } from './game/game.module';
-import { UserModule } from './user/user.module';
+import { UserModule } from './users/users.module';
 
 @Module({
   imports: [

@@ -4,21 +4,18 @@ import GameComponent from "../../components/game";
 import { NextPageWithLayout } from "../_app";
 
 export const getStaticProps: GetStaticProps = async () => {
-    const gameGateway = {
-        host: process.env.GAME_GATEWAY_HOST,
-        port: process.env.GAME_GATEWAY_PORT
-    }
-
     return {
-        props: { gameGateway: `ws://${gameGateway.host}:${gameGateway.port}` }
+        props: {
+            gateway: "/"
+        }
     }
 }
 
-const Game: NextPageWithLayout = ({ gameGateway }: { gameGateway: string }) => {
+const Game: NextPageWithLayout = ({ gateway }: { gateway: string }) => {
     return (
         <div>
             <h1>Game</h1>
-            <GameComponent gameGateway={gameGateway} />
+            <GameComponent gateway={gateway} />
         </div>
     )
 }

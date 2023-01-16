@@ -1,11 +1,22 @@
 /** @type {import('next').NextConfig} */
+
+const rewrites = async () => {
+  return [
+    {
+      source: '/api/:path*',
+      destination: `${process.env.BACKEND_URL}/:path*`, // The :path parameter is used here so will not be automatically passed in the query
+    },
+    {
+      source: '/socket.io',
+      destination: `${process.env.BACKEND_URL}/socket.io/`, // Fix websocket proxy rewrite
+    }
+  ]
+}
+
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  env: {
-    GAME_GATEWAY_HOST: process.env.GAME_GATEWAY_HOST,
-    GAME_GATEWAY_PORT: process.env.GAME_GATEWAY_PORT
-  }
+  rewrites: rewrites
 }
 
 module.exports = nextConfig

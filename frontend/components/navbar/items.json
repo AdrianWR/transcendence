@@ -1,0 +1,26 @@
+[
+    {
+        "name": "Home",
+        "path": "/"
+    },
+    {
+        "name": "About",
+        "path": "/about"
+    },
+    {
+        "name": "Users",
+        "path": "/users"
+    },
+    {
+        "name": "Game",
+        "path": "/game"
+    },
+    {
+        "name": "Chat",
+        "path": "/chat"
+    },
+    {
+        "name": "API",
+        "path": "/api"
+    }
+]

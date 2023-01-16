@@ -4,39 +4,30 @@ import { ComponentType, FC, useEffect } from "react";
 import { SketchProps } from "react-p5";
 import { Socket, io } from "socket.io-client";
 
+interface Positions {
+  [id: string]: {
+    x: number,
+    y: number
+  }
+}
+
 // Will only import `react-p5` on client-side
 const Sketch: ComponentType<SketchProps> = dynamic(() => import('react-p5').then((mod) => mod.default), {
   ssr: false,
 })
 
 interface GameComponentProps {
-  gameGateway: string
+  gateway: string
 }
 
-type UserState = {
-  position: {
-    readonly x: number
-    readonly y: number
-  }
-}
-
-let userState: UserState = {
-  position: {
-    x: 50,
-    y: 50
-  }
-}
-
-const GameComponent: FC<GameComponentProps> = ({ gameGateway }: { gameGateway: string }) => {
+const GameComponent: FC<GameComponentProps> = ({ gateway }: { gateway: string }) => {
 
   let socket: Socket;
 
-  let positions = {}
+  let positions: Positions = {}
 
   useEffect(() => {
-    socket = io(gameGateway, {
-      transports: ["websocket"],
-    });
+    socket = io(gateway);
     return () => {
       socket.disconnect();
     }

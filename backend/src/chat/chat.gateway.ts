@@ -1,23 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
+import { ChatService } from './chat.service';
+import { CreateChatDto } from './dto/create-chat.dto';
+import { UpdateChatDto } from './dto/update-chat.dto';
 
-
-
-@Injectable()
-@WebSocketGateway({
-  transports: ['websocket'],
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
-})
+@WebSocketGateway()
 export class ChatGateway {
-  @WebSocketServer()
-  server: Server;
+  constructor(private readonly chatService: ChatService) {}
 
-  @SubscribeMessage('message')
-  handleMessage(@MessageBody() message: string): void {
-    this.server.emit(' message', message)
+  @SubscribeMessage('createChat')
+  create(@MessageBody() createChatDto: CreateChatDto) {
+    return this.chatService.create(createChatDto);
+  }
+
+  @SubscribeMessage('findAllChat')
+  findAll() {
+    return this.chatService.findAll();
+  }
+
+  @SubscribeMessage('findOneChat')
+  findOne(@MessageBody() id: number) {
+    return this.chatService.findOne(id);
+  }
+
+  @SubscribeMessage('updateChat')
+  update(@MessageBody() updateChatDto: UpdateChatDto) {
+    return this.chatService.update(updateChatDto.id, updateChatDto);
+  }
+
+  @SubscribeMessage('removeChat')
+  remove(@MessageBody() id: number) {
+    return this.chatService.remove(id);
   }
 }
