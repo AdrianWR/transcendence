@@ -2,15 +2,24 @@ import { Logger } from '@nestjs/common';
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({
-  transports: ['websocket'],
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
+interface Positions {
+  [id: string]: {
+    x: number,
+    y: number
   }
-})
+}
+
+@WebSocketGateway(
+  {
+    cors: {
+      origin: FRONTEND_URL,
+      methods: ["GET", "POST"]
+    }
+  })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private positions = {}
+  private positions: Positions = {}
   private readonly frameRate = 30;
   private readonly logger: Logger = new Logger(GameGateway.name);
 
@@ -37,5 +46,4 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.positions[client.id].x = payload.x;
     this.positions[client.id].y = payload.y;
   }
-
 }

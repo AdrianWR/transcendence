@@ -23,7 +23,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "components/navbar.js"
+    "components/navbar.js",
+    "pages/api/proxy/[...path].js"
   ],
   "exclude": [
     "node_modules"
