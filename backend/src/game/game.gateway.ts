@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-const FRONTEND_URL = process.env.FRONTEND_URL;
+export const FRONTEND_URL = process.env.FRONTEND_URL
 
 interface Positions {
   [id: string]: {
@@ -13,8 +13,9 @@ interface Positions {
 
 @WebSocketGateway(
   {
+    transports: ['websocket'],
     cors: {
-      origin: FRONTEND_URL,
+      origin: "*",
       methods: ["GET", "POST"]
     }
   })
