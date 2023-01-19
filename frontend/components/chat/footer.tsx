@@ -5,11 +5,6 @@ const Footer = ({ inputMessage, setInputMessage, handleSendMessage }) => {
     <Flex w="100%" mt="5">
       <Input
         placeholder="Type something..."
-        border="none"
-        borderRadius="none"
-        _focus={{
-          border: "1px solid black"
-        }}
         onKeyPress={(e) => {
           if (e.key === "Enter") {
             handleSendMessage();
@@ -21,12 +16,6 @@ const Footer = ({ inputMessage, setInputMessage, handleSendMessage }) => {
       <Button
         bg="black"
         color="white"
-        borderRadius="none"
-        _hover={{
-          bg: "white",
-          color: "black",
-          border: "1px solid black"
-        }}
         disabled={inputMessage.trim().length <= 0}
         onClick={handleSendMessage}
       >

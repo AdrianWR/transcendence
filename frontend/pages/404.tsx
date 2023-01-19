@@ -74,7 +74,7 @@ const NotFoundWithImage: NextPageWithLayout = () => {
     return (
         <Container className={classes.root}>
             <SimpleGrid spacing={80} cols={2} breakpoints={[{ maxWidth: 'sm', cols: 1, spacing: 40 }]}>
-                <Image src={image} className={classes.mobileImage} />
+                <Image src={image} className={classes.mobileImage} alt=""/>
                 <div>
                     <Title className={classes.title}>Something is not right...</Title>
                     <Text color="dimmed" size="lg">
@@ -87,7 +87,7 @@ const NotFoundWithImage: NextPageWithLayout = () => {
                         </Button>
                     </Link>
                 </div>
-                <Image src={image.src} className={classes.desktopImage} />
+                <Image src={image.src} className={classes.desktopImage} alt="" />
             </SimpleGrid>
         </Container>
     );

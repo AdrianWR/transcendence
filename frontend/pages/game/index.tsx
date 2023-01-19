@@ -1,17 +1,18 @@
 
-import { GetStaticProps } from "next/types";
+import { GetStaticProps, NextPage } from "next";
 import GameComponent from "../../components/game";
-import { NextPageWithLayout } from "../_app";
 
-export const getStaticProps: GetStaticProps = async () => {
+type GamePageProps = {
+    gateway: string
+}
+
+export const getStaticProps: GetStaticProps = () => {
     return {
-        props: {
-            gateway: "/"
-        }
+        props: { gateway: process.env.GATEWAY_URL }
     }
 }
 
-const Game: NextPageWithLayout = ({ gateway }: { gateway: string }) => {
+const Game: NextPage = ({ gateway }: GamePageProps) => {
     return (
         <div>
             <h1>Game</h1>

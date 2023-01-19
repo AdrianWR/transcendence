@@ -17,6 +17,9 @@ RUN \
 # Rebuild the source code only when needed
 FROM node:19-alpine AS builder
 
+ARG BACKEND_URL
+ARG GATEWAY_URL
+
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

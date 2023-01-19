@@ -1,10 +1,9 @@
 import { Avatar, Flex, ScrollArea, Text } from "@mantine/core";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 const Messages = ({ messages }) => {
   const AlwaysScrollToBottom = () => {
     const elementRef = useRef();
-    useEffect(() => elementRef.current.scrollIntoView());
     return <div ref={elementRef} />
   }
 

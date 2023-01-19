@@ -1,14 +1,16 @@
 import dynamic from 'next/dynamic';
 import p5Types from "p5";
-import { ComponentType, FC, useEffect } from "react";
+import { ComponentType, FC, MutableRefObject, useEffect, useRef, useState } from "react";
 import { SketchProps } from "react-p5";
 import { Socket, io } from "socket.io-client";
 
-interface Positions {
-  [id: string]: {
-    x: number,
-    y: number
-  }
+type IPosition = {
+  x: number,
+  y: number
+}
+
+type IPositions = {
+  [id: string]: IPosition,
 }
 
 // Will only import `react-p5` on client-side
@@ -20,38 +22,42 @@ interface GameComponentProps {
   gateway: string
 }
 
-const GameComponent: FC<GameComponentProps> = ({ gateway }: { gateway: string }) => {
-
-  let socket: Socket;
-
-  let positions: Positions = {}
+const GameComponent: FC<GameComponentProps> = ({ gateway }) => {
+  const socketRef: MutableRefObject<Socket> = useRef(null);
+  const [positions, setPositions] = useState({})
 
   useEffect(() => {
-    socket = io(gateway);
-    return () => {
-      socket.disconnect();
+    // Socket domain defaults to the Next.JS proxy rewrite (next.config.js)
+    if (socketRef.current == null) {
+      socketRef.current = io(gateway, { transports: ['websocket'] });
     }
-  }, []);
+
+    socketRef.current.open();
+
+    socketRef.current.on("positions", (data: IPositions) => {
+      setPositions(data);
+    });
+
+    console
+
+    return () => {
+      socketRef.current.disconnect();
+    }
+  }, [gateway]);
 
   //See annotations in JS for more information
   const setup = (p5: p5Types, canvasParentRef: Element) => {
     const cnv = p5.createCanvas(500, 500).parent(canvasParentRef);
 
     cnv.mousePressed(() => {
-      //when you click on the canvas, update your position
-      socket.emit("updatePosition", {
-        x: p5.mouseX / p5.width, // always send relative number of position between 0 and 1
-        y: p5.mouseY / p5.height //so it positions are the relatively the same on different screen sizes.
+      socketRef.current.emit("updatePosition", {
+        x: p5.mouseX / p5.width,    // always send relative number of position between 0 and 1
+        y: p5.mouseY / p5.height    //so it positions are the relatively the same on different screen sizes.
       });
-    })
-    p5.fill(255);
-    //p5.frameRate(30);
-
-    socket.on("positions", (data) => {
-      //get the data from the server to continually update the positions
-      positions = data;
-      draw(p5);
     });
+
+    p5.fill(255);
+    p5.frameRate(30);
   };
 
   const draw = (p5: p5Types) => {
