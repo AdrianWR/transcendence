@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -6,6 +6,8 @@ import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
+  private readonly logger: Logger = new Logger(UsersService.name);
+
   constructor(
     @Inject('USER_REPOSITORY')
     private readonly usersRepository: Repository<User>,
@@ -25,7 +27,8 @@ export class UsersService {
     return user
   }
 
-  create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    this.logger.debug(`POST /users: ${createUserDto.user}`)
     const user = this.usersRepository.create(createUserDto);
     return this.usersRepository.save(user);
   }

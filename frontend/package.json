@@ -15,6 +15,8 @@
     "@mantine/form": "^5.10.0",
     "@mantine/hooks": "^5.10.0",
     "@mantine/next": "^5.10.0",
+    "@tabler/icons": "^2.4.0",
+    "@tabler/icons-react": "^2.4.0",
     "next": "13.0.4",
     "p5": "^1.5.0",
     "react": "18.2.0",

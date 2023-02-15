@@ -27,7 +27,6 @@ const GameComponent: FC<GameComponentProps> = ({ gateway }) => {
   const [positions, setPositions] = useState({})
 
   useEffect(() => {
-    // Socket domain defaults to the Next.JS proxy rewrite (next.config.js)
     if (socketRef.current == null) {
       socketRef.current = io(gateway, { transports: ['websocket'] });
     }
@@ -37,8 +36,6 @@ const GameComponent: FC<GameComponentProps> = ({ gateway }) => {
     socketRef.current.on("positions", (data: IPositions) => {
       setPositions(data);
     });
-
-    console
 
     return () => {
       socketRef.current.disconnect();

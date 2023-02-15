@@ -1,7 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 
-
 export const databaseProviders = [
   {
     provide: 'DATA_SOURCE',
@@ -13,11 +12,13 @@ export const databaseProviders = [
         username: config.get<string>('POSTGRES_USER'),
         password: config.get<string>('POSTGRES_PASSWORD'),
         database: config.get<string>('POSTGRES_DB'),
-        entities: [__dirname + '/../**/*.entity.js'],
+        entities: [
+          __dirname + '/../**/*.entity{.ts,.js}'
+        ],
         synchronize: true,
       });
-      return dataSource.initialize(
-      );
+
+      return dataSource.initialize();
     },
     inject: [ConfigService],
   },
