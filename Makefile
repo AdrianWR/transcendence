@@ -22,6 +22,7 @@ build:
 
 down:
 	docker-compose down
+	pkill -9 node
 	#docker container stop node_c
 	#docker-compose $(YML) $(ENV) down
 
@@ -36,12 +37,17 @@ fclean: down
 
 re: fclean up
 
-up:
+up_docker:
 	#docker volume create --name backend --opt type=none --opt device=/home/user42/transcendence/backend --opt o=bind
 	#docker volume create --name frontend --opt type=none --opt device=/home/user42/transcendence/frontend --opt o=bind
 	docker-compose up
 	#docker-compose $(YML) $(ENV) up -d 
 	#docker-compose $(YML) $(ENV) ps -a
+
+up:
+	docker-compose up -d db
+	cd backend && npm run start:dev &
+	cd frontend && npm run dev &
 
 #ps:
 #	docker-compose $(YML) $(ENV) ps -a
