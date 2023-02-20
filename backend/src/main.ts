@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import { AppModule } from './app.module';
 
@@ -19,9 +20,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, documentOptions);
   SwaggerModule.setup('api', app, document);
 
+  // Setupcookie parser
+  app.use(cookieParser());
+
+  // Deploy app
   const config = app.get(ConfigService)
   const port = config.getOrThrow("APP_PORT")
-
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,

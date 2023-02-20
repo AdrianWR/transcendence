@@ -1,6 +1,8 @@
 import { Box, Button, Group, Modal, PasswordInput, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import Link from "next/link";
 import { FC, FormEvent, useState } from "react";
+import { GoogleButton } from "./SocialButtons";
 
 type CreateUserFormType = {
   user: string,
@@ -43,7 +45,7 @@ const UserCreateForm = () => {
   });
 
   return (
-    <Box sx={{ maxWidth: 300 }} mx="auto">
+    <Box sx={{ maxWidth: 500 }} mx="auto">
       <form onSubmit={form.onSubmit(async (values, event) => handleSubmit(values, event))}>
         <TextInput
           withAsterisk
@@ -68,14 +70,16 @@ const UserCreateForm = () => {
         />
 
         <Group position="right" mt="md">
+          <Link href="/api/auth/google"><GoogleButton type="button">Register with Google</GoogleButton></Link>
           <Button type="submit">Register</Button>
         </Group>
+
       </form>
     </Box>
   );
 }
 
-const SignUpButton: FC = () => {
+export const SignUpButton: FC = () => {
   const [opened, setOpened] = useState(false);
 
   return (

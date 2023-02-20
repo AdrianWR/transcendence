@@ -9,15 +9,14 @@ export class UsersService {
   private readonly logger: Logger = new Logger(UsersService.name);
 
   constructor(
-    @Inject('USER_REPOSITORY')
-    private readonly usersRepository: Repository<User>,
+    @Inject('USER_REPOSITORY') private readonly usersRepository: Repository<User>,
   ) { }
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find();
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id: +id } });
 
     if (!user) {
@@ -28,7 +27,7 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    this.logger.debug(`POST /users: ${createUserDto.user}`)
+    this.logger.debug(`POST /users: ${createUserDto.username}`)
     const user = this.usersRepository.create(createUserDto);
     return this.usersRepository.save(user);
   }

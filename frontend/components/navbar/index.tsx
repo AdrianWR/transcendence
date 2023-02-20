@@ -2,7 +2,7 @@ import { Flex } from "@mantine/core";
 import Image from "next/image";
 import Link from "next/link";
 import { FC } from "react";
-import SignUpButton from "../users/sign_up_button";
+import SignUpButton from "../Buttons/SignUpButton";
 import items from "./items.json";
 
 type MenuItem = {

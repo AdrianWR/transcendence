@@ -5,8 +5,10 @@ import {
   Get,
   Param,
   Patch,
-  Post
+  Post,
+  UseGuards
 } from '@nestjs/common';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
@@ -18,15 +20,17 @@ export class UsersController {
   /** 
    * List all users 
   */
+  @UseGuards(JwtGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.usersService.findOne(id);
   }
+
 
   /**
    * Create a new user
