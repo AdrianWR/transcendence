@@ -1,30 +1,22 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { JwtModule } from "@nestjs/jwt";
-import { PassportModule } from "@nestjs/passport";
-import { UsersModule } from "src/users/users.module";
+import { UsersModule } from "../users/users.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
-import { GoogleOauthStrategy } from "./strategies/google-oauth.strategy";
-import { JwtStrategy } from "./strategies/jwt.strategy";
+import { GoogleOauthModule } from "./google-oauth/google-oauth.module";
+import { FortyTwoOauthModule } from "./intra/intra.module";
+import { JwtAuthModule } from "./jwt/jwt.module";
+import { LocalAuthModule } from "./local-auth/local-auth.module";
 
 @Module({
   imports: [
     UsersModule,
-    PassportModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_ACCESS_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN'),
-        }
-      }),
-      inject: [ConfigService],
-    }),
-    ConfigModule
+    JwtAuthModule,
+    LocalAuthModule,
+    GoogleOauthModule,
+    FortyTwoOauthModule
   ],
-  providers: [AuthService, JwtStrategy, GoogleOauthStrategy],
-  controllers: [AuthController]
+  providers: [AuthService],
+  controllers: [AuthController],
+  exports: [AuthService]
 })
 export class AuthModule { }
