@@ -2,12 +2,14 @@ import { HttpService } from "@nestjs/axios";
 import { HttpStatus, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigType } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
-import { Strategy as Oauth2Strategy, VerifyCallback } from 'passport-oauth2';
+import { Strategy, VerifyCallback } from 'passport-oauth2';
 import authConfig from "src/config/auth.config";
 
 export type IntraUserProfile = {
   provider: string,
-  username: string
+  username: string,
+  first_name: string,
+  last_name: string,
   email: string,
   picture: string,
   accessToken?: string,
@@ -15,7 +17,7 @@ export type IntraUserProfile = {
 }
 
 @Injectable()
-export class FortyTwoOauthStrategy extends PassportStrategy(Oauth2Strategy, 'forty-two') {
+export class FortyTwoOauthStrategy extends PassportStrategy(Strategy, 'forty-two') {
   constructor(
     @Inject(authConfig.KEY) authConf: ConfigType<typeof authConfig>,
     private httpService: HttpService
@@ -44,6 +46,8 @@ export class FortyTwoOauthStrategy extends PassportStrategy(Oauth2Strategy, 'for
       provider: 'forty-two',
       username: user.data.login,
       email: user.data.email,
+      first_name: user.data.first_name,
+      last_name: user.data.last_name,
       picture: user.data.image.link
     }
 

@@ -8,29 +8,45 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService)
 
   // OpenApi setup
   const documentOptions = new DocumentBuilder()
     .setTitle('Transcendence API')
-    .setDescription('Transcendence Backend')
-    .setVersion('1.0')
-    .addTag('transcendence')
+    .setDescription('Transcendence Backend API')
+    .setVersion('1.0.0')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, documentOptions);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('docs', app, document);
 
-  // Setupcookie parser
+  // Setup CORS options
+  //app.enableCors();
+
+  // const allowList = [config.get('FRONTEND_URL')];
+  // app.enableCors({
+  //   origin: function (origin, callback) {
+  //     if (allowList.indexOf(origin) !== -1) {
+  //       callback(null, true)
+  //     } else {
+  //       callback(new Error('Not allowed by CORS'))
+  //     }
+  //   },
+  //   credentials: true,
+  // })
+
+  // Setup cookie parser
   app.use(cookieParser());
 
-  // Deploy app
-  const config = app.get(ConfigService)
-  const port = config.getOrThrow("APP_PORT")
+  // Setup validation pipes
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
     transform: true
   }))
+
+  // Deploy app
+  const port = config.getOrThrow("APP_PORT")
   await app.listen(port);
 }
 bootstrap();

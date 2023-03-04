@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConfigType } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { Request } from "express";
 import { ExtractJwt, Strategy } from "passport-jwt";
+import authConfig from "src/config/auth.config";
 import { UsersService } from "src/users/users.service";
 
 export type JwtPayload = {
@@ -15,7 +16,7 @@ export type JwtPayload = {
 export class JwtStrategy extends PassportStrategy(Strategy) {
 
   constructor(
-    configService: ConfigService,
+    @Inject(authConfig.KEY) private authConf: ConfigType<typeof authConfig>,
     private usersService: UsersService
   ) {
     super({
@@ -24,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_ACCESS_SECRET'),
+      secretOrKey: authConf.jwt.access.secret,
     });
   }
 
@@ -52,26 +53,33 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 @Injectable()
 export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(
-    configService: ConfigService
+    @Inject(authConfig.KEY) private authConf: ConfigType<typeof authConfig>
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        RefreshJwtStrategy.extractJwtFromCookie,
-        ExtractJwt.fromAuthHeaderAsBearerToken()
+        RefreshJwtStrategy.extractRefreshJwtFromCookie,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_REFRESH_SECRET'),
+      secretOrKey: authConf.jwt.refresh.secret,
       passReqToCallback: true,
     });
   }
 
   validate(req: Request, payload: any) {
-    const refreshToken = req.get('Authorization')?.replace('Bearer', '').trim()
-      ?? req.cookies.refresh_token;
+    const refreshToken = RefreshJwtStrategy.extractRefreshJwtFromBearer(req)
+      ?? RefreshJwtStrategy.extractRefreshJwtFromCookie(req);
+
+    if (!refreshToken) throw new UnauthorizedException('JWT refresh token unavailable');
+
     return { ...payload, refreshToken };
   }
 
-  private static extractJwtFromCookie(req: Request): string | null {
+  private static extractRefreshJwtFromBearer(req: Request): string | null {
+    return req.get('Authorization')?.replace('Bearer', '').trim()
+  }
+
+  private static extractRefreshJwtFromCookie(req: Request): string | null {
     if (req.cookies && 'refresh_token' in req.cookies) {
       return req.cookies.refresh_token;
     }

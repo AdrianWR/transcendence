@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -32,8 +33,8 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    this.logger.debug(`POST /users: ${createUserDto.username}`)
-    const user = this.usersRepository.create(createUserDto);
+    const username = createUserDto.username ?? this.generateUsername(createUserDto);
+    const user = this.usersRepository.create({ ...createUserDto, username });
     return this.usersRepository.save(user);
   }
 
@@ -54,6 +55,10 @@ export class UsersService {
     }
 
     return this.usersRepository.remove(user);
+  }
+
+  private generateUsername(user: CreateUserDto) {
+    return user.first_name.charAt(0) + user.last_name + randomUUID().substring(0, 4);
   }
 
 }
