@@ -8,17 +8,23 @@ export class User {
   @Column({ unique: true })
   username: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
-  first_name: string;
+  firstName: string;
 
   @Column()
-  last_name: string;
+  lastName: string;
 
   @Column({ nullable: true })
   password?: string;
+
+  @Column({ default: false })
+  mfa_enabled?: boolean;
+
+  @Column({ type: 'bytea', nullable: true })
+  picture?: Uint8Array;
 
   @Column({ nullable: true })
   refreshToken?: string

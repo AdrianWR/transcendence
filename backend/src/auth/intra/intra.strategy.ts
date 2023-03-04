@@ -8,8 +8,8 @@ import authConfig from "src/config/auth.config";
 export type IntraUserProfile = {
   provider: string,
   username: string,
-  first_name: string,
-  last_name: string,
+  firstName: string,
+  lastName: string,
   email: string,
   picture: string,
   accessToken?: string,
@@ -46,8 +46,8 @@ export class FortyTwoOauthStrategy extends PassportStrategy(Strategy, 'forty-two
       provider: 'forty-two',
       username: user.data.login,
       email: user.data.email,
-      first_name: user.data.first_name,
-      last_name: user.data.last_name,
+      firstName: user.data.first_name,
+      lastName: user.data.last_name,
       picture: user.data.image.link
     }
 

@@ -1,6 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -58,7 +57,7 @@ export class UsersService {
   }
 
   private generateUsername(user: CreateUserDto) {
-    return user.first_name.charAt(0) + user.last_name + randomUUID().substring(0, 4);
+    return user?.email.substring(0, user?.email.indexOf("@"));
   }
 
 }
