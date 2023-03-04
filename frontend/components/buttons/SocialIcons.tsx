@@ -27,3 +27,22 @@ export const GoogleIcon = (props: React.ComponentPropsWithoutRef<'svg'>) => {
     </svg>
   );
 }
+
+export const FortyTwoIcon = (props: React.ComponentPropsWithoutRef<'svg'>) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 137.6 96.6"
+      width={14}
+      height={14}
+      {...props}
+    >
+      <g fill="#FFF" transform="translate(-229.2 -372.7)">
+        <path d="M229.2 443.9L279.9 443.9 279.9 469.3 305.2 469.3 305.2 423.4 254.6 423.4 305.2 372.7 279.9 372.7 229.2 423.4z"></path>
+        <path d="M316.1 398.1L341.4 372.7 316.1 372.7z"></path>
+        <path d="M341.4 398.1L316.1 423.4 316.1 448.7 341.4 448.7 341.4 423.4 366.8 398.1 366.8 372.7 341.4 372.7z"></path>
+        <path d="M366.8 423.4L341.4 448.7 366.8 448.7z"></path>
+      </g>
+    </svg>
+  );
+}

@@ -4,7 +4,7 @@ const rewrites = async () => {
   return [
     {
       source: '/api/:path*',
-      destination: `${process.env.BACKEND_URL}/:path*`, // The :path parameter is used here so will not be automatically passed in the query
+      destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/:path*`, // The :path parameter is used here so will not be automatically passed in the query
     },
   ]
 }

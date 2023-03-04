@@ -1,16 +1,14 @@
+import { NextPage } from "next";
 import Link from "next/link";
-import { ReactElement } from "react";
-import Layout from "../components/layout";
-import { useUser } from "../lib/hooks";
 import styles from "../styles/Home.module.css";
-import { NextPageWithLayout } from "./_app";
 
 interface Props {
   message: string
 }
 
-const Home: NextPageWithLayout = (props: Props) => {
-  const user = useUser();
+const user = null;
+
+const Home: NextPage = (props: Props) => {
 
   return (
     <div>
@@ -30,13 +28,6 @@ const Home: NextPageWithLayout = (props: Props) => {
   );
 }
 
-Home.getLayout = function getLayout(page: ReactElement) {
-  return (
-    <Layout>
-      {page}
-    </Layout>
-  )
-}
 
 export async function getServerSideProps(context) {
   //const response = await fetch(`http://backend:8080/user`);
