@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
 import * as argon2 from 'argon2';
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { User } from "src/users/entities/user.entity";
@@ -24,12 +24,12 @@ export class LocalAuthService {
     // Check if user exists
     const userExists = await this.usersService.findOneByEmail(user.email);
 
-    if (userExists) {
-      throw new BadRequestException('User already exists');
-    }
+    if (userExists) throw new ConflictException('User already exists');
 
     // Hash password
+    if (!user.password) throw new BadRequestException('Password cannot be empty');
     const hash = await argon2.hash(user.password);
+
     const newUser = await this.usersService.create({
       ...user,
       password: hash,

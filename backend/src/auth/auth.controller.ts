@@ -1,8 +1,10 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Request as RequestType, Response as ResponseType } from 'express';
 import { AuthService } from './auth.service';
 import { AccessTokenGuard } from './jwt/jwt.guard';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(

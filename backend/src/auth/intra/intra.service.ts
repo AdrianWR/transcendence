@@ -1,6 +1,6 @@
 import { Inject } from "@nestjs/common";
 import { ConfigType } from "@nestjs/config";
-import authConfig from "../../config/auth.config";
+import authConfig from "src/config/auth.config";
 import { CreateUserDto } from "../../users/dto/create-user.dto";
 import { UsersService } from "../../users/users.service";
 import { JwtAuthService } from "../jwt/jwt.service";
@@ -8,7 +8,7 @@ import { IntraUserProfile } from "./intra.strategy";
 
 export class FortyTwoOauthService {
   constructor(
-    @Inject(authConfig.KEY) private authConf: ConfigType<typeof authConfig>,
+    @Inject(authConfig.KEY) authConf: ConfigType<typeof authConfig>,
     private jwtAuthService: JwtAuthService,
     private usersService: UsersService
   ) { }

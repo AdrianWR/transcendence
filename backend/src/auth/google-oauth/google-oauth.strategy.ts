@@ -8,9 +8,11 @@ export type GoogleUserProfile = {
   provider: string,
   username: string
   email: string,
+  firstName: string,
+  lastName: string,
   picture: string,
-  accessToken: string,
-  refreshToken: string
+  accessToken?: string,
+  refreshToken?: string
 }
 
 @Injectable()
@@ -32,6 +34,8 @@ export class GoogleOauthStrategy extends PassportStrategy(Strategy, 'google') {
       provider: 'google',
       username: name.givenName,
       email: emails[0].value,
+      firstName: name.givenName,
+      lastName: name.familyName,
       picture: photos[0].value,
       accessToken,
       refreshToken,

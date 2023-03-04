@@ -32,8 +32,8 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    this.logger.debug(`POST /users: ${createUserDto.username}`)
-    const user = this.usersRepository.create(createUserDto);
+    const username = createUserDto.username ?? this.generateUsername(createUserDto);
+    const user = this.usersRepository.create({ ...createUserDto, username });
     return this.usersRepository.save(user);
   }
 
@@ -54,6 +54,10 @@ export class UsersService {
     }
 
     return this.usersRepository.remove(user);
+  }
+
+  private generateUsername(user: CreateUserDto) {
+    return user?.email.substring(0, user?.email.indexOf("@"));
   }
 
 }
