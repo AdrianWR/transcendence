@@ -13,3 +13,8 @@
 .backToHome {
     margin: 3rem 0 0;
 }
+
+.content {
+  max-width: 960px;
+  margin: 0 auto;
+}
