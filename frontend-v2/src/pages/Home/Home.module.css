@@ -1,0 +1,27 @@
+.game-card {
+  background-color: rgba(45, 45, 45, 0.5);
+  padding: 2.5rem;
+  border-radius: 0 9px 0 9px;
+  text-align: center;
+  transition: 0.3s;
+  border: 3px solid rgba(45, 45, 45, 0.0);
+}
+
+.game-card:hover {
+  border: 3px solid rgba(228, 228, 228, 1);
+  transform: scale(1.02);
+}
+
+.chat-card {
+  background-color: rgba(228, 228, 228, 0.5);
+  padding: 2.5rem;
+  border-radius: 9px 0 9px 0;
+  text-align: center;
+  transition: 0.3s;
+  border: 3px solid rgba(228, 228, 228, 0.0);
+}
+
+.chat-card:hover {
+  border: 3px solid rgba(67, 67, 67, 1);
+  transform: scale(1.02);
+}
