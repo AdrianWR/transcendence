@@ -11,7 +11,7 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find();
@@ -24,7 +24,7 @@ export class UsersService {
       throw new NotFoundException(`User ID ${id} not found`);
     }
 
-    return user
+    return user;
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
@@ -32,16 +32,20 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const username = createUserDto.username ?? this.generateUsername(createUserDto);
+    const username =
+      createUserDto.username ?? this.generateUsername(createUserDto);
     const user = this.usersRepository.create({ ...createUserDto, username });
     return this.usersRepository.save(user);
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.usersRepository.preload({ id: +id, ...updateUserDto });
+    const user = await this.usersRepository.preload({
+      id: +id,
+      ...updateUserDto,
+    });
 
     if (!user) {
-      throw new NotFoundException(`User ID $(id) not found`)
+      throw new NotFoundException(`User ID $(id) not found`);
     }
 
     return this.usersRepository.save(user);
@@ -50,14 +54,13 @@ export class UsersService {
   async remove(id: number) {
     const user = await this.usersRepository.findOne({ where: { id: +id } });
     if (!user) {
-      throw new NotFoundException(`User ID $(id) not found`)
+      throw new NotFoundException(`User ID $(id) not found`);
     }
 
     return this.usersRepository.remove(user);
   }
 
   private generateUsername(user: CreateUserDto) {
-    return user?.email.substring(0, user?.email.indexOf("@"));
+    return user?.email.substring(0, user?.email.indexOf('@'));
   }
-
 }

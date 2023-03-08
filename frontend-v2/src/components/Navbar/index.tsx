@@ -1,6 +1,6 @@
-import { Flex, Space, Text, Image } from '@mantine/core';
-import { Link, useLocation } from 'react-router-dom';
+import { Flex, Image, Space, Text } from '@mantine/core';
 import { FC } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import SignUpButton from '../buttons/SignUpButton';
 import items from './items.json';
 import styles from './Navbar.module.css';

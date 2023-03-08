@@ -8,7 +8,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const config = app.get(ConfigService)
+  const config = app.get(ConfigService);
 
   // OpenApi setup
   const documentOptions = new DocumentBuilder()
@@ -23,30 +23,36 @@ async function bootstrap() {
   // Setup CORS options
   //app.enableCors();
 
-  // const allowList = [config.get('FRONTEND_URL')];
-  // app.enableCors({
-  //   origin: function (origin, callback) {
-  //     if (allowList.indexOf(origin) !== -1) {
-  //       callback(null, true)
-  //     } else {
-  //       callback(new Error('Not allowed by CORS'))
-  //     }
-  //   },
-  //   credentials: true,
-  // })
+  const allowList = [config.get('FRONTEND_URL')];
+  app.enableCors({
+    origin: allowList,
+    credentials: true,
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'UPDATE', 'OPTIONS'],
+    allowedHeaders: [
+      'X-Requested-With',
+      'X-HTTP-Method-Override',
+      'Content-Type',
+      'Accept',
+      'Observe',
+      'Authorization',
+      'Origin',
+    ],
+  });
 
   // Setup cookie parser
   app.use(cookieParser());
 
   // Setup validation pipes
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true
-  }))
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   // Deploy app
-  const port = config.getOrThrow("APP_PORT")
+  const port = config.getOrThrow('APP_PORT');
   await app.listen(port);
 }
 bootstrap();

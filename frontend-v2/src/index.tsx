@@ -1,12 +1,22 @@
+import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { AuthContextProvider } from './context/AuthContext';
+import './index.css';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+
 root.render(
   <React.StrictMode>
-    <App />
+    <AuthContextProvider>
+      <MantineProvider withNormalizeCSS withGlobalStyles>
+        <Notifications />
+        <App />
+      </MantineProvider>
+    </AuthContextProvider>
   </React.StrictMode>,
 );
 

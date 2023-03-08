@@ -1,17 +1,37 @@
 import { FC, ReactNode } from 'react';
-import { Route, RouteProps, Routes } from 'react-router-dom';
+import { Navigate, Route, RouteProps, Routes } from 'react-router-dom';
 import Layout from '../components/Layout';
-import Home from '../pages/Home';
+import RequireAuth from '../components/RequireAuth';
+import { useAuthContext } from '../hooks/useAuthContext';
 import About from '../pages/About';
+import Home from '../pages/Home';
 
 const MyRoutes: FC<RouteProps> = () => {
   // Use the layout defined at the page level, if available
   const getLayout = (page: ReactNode) => <Layout>{page}</Layout>;
+import Login from '../pages/Login';
+import Profile from '../pages/Profile';
+
+const MyRoutes: FC<RouteProps> = () => {
+  const { user } = useAuthContext();
+
+  console.log('User from Router: ', user);
 
   return (
     <Routes>
-      <Route path='/' element={Home.getLayout ? Home.getLayout(<Home />) : getLayout(<Home />)} />
-      <Route path='/about' element={getLayout(<About />)} />
+      <Route path='/' element={<Layout />}>
+        {/* Public Routes */}
+        <Route path='/' element={<Home />} />
+        <Route path='/about' element={<About />} />
+        <Route path='/login' element={!user ? <Login /> : <Navigate to='/' />} />
+
+        {/* Protected Routes */}
+        <Route element={<RequireAuth />}>
+          <Route path='/profile' element={<Profile />} />
+        </Route>
+
+        {/* Catch All */}
+      </Route>
     </Routes>
   );
 };

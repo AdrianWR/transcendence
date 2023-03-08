@@ -1,15 +1,15 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
   Param,
   Patch,
   Post,
-  UseGuards
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AccessTokenGuard } from '../auth/jwt/jwt.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
@@ -18,18 +18,20 @@ import { UsersService } from './users.service';
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
-  /** 
-   * List all users 
-  */
-  @UseGuards(AccessTokenGuard)
+  /**
+   * List all users
+   */
+  //@UseGuards(AccessTokenGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
-  @UseGuards(AccessTokenGuard)
+  //@UseGuards(AccessTokenGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.usersService.findOne(id);
@@ -57,5 +59,4 @@ export class UsersController {
   remove(@Param('id') id: number) {
     return this.usersService.remove(id);
   }
-
 }
