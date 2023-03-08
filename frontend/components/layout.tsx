@@ -1,18 +1,23 @@
+import { BackgroundImage, Flex } from "@mantine/core";
 import { FC, ReactNode } from "react";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 
 interface Props {
     children: ReactNode
+    imageSrc?: string;
+    imageHeight?: string;
 }
 
-const Layout: FC<Props> = ({ children }: { children: ReactNode }) => {
+const Layout: FC<Props> = ({ children, imageSrc = "/images/webb-deep-field.png", imageHeight = "100%" }: Props) => {
     return (
-        <div className="content">
+        <Flex id="TESTE">
+          <BackgroundImage h={imageHeight} src={imageSrc}>
             <Navbar />
-            {children}
+              {children}
             <Footer />
-        </div>
+          </BackgroundImage>
+        </Flex>
 
     );
 }
