@@ -1,5 +1,5 @@
 import { Container } from '@mantine/core';
-import UserForm from '../components/forms/UserForm';
+import UserForm from '../../components/forms/UserForm';
 
 const Login = () => {
   return (

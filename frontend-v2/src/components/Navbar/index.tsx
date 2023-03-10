@@ -1,6 +1,8 @@
-import { Flex, Image, Space, Text } from '@mantine/core';
+import { Button, Flex, Image, Space, Text } from '@mantine/core';
 import { FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuthContext } from '../../hooks/useAuthContext';
+import { useLogout } from '../../hooks/useLogout';
 import SignUpButton from '../buttons/SignUpButton';
 import items from './items.json';
 import styles from './Navbar.module.css';
@@ -12,6 +14,8 @@ type MenuItem = {
 
 const Navbar: FC = () => {
   const router = useLocation();
+  const { user } = useAuthContext();
+  const { logout } = useLogout();
 
   const isActive = (item: MenuItem): boolean => String(router.pathname) === item.path;
 
@@ -38,7 +42,7 @@ const Navbar: FC = () => {
             </Flex>
           ))}
           <Space w={36} />
-          <SignUpButton />
+          {user ? <Button onClick={logout}>Log Out</Button> : <SignUpButton />}
         </Flex>
       </Flex>
     </nav>

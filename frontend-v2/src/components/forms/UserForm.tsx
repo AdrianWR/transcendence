@@ -1,7 +1,7 @@
 import { Anchor, Button, Container, Divider, Group, Paper, PaperProps, Text } from '@mantine/core';
 import { upperFirst, useToggle } from '@mantine/hooks';
 import { useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSocialLogin } from '../../hooks/useSocialLogin';
 import { FortyTwoButton, GoogleButton } from '../buttons/SocialButtons';
 import { success } from '../Notifications';
@@ -38,18 +38,27 @@ export const UserForm = (props: PaperProps) => {
           <GoogleButton
             type='button'
             disabled={isLoading}
-            onClick={() => handleSocialLogin('/auth/google')}
+            onClick={() => {
+              handleSocialLogin('http://localhost:8080/auth/google');
+            }}
           >
             Login with Google
           </GoogleButton>
 
-          <FortyTwoButton
-            type='button'
-            disabled={isLoading}
-            onClick={() => handleSocialLogin('/auth/intra')}
+          <Link
+            to='https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-aee1e21b925b5f31e7fa53ba727f9d23985886fa9a4d88ba3ab6f55d4bdb9ca7&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fauth%2Fintra%2Fredirect&response_type=code'
+            target='_blank'
           >
-            Login with 42
-          </FortyTwoButton>
+            <FortyTwoButton
+              type='button'
+              disabled={isLoading}
+              onClick={() => {
+                handleSocialLogin('http://localhost:8080/auth/intra');
+              }}
+            >
+              Login with 42
+            </FortyTwoButton>
+          </Link>
         </Group>
 
         <Divider label='Or continue with your email' labelPosition='center' my='lg' />
