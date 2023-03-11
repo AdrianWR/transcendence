@@ -41,7 +41,6 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     const user = localStorage.getItem('user');
-
     if (user) {
       dispatch({ type: 'LOGIN', payload: JSON.parse(user) });
     }

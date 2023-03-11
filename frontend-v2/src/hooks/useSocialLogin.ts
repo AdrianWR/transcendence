@@ -13,12 +13,14 @@ export const useSocialLogin = () => {
     const newWindow = window.open(authUrl, '_blank', 'width=500,height=600');
 
     if (newWindow) {
-      timer = setInterval(() => {
-        if (newWindow.closed) {
-          if (timer) clearInterval(timer);
-          return;
-        }
-      }, 1000);
+      return new Promise((resolve, reject) => {
+        timer = setInterval(() => {
+          if (newWindow.closed) {
+            if (timer) clearInterval(timer);
+            return resolve('OK');
+          }
+        }, 1000);
+      });
     }
   };
 
@@ -31,7 +33,7 @@ export const useSocialLogin = () => {
       await redirectToSsoLogin(authUrl);
 
       const response = await api.get('users/me');
-      const json = await response.data;
+      const json = response.data;
 
       localStorage.setItem('user', JSON.stringify(json));
       dispatch({ type: 'LOGIN', payload: json });
