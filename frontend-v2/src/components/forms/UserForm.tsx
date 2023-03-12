@@ -28,9 +28,9 @@ export const UserForm = (props: PaperProps) => {
   };
 
   return (
-    <Container size='xs'>
+    <Container>
       <Paper radius='md' p='md' withBorder {...props}>
-        <Text size='lg' weight={500}>
+        <Text align='center' size='lg' weight={500}>
           Welcome to Transcendence, {type} with
         </Text>
 

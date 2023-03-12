@@ -43,8 +43,8 @@ const Home: FCWithLayout = () => {
         <Space h={32} />
 
         <Flex px={60} justify='space-between'>
-          {devs.map(({ name, githubUrl }) => (
-            <Tooltip key={name} label={name} withArrow color='secondary'>
+          {devs.map(({ name, githubUrl }, index) => (
+            <Tooltip key={`${name}${index}`} label={name} withArrow color='secondary'>
               <ActionIcon
                 variant='outline'
                 size='lg'

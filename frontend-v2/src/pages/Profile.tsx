@@ -1,6 +1,7 @@
 import { Container } from '@mantine/core';
+import { FCWithLayout } from '../App';
 
-const Profile = () => {
+const Profile: FCWithLayout = () => {
   return (
     <Container>
       <h1>Protected Profile!!!</h1>
