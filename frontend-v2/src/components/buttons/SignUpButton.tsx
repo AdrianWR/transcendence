@@ -1,6 +1,7 @@
 import { Button, Group, Modal } from '@mantine/core';
 import { FC, useState } from 'react';
-import { RegisterUserForm } from '../forms/RegisterUserForm';
+import { Link } from 'react-router-dom';
+import { RegisterForm } from '../forms/RegisterUserForm';
 
 const SignUpButton: FC = () => {
   const [opened, setOpened] = useState(false);
@@ -8,13 +9,15 @@ const SignUpButton: FC = () => {
   return (
     <>
       <Modal opened={opened} onClose={() => setOpened(false)}>
-        <RegisterUserForm submitRef={() => ({})} />
+        <RegisterForm />
       </Modal>
 
       <Group position='center'>
-        <Button color='red' onClick={() => setOpened(true)}>
-          Sign Up
-        </Button>
+        <Link to='/login'>
+          <Button color='red' onClick={() => setOpened(false)}>
+            Sign Up
+          </Button>
+        </Link>
       </Group>
     </>
   );

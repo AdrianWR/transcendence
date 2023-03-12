@@ -1,10 +1,9 @@
 import { Group, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { isEmail, useForm } from '@mantine/form';
-import { showNotification } from '@mantine/notifications';
-import { IconCheck, IconX } from '@tabler/icons-react';
-import { AxiosError, HttpStatusCode } from 'axios';
-import { FormEvent } from 'react';
-import api from '../../services/api';
+import { FormEvent, forwardRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CreateUserDto, useSignUp } from '../../hooks/useSignUp';
+import { success } from '../Notifications';
 
 type RegisterUserFormType = {
   firstName: string;
@@ -14,71 +13,12 @@ type RegisterUserFormType = {
   confirmPassword: string;
 };
 
-type CreateUserDto = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-};
+export const RegisterForm = forwardRef<HTMLButtonElement>((_props, ref) => {
+  const { signUp, error, isLoading } = useSignUp();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
 
-interface RegisterFormProps {
-  submitRef: () => object;
-}
-
-const alertNotification = (title: string, message: string) => {
-  showNotification({
-    title: title,
-    message: message,
-    color: 'red',
-    icon: <IconX />,
-  });
-};
-
-const successNotification = (title: string, message: string) => {
-  showNotification({
-    title: title,
-    message: message,
-    color: 'green',
-    icon: <IconCheck />,
-  });
-};
-
-const handleSubmit = async (values: RegisterUserFormType, event: FormEvent) => {
-  event.preventDefault();
-  const registerUri = '/auth/local/signup';
-  const payload: CreateUserDto = {
-    email: values.email,
-    firstName: values.firstName,
-    lastName: values.lastName,
-    password: values.password,
-  };
-
-  console.log(payload);
-
-  try {
-    await api.post(registerUri, JSON.stringify(payload), {
-      headers: { 'Content-Type': 'application/json' },
-      withCredentials: true,
-    });
-    successNotification('Success!', 'Your user was registered successfully.');
-  } catch (err) {
-    if (err instanceof AxiosError) {
-      if (!err?.response) {
-        alertNotification('No Server Response', 'Please try again in a few seconds.');
-      } else if (err.response?.status === HttpStatusCode.Conflict) {
-        alertNotification('Email already registered', 'Please log in to your account.');
-      } else {
-        alertNotification('Registration failed', 'Please try again in a few seconds.');
-        console.error(err.response);
-      }
-    } else {
-      alertNotification('Registration failed', 'Please try again in a few seconds.');
-      console.error(err);
-    }
-  }
-};
-
-export const RegisterUserForm = ({ submitRef }: RegisterFormProps) => {
   const form = useForm<RegisterUserFormType>({
     initialValues: {
       firstName: '',
@@ -96,6 +36,26 @@ export const RegisterUserForm = ({ submitRef }: RegisterFormProps) => {
 
     validateInputOnChange: true,
   });
+
+  const handleSubmit = async (values: RegisterUserFormType, e: FormEvent) => {
+    e.preventDefault();
+
+    const createUserDto: CreateUserDto = {
+      email: values.email,
+      firstName: values.firstName,
+      lastName: values.lastName,
+      password: values.password,
+    };
+
+    await signUp(createUserDto);
+
+    if (error) {
+      alert(error);
+    } else {
+      success('Your user was registered successfully.');
+      navigate(from, { replace: true });
+    }
+  };
 
   return (
     <form onSubmit={form.onSubmit(async (values, event) => handleSubmit(values, event))}>
@@ -139,9 +99,11 @@ export const RegisterUserForm = ({ submitRef }: RegisterFormProps) => {
           {...form.getInputProps('confirmPassword')}
         />
       </Stack>
-      <button ref={submitRef} type='submit' style={{ display: 'none' }} />
+      <button type='submit' ref={ref} style={{ display: 'none' }} />
     </form>
   );
-};
+});
 
-export default { RegisterUserForm };
+RegisterForm.displayName = 'RegisterForm';
+
+export default RegisterForm;

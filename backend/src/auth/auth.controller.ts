@@ -7,15 +7,16 @@ import { AccessTokenGuard } from './jwt/jwt.guard';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private authService: AuthService
-  ) { }
+  constructor(private authService: AuthService) {}
 
   @UseGuards(AccessTokenGuard)
   @Get('logout')
-  async logout(@Req() req: RequestType, @Res({ passthrough: true }) res: ResponseType): Promise<void> {
-    res.cookie('access_token', '', { maxAge: -1, httpOnly: true });
-    res.cookie('refresh_token', '', { maxAge: -1, httpOnly: true });
+  async logout(
+    @Req() req: RequestType,
+    @Res({ passthrough: true }) res: ResponseType,
+  ): Promise<void> {
+    res.cookie('accessToken', '', { maxAge: -1, httpOnly: true });
+    res.cookie('refreshToken', '', { maxAge: -1, httpOnly: true });
     return await this.authService.logout(req.user['sub']);
   }
 }

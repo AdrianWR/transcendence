@@ -1,6 +1,9 @@
-import { Flex, Space, Text, Image } from '@mantine/core';
+import { Button, Flex, Image, Space, Text } from '@mantine/core';
+import { FC, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FC } from 'react';
+import { useAuthContext } from '../../hooks/useAuthContext';
+import { useLogout } from '../../hooks/useLogout';
+import api from '../../services/api';
 import SignUpButton from '../buttons/SignUpButton';
 import items from './items.json';
 import styles from './Navbar.module.css';
@@ -12,6 +15,17 @@ type MenuItem = {
 
 const Navbar: FC = () => {
   const router = useLocation();
+  const { user } = useAuthContext();
+  const { logout } = useLogout();
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    console.log(user);
+    if (user) {
+      console.log('Check navbar');
+      api.get('/users/me').then((response) => setEmail(response.data?.email));
+    }
+  }, [user]);
 
   const isActive = (item: MenuItem): boolean => String(router.pathname) === item.path;
 
@@ -38,7 +52,14 @@ const Navbar: FC = () => {
             </Flex>
           ))}
           <Space w={36} />
-          <SignUpButton />
+          {user ? (
+            <div>
+              <Text>{email}</Text>
+              <Button onClick={logout}>Log Out</Button>
+            </div>
+          ) : (
+            <SignUpButton />
+          )}
         </Flex>
       </Flex>
     </nav>
