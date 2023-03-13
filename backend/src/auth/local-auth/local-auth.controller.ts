@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { Request as RequestType, Response as ResponseType } from 'express';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { UsersService } from 'src/users/users.service';
 import { User } from '../../users/entities/user.entity';
+import { CreateUserDto } from '../../users/types/create-user.dto';
+import { UsersService } from '../../users/users.service';
 import { JwtAuthService } from '../jwt/jwt.service';
 import { LocalAuthService } from './local-auth.service';
 import { LocalAuthGuard } from './local.guard';

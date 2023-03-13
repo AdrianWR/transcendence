@@ -1,5 +1,4 @@
 import { Exclude, Transform } from 'class-transformer';
-import { IsString } from 'class-validator';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('users')
@@ -19,13 +18,16 @@ export class User {
   @Column()
   lastName: string;
 
-  @IsString()
+  @Column({ default: false })
+  mfaEnabled?: boolean;
+
   @Exclude()
   @Column({ nullable: true })
   password?: string;
 
-  @Column({ default: false })
-  mfa_enabled?: boolean;
+  @Exclude()
+  @Column({ nullable: true })
+  mfaSecret?: string;
 
   @Transform(({ obj }) => `${process.env.BACKEND_URL}/users/${obj.id}/avatar`)
   @Column({ type: 'bytea', nullable: true })

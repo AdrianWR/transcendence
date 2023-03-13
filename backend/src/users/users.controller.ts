@@ -13,11 +13,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Request as RequestType } from 'express';
-import { JwtPayload } from 'src/auth/jwt/jwt.strategy';
-import { AccessTokenGuard } from '../auth/jwt/jwt.guard';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtTwoFactorGuard } from '../auth/2fa/2fa.guard';
+import { RequestTypeWithUser } from '../auth/types/auth.interface';
+import { CreateUserDto } from './types/create-user.dto';
+import { UpdateUserDto } from './types/update-user.dto';
 import { UsersService } from './users.service';
 
 @ApiTags('users')
@@ -29,24 +28,24 @@ export class UsersController {
   /**
    * List all users
    */
-  @UseGuards(AccessTokenGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
+  @UseGuards(JwtTwoFactorGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   findAll() {
     return this.usersService.findAll();
   }
 
-  @UseGuards(AccessTokenGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get('me')
-  findMe(@Req() req: RequestType) {
-    const user = req.user as JwtPayload;
-    return this.usersService.findOne(user.sub);
+  @UseGuards(JwtTwoFactorGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  findMe(@Req() req: RequestTypeWithUser) {
+    const user = req.user;
+    return this.usersService.findOne(user.id);
   }
 
-  @UseGuards(AccessTokenGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
+  @UseGuards(JwtTwoFactorGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
@@ -65,6 +64,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @UseInterceptors(ClassSerializerInterceptor)
   update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
