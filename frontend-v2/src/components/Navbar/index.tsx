@@ -5,13 +5,8 @@ import { useAuthContext } from '../../hooks/useAuthContext';
 import { useLogout } from '../../hooks/useLogout';
 import api from '../../services/api';
 import SignUpButton from '../buttons/SignUpButton';
-import items from './items.json';
+import routes, { IRoutesConfig } from '../../routes/routes.config';
 import styles from './Navbar.module.css';
-
-type MenuItem = {
-  name: string;
-  path: string;
-};
 
 const Navbar: FC = () => {
   const router = useLocation();
@@ -27,7 +22,7 @@ const Navbar: FC = () => {
     }
   }, [user]);
 
-  const isActive = (item: MenuItem): boolean => String(router.pathname) === item.path;
+  const isActive = (route: IRoutesConfig): boolean => String(router.pathname) === route.path;
 
   return (
     <nav>
@@ -40,17 +35,19 @@ const Navbar: FC = () => {
         </Flex>
 
         <Flex justify='flex-end' align='center'>
-          {items.map((item: MenuItem) => (
-            <Flex
-              key={item.name.toLowerCase()}
-              className={`${styles['page-nav-link']} ${isActive(item) ? styles['active'] : ''}`}
-            >
-              <Link to={item.path}>
-                <Text weight='bold'>{item.name}</Text>
-              </Link>
-              <Space w='xl' />
-            </Flex>
-          ))}
+          {routes.map((route: IRoutesConfig) =>
+            route.showOnNavbar ? (
+              <Flex
+                key={route.name.toLowerCase()}
+                className={`${styles['page-nav-link']} ${isActive(route) ? styles['active'] : ''}`}
+              >
+                <Link to={route.path}>
+                  <Text weight='bold'>{route.name}</Text>
+                </Link>
+                <Space w='xl' />
+              </Flex>
+            ) : null,
+          )}
           <Space w={36} />
           {user ? (
             <div>

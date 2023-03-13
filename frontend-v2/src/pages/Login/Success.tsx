@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
+import { FCWithLayout } from '../../App';
 
-export const LoginSuccess = () => {
+const LoginSuccess: FCWithLayout = () => {
   useEffect(() => {
     setTimeout(() => {
       window.close();
@@ -8,3 +9,5 @@ export const LoginSuccess = () => {
   }, []);
   return <div>Thanks for logging in! You will be redirected soon...</div>;
 };
+
+export default LoginSuccess;
