@@ -1,21 +1,32 @@
-import { Controller, Get, Req, Res, UseGuards } from "@nestjs/common";
-import { Request as RequestType, Response as ResponseType } from 'express';
-import { RefreshTokenGuard } from "./jwt.guard";
-import { JwtAuthService } from "./jwt.service";
-
+import {
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Req,
+  Res,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { RequestTypeWithUser, ResponseType } from '../types/auth.interface';
+import { RefreshTokenGuard } from './jwt.guard';
+import { JwtAuthService } from './jwt.service';
 
 @Controller('auth/jwt')
 export class JwtAuthController {
-  constructor(
-    private jwtAuthService: JwtAuthService,
-  ) { }
+  constructor(private jwtAuthService: JwtAuthService) {}
 
   @UseGuards(RefreshTokenGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get('refresh')
-  async refreshTokens(@Req() req: RequestType, @Res({ passthrough: true }) res: ResponseType) {
-    const userId = req.user['sub']
-    const refreshToken = req.user['refreshToken'] || req.cookies.refresh_token;
-    const tokens = await this.jwtAuthService.refreshTokens(userId, refreshToken);
-    return await this.jwtAuthService.storeTokensInCookie(res, tokens);
+  async refreshTokens(
+    @Req() req: RequestTypeWithUser,
+    @Res({ passthrough: true }) res: ResponseType,
+  ) {
+    const user = req.user;
+    const refreshToken = req.cookies?.refreshToken;
+    const tokens = await this.jwtAuthService.refreshJwt(user.id, refreshToken);
+    await this.jwtAuthService.storeTokensInCookie(res, tokens);
+
+    return user;
   }
 }

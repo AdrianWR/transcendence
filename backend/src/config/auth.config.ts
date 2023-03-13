@@ -22,4 +22,7 @@ export default registerAs('auth', () => ({
       expires_in: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
     },
   },
+  twoFactor: {
+    appName: process.env.TWO_FACTOR_AUTH_APP_NAME || 'transcendence',
+  },
 }));

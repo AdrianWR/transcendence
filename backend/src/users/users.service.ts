@@ -1,9 +1,9 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { CreateUserDto } from './types/create-user.dto';
+import { UpdateUserDto } from './types/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -58,6 +58,12 @@ export class UsersService {
     }
 
     return this.usersRepository.remove(user);
+  }
+
+  async setTwoFactorAuthenticationSecret(secret: string, userId: number) {
+    return this.usersRepository.update(userId, {
+      mfaSecret: secret,
+    });
   }
 
   private generateUsername(user: CreateUserDto) {

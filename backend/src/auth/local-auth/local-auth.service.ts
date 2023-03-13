@@ -5,11 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { AuthTokenDto } from '../dto/auth-token.dto';
+import { User } from '../../users/entities/user.entity';
+import { CreateUserDto } from '../../users/types/create-user.dto';
 import { JwtAuthService } from '../jwt/jwt.service';
+import { AuthTokenDto } from '../types/auth-token.dto';
 
 @Injectable()
 export class LocalAuthService {
@@ -19,10 +19,7 @@ export class LocalAuthService {
   ) {}
 
   async signIn(user: User): Promise<AuthTokenDto> {
-    const tokens = await this.jwtAuthService.getTokens(user);
-    await this.jwtAuthService.updateRefreshToken(user, tokens.refreshToken);
-
-    return tokens;
+    return await this.jwtAuthService.generateJwt(user);
   }
 
   async signUp(user: CreateUserDto) {
@@ -34,16 +31,14 @@ export class LocalAuthService {
     // Hash password
     if (!user.password)
       throw new BadRequestException('Password cannot be empty');
-    const hash = await argon2.hash(user.password);
+    const hashedPassword = await argon2.hash(user.password);
 
     const newUser = await this.usersService.create({
       ...user,
-      password: hash,
+      password: hashedPassword,
     });
-    const tokens = await this.jwtAuthService.getTokens(newUser);
-    await this.jwtAuthService.updateRefreshToken(newUser, tokens.refreshToken);
 
-    return tokens;
+    return await this.jwtAuthService.generateJwt(newUser);
   }
 
   async validateUser(email: string, pass: string): Promise<User | null> {

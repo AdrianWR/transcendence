@@ -13,8 +13,8 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import { Request as RequestType, Response as ResponseType } from 'express';
-import authConfig from 'src/config/auth.config';
-import { UsersService } from 'src/users/users.service';
+import authConfig from '../../config/auth.config';
+import { UsersService } from '../../users/users.service';
 import { JwtAuthService } from '../jwt/jwt.service';
 import { GoogleOauthGuard } from './google-oauth.guard';
 import { GoogleOauthService } from './google-oauth.service';

@@ -1,15 +1,15 @@
-import { Injectable } from "@nestjs/common";
-import { CreateUserDto } from "src/users/dto/create-user.dto";
-import { UsersService } from "src/users/users.service";
-import { JwtAuthService } from "../jwt/jwt.service";
-import { GoogleUserProfile } from "./google-oauth.strategy";
+import { Injectable } from '@nestjs/common';
+import { CreateUserDto } from '../../users/types/create-user.dto';
+import { UsersService } from '../../users/users.service';
+import { JwtAuthService } from '../jwt/jwt.service';
+import { GoogleUserProfile } from './google-oauth.strategy';
 
 @Injectable()
 export class GoogleOauthService {
   constructor(
     private jwtAuthService: JwtAuthService,
-    private usersService: UsersService
-  ) { }
+    private usersService: UsersService,
+  ) {}
 
   async googleSignIn(profile: GoogleUserProfile) {
     // const username = profile.email.match(/^(.+)@/)[1]
@@ -17,13 +17,10 @@ export class GoogleOauthService {
 
     // Create new user if not registered
     if (!user) {
-      const newUser: CreateUserDto = { ...profile }
+      const newUser: CreateUserDto = { ...profile };
       user = await this.usersService.create(newUser);
     }
 
-    const tokens = await this.jwtAuthService.getTokens(user);
-    await this.jwtAuthService.updateRefreshToken(user, tokens.refreshToken);
-
-    return tokens;
+    return await this.jwtAuthService.generateJwt(user);
   }
 }

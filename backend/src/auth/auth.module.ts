@@ -1,11 +1,12 @@
-import { Module } from "@nestjs/common";
-import { UsersModule } from "../users/users.module";
-import { AuthController } from "./auth.controller";
-import { AuthService } from "./auth.service";
-import { GoogleOauthModule } from "./google-oauth/google-oauth.module";
-import { FortyTwoOauthModule } from "./intra/intra.module";
-import { JwtAuthModule } from "./jwt/jwt.module";
-import { LocalAuthModule } from "./local-auth/local-auth.module";
+import { Module } from '@nestjs/common';
+import { UsersModule } from '../users/users.module';
+import { TwoFactorAuthModule } from './2fa/2fa.module';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { GoogleOauthModule } from './google-oauth/google-oauth.module';
+import { FortyTwoOauthModule } from './intra/intra.module';
+import { JwtAuthModule } from './jwt/jwt.module';
+import { LocalAuthModule } from './local-auth/local-auth.module';
 
 @Module({
   imports: [
@@ -13,10 +14,11 @@ import { LocalAuthModule } from "./local-auth/local-auth.module";
     JwtAuthModule,
     LocalAuthModule,
     GoogleOauthModule,
-    FortyTwoOauthModule
+    FortyTwoOauthModule,
+    TwoFactorAuthModule,
   ],
   providers: [AuthService],
   controllers: [AuthController],
-  exports: [AuthService]
+  exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}
