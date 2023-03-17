@@ -1,9 +1,17 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './types/create-user.dto';
+import { UpdateUserAvatarDto } from './types/update-user-avatar.dto';
 import { UpdateUserDto } from './types/update-user.dto';
+import * as fsPromises from 'fs/promises';
+import { join } from 'path';
 
 @Injectable()
 export class UsersService {
@@ -45,16 +53,49 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`User ID $(id) not found`);
+      throw new NotFoundException(`User ID ${id} not found`);
     }
 
     return this.usersRepository.save(user);
   }
 
+  async updateAvatar(
+    id: number,
+    updateUserAvatarDto: UpdateUserAvatarDto,
+  ): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { id: +id } });
+
+    if (!user) throw new NotFoundException(`User ID ${id} not found`);
+
+    const updatedUser = await this.usersRepository.preload({
+      id: +id,
+      ...updateUserAvatarDto,
+    });
+
+    if (user.avatar) {
+      const filePath = join(
+        __dirname,
+        '../..',
+        process.env.USER_PICTURE_PATH,
+        user.avatar,
+      );
+
+      try {
+        await fsPromises.unlink(filePath);
+      } catch (err) {
+        throw new InternalServerErrorException(
+          `Server could not delete ${filePath}`,
+        );
+      }
+    }
+
+    return this.usersRepository.save(updatedUser);
+  }
+
   async remove(id: number) {
     const user = await this.usersRepository.findOne({ where: { id: +id } });
     if (!user) {
-      throw new NotFoundException(`User ID $(id) not found`);
+      throw new NotFoundException(`User ID ${id} not found`);
     }
 
     return this.usersRepository.remove(user);
