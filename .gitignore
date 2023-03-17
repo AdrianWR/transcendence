@@ -1,3 +1,4 @@
+en.subject.pdf
 /db/dbdata
 /frontend-v2/node_modules
 /frontend/node_modules
@@ -6,6 +7,7 @@
 
 .env
 .DS_Store
+.vscode/
 
 # Created by https://www.toptal.com/developers/gitignore/api/vim
 # Edit at https://www.toptal.com/developers/gitignore?templates=vim

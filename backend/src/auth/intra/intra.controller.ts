@@ -43,7 +43,7 @@ export class FortyTwoOauthController {
     const user = req.user as IntraUserProfile;
     const tokens = await this.fortyTwoOauthService.fortyTwoSignIn(user);
     await this.jwtAuthService.storeTokensInCookie(res, tokens);
-    //return this.usersService.findOneByEmail(user.email);
+
     res.redirect(`${this.authConf.frontend_url}/login/success`);
   }
 }

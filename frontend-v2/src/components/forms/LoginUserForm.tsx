@@ -4,8 +4,15 @@ import { FormEvent, ForwardRefRenderFunction, forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LoginUserDto, useLogin } from '../../hooks/useLogin';
 
-export const ForwardedUserForm: ForwardRefRenderFunction<HTMLButtonElement> = (_props, ref) => {
-  const { login, isLoading } = useLogin();
+type ForwardedUserFormProps = {
+  handleChange: (arg0: boolean) => void;
+};
+
+export const ForwardedUserForm: ForwardRefRenderFunction<
+  HTMLButtonElement,
+  ForwardedUserFormProps
+> = (props: ForwardedUserFormProps, ref) => {
+  const { login, saveUser } = useLogin();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
@@ -18,7 +25,13 @@ export const ForwardedUserForm: ForwardRefRenderFunction<HTMLButtonElement> = (_
       password: values.password,
     };
 
-    await login(loginUserDto);
+    const user = await login(loginUserDto);
+
+    if (user?.mfaEnabled) {
+      props.handleChange(true);
+    } else if (user) {
+      await saveUser(user);
+    }
   };
 
   const form = useForm<LoginUserDto>({

@@ -3,7 +3,7 @@ import { isEmail, useForm } from '@mantine/form';
 import { FormEvent, forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CreateUserDto, useSignUp } from '../../hooks/useSignUp';
-import { success } from '../Notifications';
+import { alert, success } from '../Notifications';
 
 type RegisterUserFormType = {
   firstName: string;
@@ -14,7 +14,7 @@ type RegisterUserFormType = {
 };
 
 export const RegisterForm = forwardRef<HTMLButtonElement>((_props, ref) => {
-  const { signUp, error, isLoading } = useSignUp();
+  const { signUp, error } = useSignUp();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
