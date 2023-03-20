@@ -47,7 +47,7 @@ up_docker:
 up:
 	docker-compose up -d db
 	cd backend && npm run start:dev &
-	cd frontend && npm run dev &
+	cd frontend-v2 && npm run start &
 
 #ps:
 #	docker-compose $(YML) $(ENV) ps -a

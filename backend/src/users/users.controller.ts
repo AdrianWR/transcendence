@@ -29,23 +29,23 @@ export class UsersController {
    * List all users
    */
   @Get()
-  @UseGuards(JwtTwoFactorGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
+//  @UseGuards(JwtTwoFactorGuard)
+//  @UseInterceptors(ClassSerializerInterceptor)
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get('me')
-  @UseGuards(JwtTwoFactorGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
+//  @UseGuards(JwtTwoFactorGuard)
+//  @UseInterceptors(ClassSerializerInterceptor)
   findMe(@Req() req: RequestTypeWithUser) {
     const user = req.user;
     return this.usersService.findOne(user.id);
   }
 
   @Get(':id')
-  @UseGuards(JwtTwoFactorGuard)
-  @UseInterceptors(ClassSerializerInterceptor)
+//  @UseGuards(JwtTwoFactorGuard)
+//  @UseInterceptors(ClassSerializerInterceptor)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
@@ -64,7 +64,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @UseInterceptors(ClassSerializerInterceptor)
+//  @UseInterceptors(ClassSerializerInterceptor)
   update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
