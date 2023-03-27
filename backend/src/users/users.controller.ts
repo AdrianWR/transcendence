@@ -40,8 +40,8 @@ export class UsersController {
   }
 
   @Get('me')
-  //  @UseGuards(JwtTwoFactorGuard)
-  //  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtTwoFactorGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   findMe(@Req() req: RequestTypeWithUser) {
     const user = req.user;
     return this.usersService.findOne(user.id);

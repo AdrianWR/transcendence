@@ -23,7 +23,7 @@ const NavbarAvatar: FC = () => {
                   radius='50%'
                   width={50}
                   height={50}
-                  src={user?.avatarUrl ? user.avatarUrl : '/images/southern-ring-nebula-miri.png'}
+                  src={user?.avatarUrl || '/images/cat-pirate.jpg'}
                   pos='relative'
                   alt='user avatar'
                 />

@@ -28,7 +28,7 @@ const ProfileCard: FC = () => {
       </Flex>
       <Flex justify='space-between' align='center'>
         <Avatar
-          src={user?.avatarUrl}
+          src={user?.avatarUrl || '/images/cat-pirate.jpg'}
           size='xl'
           radius='50%'
           style={{ border: '2px solid #F46036' }}
