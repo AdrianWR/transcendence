@@ -14,7 +14,7 @@ const SignUpButton: FC = () => {
 
       <Group position='center'>
         <Link to='/login'>
-          <Button color='red' onClick={() => setOpened(false)}>
+          <Button color='secondary' onClick={() => setOpened(false)}>
             Sign Up
           </Button>
         </Link>

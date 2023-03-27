@@ -1,4 +1,12 @@
-import { createContext, Dispatch, FC, PropsWithChildren, useEffect, useReducer } from 'react';
+import {
+  createContext,
+  Dispatch,
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useReducer,
+} from 'react';
 
 export type IUser = {
   id: number;
@@ -6,8 +14,9 @@ export type IUser = {
   email: string;
   firstName: string;
   lastName: string;
-  mfa_enabled: boolean;
+  mfaEnabled: boolean;
   picture: string;
+  avatarUrl: string;
 };
 
 export type IState = {
@@ -16,6 +25,7 @@ export type IState = {
 
 type IAuthContext = IState & {
   dispatch: Dispatch<IAction>;
+  updateUser: (user: IUser) => void;
 };
 
 type IAction = {
@@ -31,6 +41,8 @@ export const authReducer = (state: IState, action: IAction) => {
       return { user: action.payload };
     case 'LOGOUT':
       return { user: null };
+    case 'UPDATE':
+      return { user: action.payload };
     default:
       return state;
   }
@@ -46,5 +58,18 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
     }
   }, []);
 
-  return <AuthContext.Provider value={{ ...state, dispatch }}>{children}</AuthContext.Provider>;
+  const updateUser = useCallback(
+    (user: IUser) => {
+      localStorage.setItem('user', JSON.stringify(user));
+
+      dispatch({ type: 'UPDATE', payload: user });
+    },
+    [state],
+  );
+
+  return (
+    <AuthContext.Provider value={{ ...state, updateUser, dispatch }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
