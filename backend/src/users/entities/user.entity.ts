@@ -1,4 +1,4 @@
-import { Exclude, Transform } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('users')
@@ -36,4 +36,14 @@ export class User {
   @Exclude()
   @Column({ nullable: true })
   refreshToken?: string;
+
+  @Column({ nullable: true })
+  avatar: string;
+
+  @Expose({ name: 'avatarUrl' })
+  getAvatarUrl(): string | null {
+    if (!this.avatar) return null;
+
+    return `${process.env.BACKEND_URL}/${process.env.USER_PICTURE_PATH}/${this.avatar}`;
+  }
 }

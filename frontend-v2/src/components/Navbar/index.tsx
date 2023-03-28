@@ -7,18 +7,15 @@ import api from '../../services/api';
 import SignUpButton from '../buttons/SignUpButton';
 import routes, { IRoutesConfig } from '../../routes/routes.config';
 import styles from './Navbar.module.css';
+import NavbarAvatar from '../NavbarAvatar';
 
 const Navbar: FC = () => {
   const router = useLocation();
   const { user } = useAuthContext();
-  const { logout } = useLogout();
-  const [email, setEmail] = useState('');
 
   useEffect(() => {
-    console.log(user);
     if (user) {
-      console.log('Check navbar');
-      api.get('/users/me').then((response) => setEmail(response.data?.email));
+      api.get('/users/me'); // this seems to be done on the auth context when signin and the email will be updated when page reloads or when profile is updated
     }
   }, [user]);
 
@@ -49,14 +46,7 @@ const Navbar: FC = () => {
             ) : null,
           )}
           <Space w={36} />
-          {user ? (
-            <div>
-              <Text>{email}</Text>
-              <Button onClick={logout}>Log Out</Button>
-            </div>
-          ) : (
-            <SignUpButton />
-          )}
+          <NavbarAvatar />
         </Flex>
       </Flex>
     </nav>

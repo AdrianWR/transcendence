@@ -41,7 +41,10 @@ export class LocalAuthService {
     return await this.jwtAuthService.generateJwt(newUser);
   }
 
-  async validateUser(email: string, pass: string): Promise<User | null> {
+  async validateUser(
+    email: string,
+    pass: string,
+  ): Promise<Omit<User, 'getAvatarUrl'> | null> {
     const user = await this.usersService.findOneByEmail(email);
     if (!user) {
       throw new BadRequestException('User does not exist');

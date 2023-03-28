@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -14,7 +16,7 @@ import { ChannelsModule } from './channels/channels.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [databaseConfig, authConfig]
+      load: [databaseConfig, authConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule.forFeature(databaseConfig)],
@@ -26,9 +28,13 @@ import { ChannelsModule } from './channels/channels.module';
         password: dbConfig.postgres.password,
         database: dbConfig.postgres.database,
         synchronize: true,
-        autoLoadEntities: true
+        autoLoadEntities: true,
       }),
       inject: [databaseConfig.KEY],
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/public/',
     }),
     UsersModule,
     ChannelsModule,
@@ -39,4 +45,4 @@ import { ChannelsModule } from './channels/channels.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,7 +1,6 @@
 import Home from '../pages/Home';
 import About from '../pages/About';
 import Profile from '../pages/Profile';
-import Profile2 from '../pages/Profile2';
 import Login from '../pages/Login';
 import LoginSuccess from '../pages/Login/Success';
 import { FCWithLayout } from '../App';
@@ -32,13 +31,6 @@ const routesConfig: IRoutesConfig[] = [
     name: 'Profile',
     path: '/profile',
     component: Profile,
-    isPrivate: true,
-    showOnNavbar: true,
-  },
-  {
-    name: 'Profile2',
-    path: '/profile2',
-    component: Profile2,
     isPrivate: true,
     showOnNavbar: true,
   },
