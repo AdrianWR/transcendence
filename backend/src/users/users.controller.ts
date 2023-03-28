@@ -91,7 +91,8 @@ export class UsersController {
   }
 
   @Patch(':id')
-  //  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtTwoFactorGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }

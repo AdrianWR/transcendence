@@ -1,10 +1,12 @@
 import {
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as argon2 from 'argon2';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './types/create-user.dto';
@@ -47,9 +49,22 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    if (updateUserDto.username) {
+      const userByUsername = await this.usersRepository.findOneBy({
+        username: updateUserDto.username,
+      });
+
+      if (userByUsername && userByUsername.id !== +id)
+        throw new ConflictException(
+          `Username ${updateUserDto.username} already exists!`,
+        );
+    }
+
+    const { password, ...rest } = updateUserDto;
     const user = await this.usersRepository.preload({
       id: +id,
-      ...updateUserDto,
+      ...(password ? { password: await argon2.hash(password) } : {}),
+      ...rest,
     });
 
     if (!user) {
@@ -108,6 +123,9 @@ export class UsersService {
   }
 
   private generateUsername(user: CreateUserDto) {
-    return user?.email.substring(0, user?.email.indexOf('@'));
+    return `${user?.email.substring(
+      0,
+      user?.email.indexOf('@'),
+    )}_${new Date().getTime()}`;
   }
 }

@@ -17,6 +17,6 @@ export class AuthController {
   ): Promise<void> {
     res.cookie('accessToken', '', { maxAge: -1, httpOnly: true });
     res.cookie('refreshToken', '', { maxAge: -1, httpOnly: true });
-    return await this.authService.logout(req.user['sub']);
+    return await this.authService.logout(req.user['id']);
   }
 }
