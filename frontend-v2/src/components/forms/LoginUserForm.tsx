@@ -1,12 +1,11 @@
 import { PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { FormEvent, forwardRef, ForwardRefRenderFunction } from 'react';
+import { FormEvent, ForwardRefRenderFunction, forwardRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LoginUserDto, useLogin } from '../../hooks/useLogin';
-import { alert, success } from '../Notifications';
 
 export const ForwardedUserForm: ForwardRefRenderFunction<HTMLButtonElement> = (_props, ref) => {
-  const { login, error, isLoading } = useLogin();
+  const { login, isLoading } = useLogin();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
@@ -20,13 +19,6 @@ export const ForwardedUserForm: ForwardRefRenderFunction<HTMLButtonElement> = (_
     };
 
     await login(loginUserDto);
-
-    if (error) {
-      alert(error);
-    } else {
-      success('Your user was logged in successfully!');
-      navigate(from, { replace: true });
-    }
   };
 
   const form = useForm<LoginUserDto>({

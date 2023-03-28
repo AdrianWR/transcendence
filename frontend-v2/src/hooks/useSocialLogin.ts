@@ -1,5 +1,7 @@
 import { AxiosError } from 'axios';
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { alert, success } from '../components/Notifications';
 import api from '../services/api';
 import { useAuthContext } from './useAuthContext';
 
@@ -7,6 +9,9 @@ export const useSocialLogin = () => {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { dispatch } = useAuthContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
 
   const redirectToSsoLogin = async (authUrl: string) => {
     let timer: NodeJS.Timeout | null = null;
@@ -37,11 +42,13 @@ export const useSocialLogin = () => {
 
       localStorage.setItem('user', JSON.stringify(json));
       dispatch({ type: 'LOGIN', payload: json });
+      success('Your user was logged in successfully!');
+      navigate(from, { replace: true });
     } catch (err) {
       if (err instanceof AxiosError) {
-        setError(err.response?.data.message);
+        alert(err.response?.data.message);
       } else {
-        setError('No Server Response');
+        alert('No Server Response');
       }
     }
     setIsLoading(false);
