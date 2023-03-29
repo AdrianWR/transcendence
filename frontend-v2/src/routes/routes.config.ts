@@ -1,5 +1,6 @@
 import { FCWithLayout } from '../App';
 import About from '../pages/About';
+import ChatPage from '../pages/Chat';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
 import LoginSuccess from '../pages/Login/Success';
@@ -40,10 +41,15 @@ const routesConfig: IRoutesConfig[] = [
     component: Login,
   },
   {
-    name: 'LoginSuccess',
+    name: 'Login Success',
     path: '/login/success',
     component: LoginSuccess,
-    noLayout: true,
+  },
+  {
+    name: 'Chat',
+    path: '/chat',
+    component: ChatPage,
+    showOnNavbar: true,
   },
 ];
 

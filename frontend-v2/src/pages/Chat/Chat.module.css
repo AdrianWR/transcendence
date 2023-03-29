@@ -1,0 +1,19 @@
+.container {
+  border: 1px solid white;
+  border-radius: 10px;
+  width: 80%;
+  height: 300px;
+  display: flex;
+  overflow: hidden;
+}
+
+.sidebar {
+  flex: 1;
+  /* background-color: darkslategray; */
+}
+
+.chat {
+  flex: 2;
+  background-color: orange;
+}
+

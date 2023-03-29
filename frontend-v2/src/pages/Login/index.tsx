@@ -1,7 +1,7 @@
 import { Flex } from '@mantine/core';
 import { Navigate } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
-import { UserForm } from '../../components/forms/UserForm';
+import { UserForm } from '../../components/Forms/UserForm';
 import { useAuthContext } from '../../hooks/useAuthContext';
 
 const Login: FCWithLayout = () => {

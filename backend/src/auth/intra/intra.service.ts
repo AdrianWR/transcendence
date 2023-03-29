@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import authConfig from 'src/config/auth.config';
+import authConfig from '../../config/auth.config';
 import { CreateUserDto } from '../../users/types/create-user.dto';
 import { UsersService } from '../../users/users.service';
 import { JwtAuthService } from '../jwt/jwt.service';

@@ -3,6 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { GameGateway } from './game.gateway';
 
 @Module({
-    providers: [GameGateway, ConfigService],
+  providers: [GameGateway, ConfigService],
 })
-export class GameModule { }
+export class GameModule {}

@@ -8,7 +8,7 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-oauth2';
-import authConfig from 'src/config/auth.config';
+import authConfig from '../../config/auth.config';
 
 export type IntraUserProfile = {
   provider: string;
