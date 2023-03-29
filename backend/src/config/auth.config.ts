@@ -23,6 +23,6 @@ export default registerAs('auth', () => ({
     },
   },
   twoFactor: {
-    appName: process.env.TWO_FACTOR_AUTH_APP_NAME || 'transcendence',
+    appName: process.env.TWO_FACTOR_AUTH_APP_NAME || 'Transcendence 2FA',
   },
 }));

@@ -1,9 +1,9 @@
-import Home from '../pages/Home';
+import { FCWithLayout } from '../App';
 import About from '../pages/About';
-import Profile from '../pages/Profile';
+import Home from '../pages/Home';
 import Login from '../pages/Login';
 import LoginSuccess from '../pages/Login/Success';
-import { FCWithLayout } from '../App';
+import Profile from '../pages/Profile';
 
 export interface IRoutesConfig {
   name: string;

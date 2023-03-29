@@ -18,7 +18,6 @@ export class FortyTwoOauthService {
 
     // Check if user is already registered
     if (!user) {
-      // throw new ForbiddenException('User already registered');
       const newUser: CreateUserDto = { ...profile };
       user = await this.usersService.create(newUser);
     }

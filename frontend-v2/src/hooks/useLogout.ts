@@ -11,7 +11,7 @@ export const useLogout = () => {
       await api.get('auth/logout');
     } catch (err) {
       if (err instanceof AxiosError) {
-        console.log('Failed to call logout endpoint. Continuing');
+        console.error('Failed to call logout endpoint. Continuing');
       }
     }
 

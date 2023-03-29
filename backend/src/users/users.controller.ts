@@ -18,6 +18,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AccessTokenGuard } from 'src/auth/jwt/jwt.guard';
 import { JwtTwoFactorGuard } from '../auth/2fa/2fa.guard';
 import { RequestTypeWithUser } from '../auth/types/auth.interface';
 import { CreateUserDto } from './types/create-user.dto';
@@ -33,14 +34,14 @@ export class UsersController {
    * List all users
    */
   @Get()
-  //  @UseGuards(JwtTwoFactorGuard)
-  //  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtTwoFactorGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get('me')
-  @UseGuards(JwtTwoFactorGuard)
+  @UseGuards(AccessTokenGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   findMe(@Req() req: RequestTypeWithUser) {
     const user = req.user;
@@ -48,8 +49,8 @@ export class UsersController {
   }
 
   @Get(':id')
-  //  @UseGuards(JwtTwoFactorGuard)
-  //  @UseInterceptors(ClassSerializerInterceptor)
+  @UseGuards(JwtTwoFactorGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
@@ -37,6 +38,9 @@ export class TwoFactorAuthController {
     @Body() { code }: TwoFactorAuthenticationCodeDto,
   ) {
     const user = request.user;
+
+    if (!user.mfaEnabled || !user.mfaSecret)
+      throw new BadRequestException("User doesn't have 2FA enabled");
 
     const isCodeValid = this.twoFactorAuthService.isCodeValid(code, user);
 
