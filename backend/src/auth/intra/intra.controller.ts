@@ -11,8 +11,8 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { ApiOAuth2, ApiTags } from '@nestjs/swagger';
 import { Request as RequestType, Response as ResponseType } from 'express';
-import authConfig from 'src/config/auth.config';
-import { UsersService } from 'src/users/users.service';
+import authConfig from '../../config/auth.config';
+import { UsersService } from '../../users/users.service';
 import { JwtAuthService } from '../jwt/jwt.service';
 import { FortyTwoOauthGuard } from './intra.guard';
 import { FortyTwoOauthService } from './intra.service';

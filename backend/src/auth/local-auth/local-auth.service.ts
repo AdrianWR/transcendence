@@ -5,9 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import { UsersService } from 'src/users/users.service';
 import { User } from '../../users/entities/user.entity';
 import { CreateUserDto } from '../../users/types/create-user.dto';
+import { UsersService } from '../../users/users.service';
 import { JwtAuthService } from '../jwt/jwt.service';
 import { AuthTokenDto } from '../types/auth-token.dto';
 
@@ -54,7 +54,6 @@ export class LocalAuthService {
     if (!passwordMatches)
       throw new UnauthorizedException('Password is incorrect');
 
-    const { password, ...result } = user;
-    return result;
+    return user;
   }
 }

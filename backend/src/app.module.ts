@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import authConfig from './config/auth.config';
 import databaseConfig from './config/database.config';
+import { FriendsModule } from './friends/friends.module';
 import { GameModule } from './game/game.module';
 import { UsersModule } from './users/users.module';
 import { ChannelsModule } from './channels/channels.module';
@@ -41,6 +42,7 @@ import { ChannelsModule } from './channels/channels.module';
     GameModule,
     ChatModule,
     AuthModule,
+    FriendsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

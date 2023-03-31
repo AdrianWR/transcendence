@@ -38,7 +38,8 @@
             "single"
         ],
         "no-duplicate-imports": "error",
-        "prettier/prettier": "error"
+        "prettier/prettier": "error",
+        "@typescript-eslint/no-empty-interface": "off"
     },
     "settings": {
         "import/resolver": {

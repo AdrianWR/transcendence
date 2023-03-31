@@ -1,7 +1,7 @@
 import { Button, Group, Modal } from '@mantine/core';
 import { FC, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { RegisterForm } from '../forms/RegisterUserForm';
+import { RegisterForm } from '../Forms/RegisterUserForm';
 
 const SignUpButton: FC = () => {
   const [opened, setOpened] = useState(false);

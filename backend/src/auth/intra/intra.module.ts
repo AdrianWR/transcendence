@@ -1,13 +1,13 @@
-import { HttpModule } from "@nestjs/axios";
-import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { PassportModule } from "@nestjs/passport";
-import { UsersModule } from "src/users/users.module";
-import authConfig from "../../config/auth.config";
-import { JwtAuthModule } from "../jwt/jwt.module";
-import { FortyTwoOauthController } from "./intra.controller";
-import { FortyTwoOauthService } from "./intra.service";
-import { FortyTwoOauthStrategy } from "./intra.strategy";
+import { HttpModule } from '@nestjs/axios';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
+import authConfig from '../../config/auth.config';
+import { UsersModule } from '../../users/users.module';
+import { JwtAuthModule } from '../jwt/jwt.module';
+import { FortyTwoOauthController } from './intra.controller';
+import { FortyTwoOauthService } from './intra.service';
+import { FortyTwoOauthStrategy } from './intra.strategy';
 
 @Module({
   imports: [
@@ -19,6 +19,6 @@ import { FortyTwoOauthStrategy } from "./intra.strategy";
   ],
   providers: [FortyTwoOauthStrategy, FortyTwoOauthService],
   controllers: [FortyTwoOauthController],
-  exports: []
+  exports: [],
 })
-export class FortyTwoOauthModule { }
+export class FortyTwoOauthModule {}

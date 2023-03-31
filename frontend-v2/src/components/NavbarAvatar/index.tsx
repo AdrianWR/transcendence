@@ -4,7 +4,7 @@ import { FC } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useLogout } from '../../hooks/useLogout';
-import SignUpButton from '../buttons/SignUpButton';
+import SignUpButton from '../Buttons/SignUpButton';
 import styles from './NavbarAvatar.module.css';
 
 const NavbarAvatar: FC = () => {

@@ -2,7 +2,7 @@ import { Anchor, Button, Container, Divider, Group, Paper, PaperProps, Text } fr
 import { upperFirst, useToggle } from '@mantine/hooks';
 import { useRef, useState } from 'react';
 import { useLogin } from '../../hooks/useLogin';
-import { FortyTwoButton, GoogleButton } from '../buttons/SocialButtons';
+import { FortyTwoButton, GoogleButton } from '../Buttons/SocialButtons';
 import LoginForm from './LoginUserForm';
 import RegisterForm from './RegisterUserForm';
 import { TwoFactorAuthenticationForm } from './TwoFactorAuthenticationForm';
