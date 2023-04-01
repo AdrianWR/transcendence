@@ -36,7 +36,7 @@ const Navbar: FC = () => {
                 key={route.name.toLowerCase()}
                 className={`${styles['page-nav-link']} ${isActive(route) ? styles['active'] : ''}`}
               >
-                <Link to={route.path}>
+                <Link to={route.navPath || route.path}>
                   <Text weight='bold'>{route.name}</Text>
                 </Link>
                 <Space w='xl' />

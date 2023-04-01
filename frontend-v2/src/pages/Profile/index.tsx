@@ -1,6 +1,6 @@
 import { Flex } from '@mantine/core';
-import { FCWithLayout } from '../App';
-import ProfileCard from '../components/Profile/ProfileCard';
+import { FCWithLayout } from '../../App';
+import ProfileCard from '../../components/Profile/ProfileCard';
 
 const Profile: FCWithLayout = () => {
   return (

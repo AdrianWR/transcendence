@@ -15,7 +15,7 @@ export type TwoFactorAuthenticationDto = {
 };
 
 export const useLogin = () => {
-  const { dispatch } = useAuthContext();
+  const { updateUser } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
@@ -85,8 +85,7 @@ export const useLogin = () => {
   };
 
   const saveUser = async (user: IUser) => {
-    localStorage.setItem('user', JSON.stringify(user));
-    dispatch({ type: 'LOGIN', payload: user });
+    updateUser(user);
     success('Your user was logged in successfully!');
     navigate(from, { replace: true });
   };
