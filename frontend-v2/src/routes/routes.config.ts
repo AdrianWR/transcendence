@@ -24,13 +24,6 @@ const routesConfig: IRoutesConfig[] = [
     showOnNavbar: true,
   },
   {
-    name: 'Game',
-    path: '/game',
-    component: Game,
-    showOnNavbar: true,
-    noLayout: false,
-  },
-  {
     name: 'About',
     path: '/about',
     component: About,
@@ -58,6 +51,15 @@ const routesConfig: IRoutesConfig[] = [
     path: '/chat',
     component: ChatPage,
     showOnNavbar: true,
+    isPrivate: true,
+  },
+  {
+    name: 'Game',
+    path: '/game',
+    component: Game,
+    showOnNavbar: true,
+    noLayout: false,
+    isPrivate: true,
   },
 ];
 
