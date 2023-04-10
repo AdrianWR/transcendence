@@ -109,7 +109,7 @@ export class Jogador {
     this.altura = 120;
     this.largura = 20;
     if (this.id == 1) {
-      this.posicaoX = 0;
+      this.posicaoX = 1;
     } else if (this.id == 2) {
       this.posicaoX = width - this.largura;
     }

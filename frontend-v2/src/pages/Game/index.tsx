@@ -12,7 +12,7 @@ const Game: FCWithLayout = () => {
       mx={32}
       p={{ base: 32, sm: 0 }}
     >
-      <Pong></Pong>
+      <Pong />
     </Flex>
   );
 };

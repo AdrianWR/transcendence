@@ -28,7 +28,7 @@ const routesConfig: IRoutesConfig[] = [
     path: '/game',
     component: Game,
     showOnNavbar: true,
-    noLayout: true,
+    noLayout: false,
   },
   {
     name: 'About',
