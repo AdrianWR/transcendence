@@ -1,0 +1,19 @@
+.player-avatar {
+  transition: 0.3s;
+  border-radius: 50%;
+  border: 2px solid rgba(45, 45, 45, 0.0);
+}
+
+.player-avatar:hover {
+  border: 2px solid rgba(244, 96, 54, 1);
+}
+
+.opponent-avatar {
+  transition: 0.3s;
+  border-radius: 50%;
+  border: 2px solid rgba(45, 45, 45, 0.0);
+}
+
+.opponent-avatar:hover {
+  border: 2px solid rgba(8, 178, 227, 1);
+}

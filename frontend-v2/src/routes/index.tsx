@@ -31,8 +31,6 @@ const MyRoutes: FC<RouteProps> = () => {
         }
         return <Route key={name} path={path} element={getLayout(component, noLayout)} />;
       })}
-
-      {/* Catch All */}
     </Routes>
   );
 };

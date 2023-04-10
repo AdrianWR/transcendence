@@ -20,8 +20,11 @@ import api from '../../../services/api';
 import { AxiosError } from 'axios';
 import { alert, success } from '../../Notifications';
 
-const ProfileCard: FC = () => {
-  const { userId } = useParams();
+interface ProfileCardProps {
+  userId: number | undefined;
+}
+
+const ProfileCard: FC<ProfileCardProps> = ({ userId }) => {
   const { user } = useAuthContext();
   const [opened, { open, close }] = useDisclosure(false);
   const [userData, setUserData] = useState<IUser | null>(null);
@@ -30,12 +33,15 @@ const ProfileCard: FC = () => {
   const notificationTitle = 'Profile';
 
   useEffect(() => {
-    if (userId === 'me' || userId == user?.id) {
+    if (!userId) return;
+
+    if (userId == user?.id) {
       setUserData(user);
       setIsLoggedUser(true);
-      if (userId == user?.id) history.replaceState(null, '', '/profile/me');
-    } else if (!userData) {
+    } else {
       setIsLoading(true);
+      setIsLoggedUser(false);
+
       api
         .get(`/users/${userId}`)
         .then(({ data }) => {
@@ -46,12 +52,12 @@ const ProfileCard: FC = () => {
           if (err instanceof AxiosError) {
             alert(err.response?.data.message, notificationTitle);
           } else {
-            alert('Error occured while fetchin user data', notificationTitle);
+            alert('Error occured while fetching user data', notificationTitle);
           }
         })
         .finally(() => setIsLoading(false));
     }
-  }, [user]);
+  }, [user, userId]);
 
   return (
     <Card shadow='xl' px={20} p={16} withBorder style={{ position: 'relative' }}>
@@ -80,8 +86,9 @@ const ProfileCard: FC = () => {
           </>
         )}
       </Flex>
-      <Flex justify='space-between' align='center'>
+      <Flex justify='space-between' align='start'>
         <Avatar
+          mt={30}
           src={userData?.avatarUrl || '/images/cat-pirate.jpg'}
           size='xl'
           radius='50%'
@@ -90,13 +97,20 @@ const ProfileCard: FC = () => {
         <Flex ml={32} direction='column' align='center' justify='center'>
           <TextInput
             disabled
+            mt={4}
             label='username'
             value={userData?.username || ''}
             icon={<IconUser size='0.8rem' />}
           />
           <TextInput
             disabled
-            my={4}
+            label='name'
+            value={userData?.firstName ? `${userData.firstName} ${userData.lastName}` : ''}
+            icon={<IconUser size='0.8rem' />}
+          />
+          <TextInput
+            disabled
+            mt={4}
             label='email'
             value={userData?.email || ''}
             icon={<IconAt size='0.8rem' />}
