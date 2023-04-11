@@ -137,7 +137,7 @@ const UserStatsCard: FC<UserStatsCardProps> = ({ userId }) => {
         size={32}
         styles={{
           root: { position: 'relative' },
-          label: { position: 'absolute', left: 344, fontSize: 16 },
+          label: { position: 'absolute', left: 290, fontSize: 16 },
         }}
         value={progress}
         label={
