@@ -18,7 +18,7 @@ const NavbarAvatar: FC = () => {
         <Flex className={styles['nav-avatar']} justify='space-between' align='center'>
           <HoverCard width={260} shadow='md' openDelay={100} closeDelay={100}>
             <HoverCard.Target>
-              <Link to='/profile'>
+              <Link to='/profile/me'>
                 <Image
                   radius='50%'
                   width={50}
@@ -36,7 +36,7 @@ const NavbarAvatar: FC = () => {
                   label='Profile'
                   description={user.email}
                   icon={<IconUser size='1rem' stroke={1.5} />}
-                  onClick={() => navigate('/profile')}
+                  onClick={() => navigate('/profile/me')}
                 ></NavLink>
                 <Button color='red' onClick={logout} my={10}>
                   Log Out
