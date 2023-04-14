@@ -1,6 +1,12 @@
 import { Avatar, DefaultProps, Group, Stack, Text } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
-import { FC } from 'react';
+import { FC, useEffect, useState } from 'react';
+import { useChatContext } from '../hooks/useChatContext';
+
+type Chat = {
+  id: string;
+  name: string;
+};
 
 interface ChatItemProps extends DefaultProps {
   name: string;
@@ -32,9 +38,32 @@ const ChatItem: FC<ChatItemProps> = ({ name, avatar, lastMessage }) => {
   );
 };
 
-const SidebarFriends: FC<DefaultProps> = () => {
+const SidebarFriends: FC<Props> = () => {
+  const { socketRef } = useChatContext();
+  const [activeChat, setActiveChat] = useState();
+  const [chats, setChats] = useState<Chat[]>();
+
+  useEffect(() => {
+    console.log('socketRef: ', socketRef);
+
+    socketRef.current?.once('connect', () => {
+      console.log('connected');
+    });
+
+    socketRef.current?.emit('requestRooms');
+
+    // Get current user chats
+    socketRef.current?.on('listRooms', (rooms: Chat[]) => {
+      console.log(rooms);
+      setChats(rooms);
+    });
+  }, [socketRef.current]);
+
   return (
     <div>
+      {chats?.map((chat) => (
+        <ChatItem key={chat.id} name={chat.name} avatar={null} />
+      ))}
       <ChatItem name='Nelsinho' avatar={null} />
       <ChatItem name='Luizinho' avatar={null} />
       <ChatItem name='Huguinho' avatar={null} lastMessage='Hello!' />

@@ -1,26 +1,32 @@
 import { Logger } from '@nestjs/common';
-import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  ConnectedSocket,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-export const FRONTEND_URL = process.env.FRONTEND_URL
+export const FRONTEND_URL = process.env.FRONTEND_URL;
 
 interface Positions {
   [id: string]: {
-    x: number,
-    y: number
-  }
+    x: number;
+    y: number;
+  };
 }
 
-@WebSocketGateway(
-  {
-    transports: ['websocket'],
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
-    }
-  })
+@WebSocketGateway({
+  transports: ['websocket'],
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+})
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private positions: Positions = {}
+  private positions: Positions = {};
   private readonly frameRate = 30;
   private readonly logger: Logger = new Logger(GameGateway.name);
 
@@ -32,7 +38,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.positions[client.id] = { x: 0.5, y: 0.5 };
 
     setInterval(() => {
-      this.server.emit("positions", this.positions);
+      this.server.emit('positions', this.positions);
     }, 1000 / this.frameRate);
   }
 
@@ -43,7 +49,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('updatePosition')
   updatePositions(client: Socket, payload: any): void {
-    this.logger.debug(`Update position for socket: ${client.id}`)
+    this.logger.debug(`Update position for socket: ${client.id}`);
     this.positions[client.id].x = payload.x;
     this.positions[client.id].y = payload.y;
   }
