@@ -44,7 +44,7 @@ const UserStatsCard: FC<UserStatsCardProps> = ({ userId }) => {
         if (err instanceof AxiosError) {
           alert(err.response?.data.message, notificationTitle);
         } else {
-          alert('Error occured while fetchin user data', notificationTitle);
+          alert('Error occured while fetching user data', notificationTitle);
         }
       })
       .finally(() =>
@@ -86,6 +86,7 @@ const UserStatsCard: FC<UserStatsCardProps> = ({ userId }) => {
     <Card
       bg='lightGrey'
       shadow='xl'
+      h={310}
       px={20}
       p={16}
       style={{ position: 'relative', backgroundColor: 'rgba(45, 45, 45, 0.5)' }}

@@ -11,7 +11,6 @@ import {
 } from '@mantine/core';
 import { IconAt, IconUser, IconUserEdit } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
-import { useParams } from 'react-router-dom';
 import { FC, useEffect, useState } from 'react';
 import ProfileUserForm from '../ProfileUserForm';
 import { useAuthContext } from '../../../hooks/useAuthContext';
@@ -60,7 +59,7 @@ const ProfileCard: FC<ProfileCardProps> = ({ userId }) => {
   }, [user, userId]);
 
   return (
-    <Card shadow='xl' px={20} p={16} withBorder style={{ position: 'relative' }}>
+    <Card shadow='xl' px={20} p={16} h={310} withBorder style={{ position: 'relative' }}>
       <LoadingOverlay
         loaderProps={{ color: 'secondary', variant: 'bars' }}
         overlayOpacity={0.2}

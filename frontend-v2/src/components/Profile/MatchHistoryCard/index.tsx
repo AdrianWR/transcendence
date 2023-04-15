@@ -49,7 +49,7 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
         if (err instanceof AxiosError) {
           alert(err.response?.data.message, notificationTitle);
         } else {
-          alert('Error occured while fetchin match history', notificationTitle);
+          alert('Error occured while fetching match history', notificationTitle);
         }
       })
       .finally(() =>
@@ -95,6 +95,7 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
       shadow='xl'
       px={20}
       p={16}
+      h={380}
       style={{ position: 'relative', backgroundColor: 'rgba(45, 45, 45, 0.5)' }}
     >
       <LoadingOverlay
@@ -106,7 +107,14 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
       <Title color='white' order={2} mb={12}>
         Match History
       </Title>
-      <Flex direction='column' align='center' mb={24} mah='30vh' style={{ overflow: 'auto' }}>
+      <Flex
+        className='custom-scroll-bar'
+        direction='column'
+        align='center'
+        mb={24}
+        mah={290}
+        style={{ overflow: 'auto' }}
+      >
         {matchHistory.map(({ player, opponent }, index) => (
           <Card
             key={`${player.id}${opponent.id}${index}`}
