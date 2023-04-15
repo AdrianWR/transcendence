@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { diskStorage } from 'multer';
+import { UsersGateway } from './users.gateway';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { diskStorage } from 'multer';
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, UsersGateway],
   exports: [UsersService],
 })
 export class UsersModule {}

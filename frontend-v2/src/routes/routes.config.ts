@@ -46,6 +46,7 @@ const routesConfig: IRoutesConfig[] = [
     name: 'Login Success',
     path: '/login/success',
     component: LoginSuccess,
+    noLayout: true,
   },
   {
     name: 'Chat',

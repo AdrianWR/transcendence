@@ -81,4 +81,9 @@ export class FriendsController {
   async listFriends(@ReqUser('id') userId: number): Promise<User[]> {
     return await this.friendsService.listFriends(userId);
   }
+
+  @Get(':id')
+  async listFriendsByParamId(@Param('id') userId: number): Promise<User[]> {
+    return await this.friendsService.listFriends(userId);
+  }
 }

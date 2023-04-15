@@ -2,6 +2,7 @@ import { Flex, Space } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
+import FriendsListCard from '../../components/Profile/FriendsListCard';
 import MatchHistoryCard from '../../components/Profile/MatchHistoryCard';
 import ProfileCard from '../../components/Profile/ProfileCard';
 import UserStatsCard from '../../components/Profile/UserStatsCard';
@@ -27,7 +28,11 @@ const Profile: FCWithLayout = () => {
       m={32}
       p={{ base: 32, sm: 0 }}
     >
-      <ProfileCard userId={currentUserId} />
+      <Flex direction='column'>
+        <ProfileCard userId={currentUserId} />
+        <Space h={20} />
+        <FriendsListCard userId={currentUserId} />
+      </Flex>
       <Flex direction='column'>
         <UserStatsCard userId={currentUserId} />
         <Space h={20} />
