@@ -1,8 +1,8 @@
 import { FC } from 'react';
 
-interface Props {}
+// interface Props {}
 
-const Message: FC<Props> = () => {
+const Message: FC = () => {
   return <div>Message</div>;
 };
 

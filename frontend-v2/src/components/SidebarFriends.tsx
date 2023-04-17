@@ -2,8 +2,6 @@ import { Avatar, DefaultProps, Group, Stack, Text } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
 import { FC } from 'react';
 
-interface Props extends DefaultProps {}
-
 interface ChatItemProps extends DefaultProps {
   name: string;
   avatar: string | null;
@@ -34,7 +32,7 @@ const ChatItem: FC<ChatItemProps> = ({ name, avatar, lastMessage }) => {
   );
 };
 
-const SidebarFriends: FC<Props> = () => {
+const SidebarFriends: FC<DefaultProps> = () => {
   return (
     <div>
       <ChatItem name='Nelsinho' avatar={null} />
