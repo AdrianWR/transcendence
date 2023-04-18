@@ -20,7 +20,6 @@ import { CreateChatDto } from './dto/create-chat.dto';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @WebSocketGateway({
-  namespace: 'chat',
   transports: ['websocket'],
   cors: '*',
 })
@@ -33,9 +32,23 @@ export class ChatGateway implements OnGatewayConnection {
   constructor(private readonly chatService: ChatService) {}
 
   async handleConnection(@ConnectedSocket() client: Socket) {
-    this.logger.debug(`Socket connected: ${client.id}`);
-    const rooms = await this.chatService.findChatRoomsByUserId(9);
-    this.server.emit('listRooms', rooms);
+    const userId = client.handshake.auth?.user?.id;
+    if (!userId) {
+      client.disconnect();
+      return;
+    }
+
+    const rooms = await this.chatService.findChatRoomsByUserId(userId);
+    client.emit('listRooms', rooms);
+  }
+
+  // Join a socket room
+  @SubscribeMessage('joinRoom')
+  async joinRoom(
+    @MessageBody(new ParseIntPipe()) chatId: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.join(chatId.toString());
   }
 
   @SubscribeMessage('requestRooms')
@@ -75,12 +88,12 @@ export class ChatGateway implements OnGatewayConnection {
     return await this.chatService.findChatRoomsByUserId(userId);
   }
 
-  @SubscribeMessage('joinRoom')
-  async joinRoom(
+  @SubscribeMessage('joinChat')
+  async joinChat(
     @SocketUser('id') userId: number,
     @MessageBody(new ParseIntPipe()) chatId: number,
   ) {
-    return await this.chatService.joinChatRoom(userId, chatId);
+    return await this.chatService.joinChat(userId, chatId);
   }
 
   @SubscribeMessage('leaveRoom')
@@ -105,12 +118,12 @@ export class ChatGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
     @SocketUser('id') userId: number,
     @MessageBody(new ParseIntPipe()) chatId: number,
-    @MessageBody(new ValidationPipe()) message: string,
+    @MessageBody(new ValidationPipe()) content: string,
   ) {
     const newMessage = await this.chatService.sendMessage(
       userId,
       chatId,
-      message,
+      content,
     );
     return client.to(chatId.toString()).emit('newMessage', newMessage);
   }

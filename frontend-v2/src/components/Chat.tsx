@@ -1,6 +1,6 @@
 import { Avatar, DefaultProps, Group, Text } from '@mantine/core';
 import { FC } from 'react';
-import Message from './Message';
+import Messages from './Messages/Messages';
 
 // interface ChatProps extends DefaultProps {}
 
@@ -13,7 +13,7 @@ const Chat: FC<DefaultProps> = ({ className }) => {
           Chats
         </Text>
       </Group>
-      <Message />
+      <Messages />
     </div>
   );
 };

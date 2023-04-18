@@ -1,55 +1,35 @@
-import { FC, PropsWithChildren, createContext, useEffect, useRef, useState } from 'react';
-import { Socket, io } from 'socket.io-client';
-import { useAuthContext } from '../hooks/useAuthContext';
+import { FC, PropsWithChildren, createContext, useState } from 'react';
+import { useSocket } from '../hooks/socket';
 
 export type IChat = {
-  id: number;
+  id: string;
   name: string;
-  avatar: string | null;
+  type: 'public' | 'private' | 'protected by password';
+  createdAt: string;
+  updatedAt: string;
+  lastMessage?: string;
+  avatar?: string;
 };
 
 export type IChatContext = {
-  socketRef: React.MutableRefObject<Socket | null>;
-  messages: string[];
-  sendMessage: (message: string) => void;
+  activeChat: IChat | null;
+  setActiveChat: (chat: IChat | null) => void;
 };
 
 export const ChatContext = createContext<IChatContext | null>(null);
 
 export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
-  const socketRef = useRef<Socket | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
+  const [activeChat, setChat] = useState<IChat | null>(null);
   const [rooms, setRooms] = useState<IChat[]>([]);
-  const { user } = useAuthContext();
+  const { socket } = useSocket();
 
-  useEffect(() => {
-    if (!user || socketRef.current) return;
-
-    const chatSocketUrl = `${process.env.REACT_APP_BACKEND_URL}/chat`;
-    const socket = io(chatSocketUrl, {
-      transports: ['websocket'],
-      withCredentials: true,
-      auth: {
-        user: user,
-      },
-    });
-
-    socketRef.current = socket;
-  }, [user]);
-
-  const sendMessage = (message: string) => {
-    socketRef.current?.emit('message', message);
+  const setActiveChat = (chat: IChat | null) => {
+    socket.emit('joinRoom', chat?.id);
+    setChat(chat);
   };
 
-  useEffect(() => {
-    socketRef.current?.on('message', (message: string) => {
-      setMessages((messages) => [...messages, message]);
-    });
-  }, []);
-
   return (
-    <ChatContext.Provider value={{ socketRef, messages, sendMessage }}>
-      {children}
-    </ChatContext.Provider>
+    <ChatContext.Provider value={{ activeChat, setActiveChat }}>{children}</ChatContext.Provider>
   );
 };

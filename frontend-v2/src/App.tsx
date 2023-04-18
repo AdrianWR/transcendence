@@ -19,12 +19,12 @@ const App: FC = () => {
       <AuthContextProvider>
         <ChatContextProvider>
           <SocketProvider>
-          <MantineProvider withGlobalStyles withNormalizeCSS theme={myTheme}>
+            <MantineProvider withGlobalStyles withNormalizeCSS theme={myTheme}>
               <Notifications />
               <MyRoutes />
             </MantineProvider>
+          </SocketProvider>
         </ChatContextProvider>
-        </SocketProvider>
       </AuthContextProvider>
     </BrowserRouter>
   );

@@ -106,7 +106,7 @@ export class ChatService {
   }
 
   // Let the user join the chat room
-  async joinChatRoom(userId: number, chatId: number) {
+  async joinChat(userId: number, chatId: number) {
     const user = await this.usersService.findOne(userId);
     if (!user) throw new BadRequestException('User does not exist');
 

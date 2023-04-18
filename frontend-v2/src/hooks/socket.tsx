@@ -1,13 +1,13 @@
 import {
-  useContext,
-  createContext,
   FC,
   PropsWithChildren,
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useState,
 } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import { IUser } from '../context/AuthContext';
 import { useAuthContext } from './useAuthContext';
 
@@ -26,8 +26,14 @@ const SocketContext = createContext<ISocketContext | null>(null);
 
 export const SocketProvider: FC<PropsWithChildren> = ({ children }) => {
   const { user } = useAuthContext();
-  const [socket, setSocket] = useState(() =>
-    io('http://localhost:8080', { transports: ['websocket'] }),
+  const [socket, _] = useState(() =>
+    io(process.env.REACT_APP_BACKEND_URL as string, {
+      transports: ['websocket'],
+      withCredentials: true,
+      auth: {
+        user: user,
+      },
+    }),
   );
   const [socketUsersList, setSocketUsersList] = useState({} as { [userId: number]: SocketUser });
 

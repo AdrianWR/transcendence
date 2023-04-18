@@ -1,12 +1,4 @@
-import {
-  createContext,
-  FC,
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useReducer,
-  useState,
-} from 'react';
+import { createContext, FC, PropsWithChildren, useCallback, useState } from 'react';
 
 export type IUser = {
   id: number;
@@ -15,7 +7,6 @@ export type IUser = {
   firstName: string;
   lastName: string;
   mfaEnabled: boolean;
-  picture: string;
   avatarUrl: string;
 };
 

@@ -5,7 +5,7 @@ import styles from './Chat.module.css';
 
 const ChatPage = () => {
   return (
-    <Container className={styles['container']} style={{ height: '100%' }}>
+    <Container className={styles['container']}>
       <Sidebar className={styles['sidebar']} />
       <Chat className={styles['chat']} />
     </Container>
