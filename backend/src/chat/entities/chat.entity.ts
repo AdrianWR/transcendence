@@ -1,11 +1,47 @@
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { ChatUsers } from './chat-users.entity';
 
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+export enum CHAT_TYPE {
+  PRIVATE = 'private',
+  PUBLIC = 'public',
+  PROTECTED = 'protected',
+  DIRECT = 'direct',
+}
 
 @Entity()
 export class Chat {
   @PrimaryGeneratedColumn()
-  conversation_id: number;
+  id: number;
 
-  @Column()
-  session: string;
+  @Column({ nullable: true })
+  name: string;
+
+  @Column({ default: CHAT_TYPE.DIRECT })
+  type: CHAT_TYPE;
+
+  @OneToMany(() => ChatUsers, (chatUsers) => chatUsers.chat, {
+    eager: true,
+    cascade: true,
+  })
+  users: ChatUsers[];
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  public createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  public updatedAt: Date;
 }

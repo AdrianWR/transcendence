@@ -7,13 +7,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
+import * as fsPromises from 'fs/promises';
+import { join } from 'path';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './types/create-user.dto';
 import { UpdateUserAvatarDto } from './types/update-user-avatar.dto';
 import { UpdateUserDto } from './types/update-user.dto';
-import * as fsPromises from 'fs/promises';
-import { join } from 'path';
 
 @Injectable()
 export class UsersService {
@@ -106,6 +106,10 @@ export class UsersService {
 
     return this.usersRepository.save(updatedUser);
   }
+
+  // async getChats(id: number): Promise<Chat[]> {
+  //   return (await this.findOne(id)).chats;
+  // }
 
   async remove(id: number) {
     const user = await this.usersRepository.findOne({ where: { id: +id } });

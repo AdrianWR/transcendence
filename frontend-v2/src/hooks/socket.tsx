@@ -1,18 +1,18 @@
 import {
-  useContext,
-  createContext,
   FC,
   PropsWithChildren,
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useState,
 } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import { IUser } from '../context/AuthContext';
 import { useAuthContext } from './useAuthContext';
 
 interface ISocketContext {
-  socket: Socket;
+  socket: Socket | null;
   socketUsersList: { [userId: number]: SocketUser };
   updateSocketUserStatus(status: socketStatus): void;
 }
@@ -26,22 +26,35 @@ const SocketContext = createContext<ISocketContext | null>(null);
 
 export const SocketProvider: FC<PropsWithChildren> = ({ children }) => {
   const { user } = useAuthContext();
-  const [socket, setSocket] = useState(() =>
-    io('http://localhost:8080', { transports: ['websocket'] }),
-  );
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [socketUsersList, setSocketUsersList] = useState({} as { [userId: number]: SocketUser });
 
   useEffect(() => {
-    socket.on('usersList', (usersList: SocketUser[]) =>
+    if (!user) return;
+
+    const newSocket = io(process.env.REACT_APP_BACKEND_URL as string, {
+      transports: ['websocket'],
+      withCredentials: true,
+      auth: {
+        user: user,
+      },
+    });
+
+    setSocket((currentSocket) => {
+      currentSocket?.disconnect();
+      return newSocket;
+    });
+
+    newSocket.on('usersList', (usersList: SocketUser[]) =>
       setSocketUsersList(
         usersList.reduce((indexedList, user) => ({ ...indexedList, [user.id]: user }), {}),
       ),
     );
-  }, []);
+  }, [user]);
 
   const updateSocketUserStatus = useCallback(
     (status: socketStatus) => {
-      if (user) socket.emit('updateUser', { ...user, status });
+      if (user) socket?.emit('updateUser', { ...user, status });
     },
     [socket, user],
   );
