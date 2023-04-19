@@ -38,17 +38,29 @@ export class ChatGateway implements OnGatewayConnection {
       return;
     }
 
-    const rooms = await this.chatService.findChatRoomsByUserId(userId);
-    client.emit('listRooms', rooms);
+    const chats = await this.chatService.findChatRoomsByUserId(userId);
+    client.emit('listChats', chats);
   }
 
   // Join a socket room
-  @SubscribeMessage('joinRoom')
+  @SubscribeMessage('join')
   async joinRoom(
     @MessageBody(new ParseIntPipe()) chatId: number,
     @ConnectedSocket() client: Socket,
   ) {
-    client.join(chatId.toString());
+    client.join(`chat:${chatId}`);
+
+    const messages = await this.chatService.findMessagesByChatId(chatId);
+    client.emit('listMessages', messages);
+  }
+
+  // Leave a socket room
+  @SubscribeMessage('leaveRoom')
+  async leaveRoom(
+    @MessageBody(new ParseIntPipe()) chatId: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.leave(`chat:${chatId}`);
   }
 
   @SubscribeMessage('requestRooms')
@@ -61,7 +73,7 @@ export class ChatGateway implements OnGatewayConnection {
     client.emit('listRooms', rooms);
   }
 
-  @SubscribeMessage('createChatRoom')
+  @SubscribeMessage('createChat')
   async createChatRoom(
     @SocketUser('id') userId: number,
     @MessageBody(new ValidationPipe({ transform: true }))
@@ -82,22 +94,20 @@ export class ChatGateway implements OnGatewayConnection {
     return chat;
   }
 
-  @SubscribeMessage('listRooms')
+  @SubscribeMessage('listChats')
   async listRooms(@SocketUser('id') userId: number) {
-    this.logger.debug('listRooms');
-    return await this.chatService.findChatRoomsByUserId(userId);
+    const chats = await this.chatService.findChatRoomsByUserId(userId);
+    return chats;
   }
 
   @SubscribeMessage('joinChat')
-  async joinChat(
-    @SocketUser('id') userId: number,
-    @MessageBody(new ParseIntPipe()) chatId: number,
-  ) {
-    return await this.chatService.joinChat(userId, chatId);
+  async joinChat(@MessageBody(new ValidationPipe()) joinChatDto: JoinChatDto) {
+    const { chatId, userIds } = joinChatDto;
+    return await this.chatService.joinChat(chatId, userIds);
   }
 
-  @SubscribeMessage('leaveRoom')
-  async leaveRoom(
+  @SubscribeMessage('leaveChat')
+  async leaveChat(
     @SocketUser('id') userId: number,
     @MessageBody(new ParseIntPipe()) chatId: number,
   ) {
@@ -115,17 +125,16 @@ export class ChatGateway implements OnGatewayConnection {
 
   @SubscribeMessage('sendMessage')
   async sendMessage(
-    @ConnectedSocket() client: Socket,
     @SocketUser('id') userId: number,
-    @MessageBody(new ParseIntPipe()) chatId: number,
-    @MessageBody(new ValidationPipe()) content: string,
+    @MessageBody(new ValidationPipe()) messageDto: PostMessageDto,
   ) {
+    const { chatId, content } = messageDto;
     const newMessage = await this.chatService.sendMessage(
       userId,
       chatId,
       content,
     );
-    return client.to(chatId.toString()).emit('newMessage', newMessage);
+    this.server.to(`chat:${chatId}`).emit('newMessage', newMessage);
   }
 
   @SubscribeMessage('promoteUser')
@@ -145,4 +154,14 @@ export class ChatGateway implements OnGatewayConnection {
   ) {
     return await this.chatService.demoteUser(userId, chatId, userIdToDemote);
   }
+}
+
+export interface PostMessageDto {
+  chatId: number;
+  content: string;
+}
+
+export interface JoinChatDto {
+  chatId: number;
+  userIds: number[];
 }

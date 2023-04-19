@@ -1,19 +1,11 @@
-import { Container, Flex, Text } from '@mantine/core';
-import { FC, useEffect, useState } from 'react';
-import { IUser } from '../../context/AuthContext';
-import { useSocket } from '../../hooks/socket';
-import { useAuthContext } from '../../hooks/useAuthContext';
-import { useChatContext } from '../../hooks/useChatContext';
+import { Container, Flex, ScrollArea, Text } from '@mantine/core';
+import { FC, useEffect, useRef } from 'react';
+import { IMessage } from '../../../context/ChatContext';
+import { useSocket } from '../../../hooks/socket';
+import { useAuthContext } from '../../../hooks/useAuthContext';
+import { useChatContext } from '../../../hooks/useChatContext';
 import MessageInput from './MessageInput';
 import styles from './Messages.module.css';
-
-export type IMessage = {
-  id: number;
-  content: string;
-  sender: IUser;
-  createdAt: string;
-  updatedAt: string;
-};
 
 // Write for me a MessageItem component, which takes an IMessage object and renders it
 // as a div with a p tag inside it, which contains the message content. The style of this component should
@@ -40,61 +32,41 @@ const MessageItem: FC<IMessage> = ({ content, sender, updatedAt }) => {
 // Defines a message component that fetches the message from the server
 // and renders it.
 const Messages: FC = () => {
-  const mockedMessages: IMessage[] = [
-    {
-      id: 1,
-      content: 'Hello',
-      sender: {
-        id: 9,
-        username: 'user1',
-        email: 'user1@email.com',
-        firstName: 'User',
-        lastName: 'One',
-        mfaEnabled: false,
-        avatarUrl: 'https://i.pravatar.cc/150?img=1',
-      },
-      createdAt: '2021-08-01T12:00:00.000Z',
-      updatedAt: '2021-08-01T12:00:00.000Z',
-    },
-    {
-      id: 2,
-      content: 'Hi',
-      sender: {
-        id: 2,
-        username: 'user2',
-        email: 'user2@email.com',
-        firstName: 'User',
-        lastName: 'Two',
-        mfaEnabled: false,
-        avatarUrl: 'https://i.pravatar.cc/150?img=2',
-      },
-      createdAt: '2021-08-01T12:00:00.000Z',
-      updatedAt: '2021-08-01T12:00:00.000Z',
-    },
-  ];
+  const viewport = useRef<HTMLDivElement>(null);
 
-  const [messages, setMessages] = useState<IMessage[]>(mockedMessages);
-  const { activeChat, setActiveChat } = useChatContext();
+  const { activeChat, setActiveChat, messages } = useChatContext();
   const { socket } = useSocket();
 
+  const scrollToBottom = () => {
+    if (viewport.current) {
+      viewport.current.scrollTo({ top: viewport.current.scrollHeight, behavior: 'auto' });
+    }
+  };
+
   useEffect(() => {
-    // Get active chat messages
-    socket.on('listMessages', (messages: IMessage[]) => setMessages(messages));
-  }, []);
+    // Auto scroll to bottom
+    scrollToBottom();
+  });
 
   return (
     <Container
       style={{
-        // height: '100%',
         overflowY: 'auto',
         overflowX: 'hidden',
         backgroundColor: 'white',
       }}
     >
-      {messages.map((message) => (
-        <MessageItem key={message.id} {...message} />
-      ))}
-
+      <ScrollArea
+        h={300}
+        type='always'
+        offsetScrollbars={true}
+        scrollbarSize={16}
+        viewportRef={viewport}
+      >
+        {messages.map((message) => (
+          <MessageItem key={message.id} {...message} />
+        ))}
+      </ScrollArea>
       <MessageInput />
     </Container>
   );

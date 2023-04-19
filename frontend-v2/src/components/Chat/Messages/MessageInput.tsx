@@ -1,7 +1,7 @@
 import { TextInput } from '@mantine/core';
 import { SetStateAction, useState } from 'react';
-import { useSocket } from '../../hooks/socket';
-import { useChatContext } from '../../hooks/useChatContext';
+import { useSocket } from '../../../hooks/socket';
+import { useChatContext } from '../../../hooks/useChatContext';
 import styles from './Messages.module.css';
 
 const MessageInput = () => {
@@ -11,8 +11,7 @@ const MessageInput = () => {
   const { socket } = useSocket();
 
   const onSend = (message: string) => {
-    console.log(message);
-    socket.emit('sendMessage', {
+    socket?.emit('sendMessage', {
       chatId: activeChat?.id,
       content: message,
     });

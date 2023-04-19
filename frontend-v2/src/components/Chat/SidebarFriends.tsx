@@ -1,9 +1,8 @@
 import { Avatar, DefaultProps, Group, Stack, Text, UnstyledButton } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
-import { FC, PropsWithChildren, useEffect, useState } from 'react';
-import { IChat } from '../context/ChatContext';
-import { useSocket } from '../hooks/socket';
-import { useChatContext } from '../hooks/useChatContext';
+import { FC, PropsWithChildren } from 'react';
+import { IChat } from '../../context/ChatContext';
+import { useChatContext } from '../../hooks/useChatContext';
 
 interface ChatItemProps extends DefaultProps {
   chat: IChat;
@@ -37,19 +36,7 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
 };
 
 const SidebarFriends: FC<PropsWithChildren> = () => {
-  const [chats, setChats] = useState<IChat[]>();
-
-  const { socket } = useSocket();
-  const { activeChat, setActiveChat } = useChatContext();
-
-  useEffect(() => {
-    // Get current user chats
-    socket.on('listRooms', (rooms: IChat[]) => setChats(rooms));
-  }, []);
-
-  useEffect(() => {
-    console.log('Active chat:', activeChat);
-  }, [activeChat]);
+  const { chats } = useChatContext();
 
   return (
     <div>

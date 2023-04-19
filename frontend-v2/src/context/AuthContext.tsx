@@ -1,4 +1,5 @@
 import { createContext, FC, PropsWithChildren, useCallback, useState } from 'react';
+import { IChat } from './ChatContext';
 
 export type IUser = {
   id: number;
@@ -8,6 +9,7 @@ export type IUser = {
   lastName: string;
   mfaEnabled: boolean;
   avatarUrl: string;
+  chats: IChat[];
 };
 
 export type IState = {

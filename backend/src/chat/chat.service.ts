@@ -93,8 +93,8 @@ export class ChatService {
     const chat = await this.findOne(chatId);
     if (!chat) throw new BadRequestException('Chat room does not exist');
 
-    const isUserInChat = chat.users.some((u) => u.id === userId);
-    if (!isUserInChat) throw new BadRequestException('User not in chat room');
+    //const isUserInChat = chat.users.some((u) => u.id === userId);
+    //if (!isUserInChat) throw new BadRequestException('User not in chat room');
 
     const newMessage = this.messageRepository.create({
       content: message,
@@ -106,21 +106,24 @@ export class ChatService {
   }
 
   // Let the user join the chat room
-  async joinChat(userId: number, chatId: number) {
-    const user = await this.usersService.findOne(userId);
-    if (!user) throw new BadRequestException('User does not exist');
-
+  async joinChat(chatId: number, userIds: number[]) {
     const chat = await this.findOne(chatId);
     if (!chat) throw new BadRequestException('Chat room does not exist');
 
-    if (chat.type !== 'public')
-      throw new BadRequestException('Chat room is not public');
+    const users = await Promise.all(
+      userIds.map(async (id) => {
+        const user = await this.usersService.findOne(id);
+        if (!user) throw new BadRequestException('User does not exist');
 
-    const isUserInChat = chat.users.some((u) => u.id === userId);
-    if (isUserInChat)
-      throw new BadRequestException('User already in chat room');
+        return this.chatUsersRepository.create({
+          user: user,
+          role: Role.MEMBER,
+        });
+      }),
+    );
 
-    return await this.chatUsersRepository.save({ user, chat });
+    chat.users.push(...users);
+    return await this.chatRepository.save(chat);
   }
 
   async findChatRoomsByUserId(userId: number) {
@@ -197,5 +200,17 @@ export class ChatService {
 
     chat.users.find((u) => u.id === userId).role = role;
     return await this.chatRepository.save(chat);
+  }
+
+  async findMessagesByChatId(chatId: number) {
+    const chat = await this.findOne(chatId);
+    if (!chat) throw new BadRequestException('Chat room does not exist');
+
+    return await this.messageRepository
+      .createQueryBuilder('message')
+      .leftJoinAndSelect('message.sender', 'sender')
+      .leftJoinAndSelect('message.chat', 'chat')
+      .where('chat.id = :chatId', { chatId: chatId })
+      .getMany();
   }
 }

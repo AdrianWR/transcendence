@@ -17,14 +17,14 @@ const App: FC = () => {
   return (
     <BrowserRouter>
       <AuthContextProvider>
-        <ChatContextProvider>
-          <SocketProvider>
+        <SocketProvider>
+          <ChatContextProvider>
             <MantineProvider withGlobalStyles withNormalizeCSS theme={myTheme}>
               <Notifications />
               <MyRoutes />
             </MantineProvider>
-          </SocketProvider>
-        </ChatContextProvider>
+          </ChatContextProvider>
+        </SocketProvider>
       </AuthContextProvider>
     </BrowserRouter>
   );

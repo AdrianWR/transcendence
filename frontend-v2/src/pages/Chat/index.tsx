@@ -1,6 +1,6 @@
 import { Container } from '@mantine/core';
-import Chat from '../../components/Chat';
-import Sidebar from '../../components/Sidebar';
+import Chat from '../../components/Chat/Chat';
+import Sidebar from '../../components/Chat/Sidebar';
 import styles from './Chat.module.css';
 
 const ChatPage = () => {
