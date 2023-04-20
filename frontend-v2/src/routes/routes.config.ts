@@ -52,6 +52,7 @@ const routesConfig: IRoutesConfig[] = [
     name: 'Chat',
     path: '/chat',
     component: ChatPage,
+    isPrivate: true,
     showOnNavbar: true,
   },
 ];

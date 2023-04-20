@@ -1,4 +1,4 @@
-import { Container, Flex, ScrollArea, Text } from '@mantine/core';
+import { Container, Flex, ScrollArea, Text, Title } from '@mantine/core';
 import { FC, useEffect, useRef } from 'react';
 import { IMessage } from '../../../context/ChatContext';
 import { useSocket } from '../../../hooks/socket';
@@ -34,8 +34,7 @@ const MessageItem: FC<IMessage> = ({ content, sender, updatedAt }) => {
 const Messages: FC = () => {
   const viewport = useRef<HTMLDivElement>(null);
 
-  const { activeChat, setActiveChat, messages } = useChatContext();
-  const { socket } = useSocket();
+  const { activeChat, messages } = useChatContext();
 
   const scrollToBottom = () => {
     if (viewport.current) {
@@ -53,16 +52,25 @@ const Messages: FC = () => {
       style={{
         overflowY: 'auto',
         overflowX: 'hidden',
-        backgroundColor: 'white',
+        backgroundColor: 'rgba(67, 67, 67, 0.7)',
+        height: '100%',
+        width: '100%',
+        borderRadius: '0 0 10px 0',
+        padding: 0,
       }}
     >
       <ScrollArea
-        h={300}
+        h='85%'
         type='always'
         offsetScrollbars={true}
         scrollbarSize={16}
         viewportRef={viewport}
       >
+        {!activeChat && (
+          <Title my='20%' align='center' color='white'>
+            Select a chat or create a new one
+          </Title>
+        )}
         {messages.map((message) => (
           <MessageItem key={message.id} {...message} />
         ))}

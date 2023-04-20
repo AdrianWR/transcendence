@@ -17,7 +17,9 @@ const Navbar: FC = () => {
     }
   }, [user]);
 
-  const isActive = (route: IRoutesConfig): boolean => String(router.pathname) === route.path;
+  const isActive = (route: IRoutesConfig): boolean =>
+    String(router.pathname) === route.path ||
+    String(router.pathname).includes(route.name.toLowerCase());
 
   return (
     <nav>

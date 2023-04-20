@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   DefaultProps,
+  Flex,
   Group,
   MantineNumberSize,
   Modal,
@@ -11,38 +12,38 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconPlus } from '@tabler/icons-react';
+import { IconMessages, IconPlus } from '@tabler/icons-react';
 import { FC } from 'react';
-import useStyles, { SidebarStylesParams } from './Sidebar.styles';
+import DirectMessageCreateModal from './DirectMessageCreateModal';
 import SideBarFriends from './SidebarFriends';
-
-type SidebarStylesNames = Selectors<typeof useStyles>;
-
-interface SidebarProps extends DefaultProps<SidebarStylesNames, SidebarStylesParams> {
-  radius?: MantineNumberSize;
-}
 
 const Navbar: FC<DefaultProps> = () => {
   const [opened, { open, close }] = useDisclosure(false);
 
   return (
     <>
-      <Modal title='Create a New Chat' opened={opened} onClose={close}>
-        <Tabs defaultValue='direct'>
-          <Tabs.List>
-            <Tabs.Tab value='direct'>With a Friend</Tabs.Tab>
+      <Modal size='xl' title='Create a New Chat' opened={opened} onClose={close}>
+        <Tabs color='secondary' defaultValue='direct'>
+          <Tabs.List grow>
+            <Tabs.Tab value='direct' icon={<IconMessages size='0.8rem' />}>
+              Direct Message
+            </Tabs.Tab>
             <Tabs.Tab value='two'>Two</Tabs.Tab>
             <Tabs.Tab value='three'>Three</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value='direct'>
-            <Button>Add a Friend</Button>
+            <DirectMessageCreateModal close={close} />
           </Tabs.Panel>
           <Tabs.Panel value='two'>Two content</Tabs.Panel>
           <Tabs.Panel value='three'>Three content</Tabs.Panel>
         </Tabs>
       </Modal>
 
-      <Group position='apart' p='xl' style={{ backgroundColor: '#2f252f', height: '30%' }}>
+      <Group
+        position='apart'
+        p='xl'
+        style={{ backgroundColor: '#2f252f', height: 72, borderRadius: '10px 0 0 0' }}
+      >
         <Text weight='bold' color='orange' size='xl'>
           Chats
         </Text>
@@ -61,22 +62,13 @@ const Navbar: FC<DefaultProps> = () => {
   );
 };
 
-const Sidebar: FC<SidebarProps> = ({
-  classNames,
-  styles,
-  unstyled,
-  radius,
-  className,
-  ...others
-}) => {
-  const { classes, cx } = useStyles({ radius }, { name: 'Sidebar', classNames, styles, unstyled });
-
+const Sidebar: FC = () => {
   return (
-    <Box className={cx(classes.root, className)} {...others}>
-      <div className={classes.title}>
+    <Box style={{ flex: 1 }}>
+      <Flex direction='column' h='100%'>
         <Navbar />
         <SideBarFriends />
-      </div>
+      </Flex>
     </Box>
   );
 };

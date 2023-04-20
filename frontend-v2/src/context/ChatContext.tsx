@@ -1,4 +1,5 @@
-import { FC, PropsWithChildren, createContext, useEffect, useState } from 'react';
+import { FC, PropsWithChildren, createContext, useEffect, useState, useCallback } from 'react';
+import { alert } from '../components/Notifications';
 import { useSocket } from '../hooks/socket';
 import { IUser } from './AuthContext';
 
@@ -13,16 +14,18 @@ export type IMessage = {
 export type IChat = {
   id: number;
   name: string;
-  type: 'public' | 'private' | 'protected by password';
+  type: 'public' | 'private' | 'protected by password' | 'direct';
   createdAt: string;
   updatedAt: string;
   lastMessage?: string;
   avatar?: string;
+  users: IUser[];
 };
 
 export type IChatContext = {
   activeChat: IChat | null;
   setActiveChat: (chat: IChat | null) => void;
+  createDirectMessage(friendId: number): void;
   chats: IChat[];
   messages: IMessage[];
 };
@@ -36,7 +39,7 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const { socket } = useSocket();
 
   const setActiveChat = (chat: IChat | null) => {
-    socket?.emit('join', chat?.id);
+    if (chat) socket?.emit('join', chat?.id);
     setChat(chat);
     console.log('activeChat: ', chat);
   };
@@ -54,10 +57,23 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
     socket?.on('listMessages', (messages: IMessage[]) => {
       setMessages(messages);
     });
+
+    socket?.on('apiError', (message: string) => {
+      alert(message, 'Chat Socket');
+    });
   }, [socket]);
 
+  const createDirectMessage = useCallback(
+    (friendId: number) => {
+      socket?.emit('createDirectMessage', friendId);
+    },
+    [socket],
+  );
+
   return (
-    <ChatContext.Provider value={{ activeChat, setActiveChat, chats, messages }}>
+    <ChatContext.Provider
+      value={{ activeChat, setActiveChat, chats, messages, createDirectMessage }}
+    >
       {children}
     </ChatContext.Provider>
   );

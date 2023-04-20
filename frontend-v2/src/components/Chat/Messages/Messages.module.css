@@ -34,29 +34,23 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px;
-  background-color: #fff;
-  border-top: 1px solid #ddd;
+  background-color: #2d2d2d;
+  height: 15%;
 }
 
 .chat-input-field {
   flex-grow: 1;
   padding: 8px;
   border-radius: 20px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
   font-size: 16px;
   outline: none;
 }
 
 .chat-input-button {
   margin-left: 8px;
-  padding: 8px 16px;
   border-radius: 20px;
   border: none;
   background-color: #007bff;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
 }
 
 .chat-input-button:hover {

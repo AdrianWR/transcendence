@@ -45,10 +45,21 @@ export class ChatService {
 
   async createDirectMessageRoom(userId: number, friendId: number) {
     const users = await Promise.all(
-      [userId, friendId].map((id) => this.usersService.findOne(id)),
+      [userId, friendId].map(async (id) => {
+        const user = await this.usersService.findOne(id);
+        if (!user) throw new BadRequestException('User does not exist');
+
+        return this.chatUsersRepository.create({
+          user: user,
+          role: Role.OWNER,
+        });
+      }),
     );
 
-    const chat = this.chatRepository.create({ users: users });
+    const chat = this.chatRepository.create({
+      users: users,
+    });
+
     return await this.chatRepository.save(chat);
   }
 
@@ -131,11 +142,25 @@ export class ChatService {
     if (!user) throw new BadRequestException('User does not exist');
 
     const chats = await this.chatRepository
-      .createQueryBuilder('chat')
-      .leftJoinAndSelect('chat.users', 'users')
-      .leftJoinAndSelect('users.user', 'user')
-      .where('user.id = :userId', { userId: userId })
-      .getMany();
+      .query(`
+      select
+        chat.id as id,
+        chat.name as name,
+        chat.type as type,
+        chat."createdAt" as "createdAt",
+        JSON_AGG(JSON_BUILD_OBJECT(
+          'id', users.id,
+          'username', users.username,
+          'firstName', users."firstName",
+          'lastName', users."lastName",
+          'email', users.email
+        )) as users
+      from chat
+      JOIN chat_users ON chat_id = chat.id
+      JOIN users ON chat_users.user_id = users.id
+      WHERE chat.id IN (select chat_id from chat_users where user_id = ${userId})
+      GROUP BY chat.id
+      `);
 
     return chats;
   }
