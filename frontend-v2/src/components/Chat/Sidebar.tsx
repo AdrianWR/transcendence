@@ -1,4 +1,4 @@
-import { Box, DefaultProps, Flex, Group, Modal, Tabs, Text, UnstyledButton } from '@mantine/core';
+import { DefaultProps, Flex, Group, Modal, Tabs, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconMessages, IconPlus } from '@tabler/icons-react';
 import { FC } from 'react';

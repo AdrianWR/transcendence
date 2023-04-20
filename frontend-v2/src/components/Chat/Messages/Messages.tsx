@@ -1,7 +1,6 @@
 import { Container, Flex, ScrollArea, Text, Title, Tooltip } from '@mantine/core';
 import { FC, useEffect, useRef } from 'react';
 import { IMessage } from '../../../context/ChatContext';
-import { useSocket } from '../../../hooks/socket';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useChatContext } from '../../../hooks/useChatContext';
 import MessageInput from './MessageInput';

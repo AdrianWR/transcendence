@@ -91,10 +91,7 @@ export class ChatGateway implements OnGatewayConnection {
   ) {
     try {
       this.logger.debug(`create dm - ${userId} : ${friendId}`);
-      await this.chatService.createDirectMessageRoom(
-        userId,
-        friendId,
-      );
+      await this.chatService.createDirectMessageRoom(userId, friendId);
       const chats = await this.chatService.findChatRoomsByUserId(userId);
 
       client.emit('apiSuccess', 'Successfully created direct message');
