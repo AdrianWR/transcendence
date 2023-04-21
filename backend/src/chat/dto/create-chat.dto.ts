@@ -12,4 +12,8 @@ export class CreateChatDto {
   @IsOptional()
   @IsArray()
   users?: number[] = [];
+
+  @IsOptional()
+  @IsString()
+  password?: string;
 }

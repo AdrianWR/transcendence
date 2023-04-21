@@ -1,12 +1,21 @@
 import { DefaultProps, Flex, Group, Modal, Tabs, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconMessages, IconPlus } from '@tabler/icons-react';
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
+import { useSocket } from '../../hooks/socket';
 import DirectMessageCreateModal from './DirectMessageCreateModal';
 import SideBarFriends from './SidebarFriends';
 
 const Navbar: FC<DefaultProps> = () => {
   const [opened, { open, close }] = useDisclosure(false);
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    socket?.on('listMessages', () => {
+      console.log('listMessages');
+      close();
+    });
+  }, [socket]);
 
   return (
     <>

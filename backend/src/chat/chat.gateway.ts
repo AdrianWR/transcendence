@@ -80,7 +80,12 @@ export class ChatGateway implements OnGatewayConnection {
     @MessageBody(new ValidationPipe({ transform: true }))
     createChatDto: CreateChatDto,
   ) {
-    return this.chatService.createChatRoom(userId, createChatDto);
+    const chat = await this.chatService.createChatRoom(userId, createChatDto);
+    if (!chat) {
+      return;
+    }
+
+    this.server.to(`chat:${chat.id}`).emit('join', chat);
   }
 
   @SubscribeMessage('createDirectMessage')

@@ -35,6 +35,16 @@ export class ChatService {
       }),
     );
 
+    // Check if the owner is in the list of users. If not, add him.
+    if (!users.find((user) => user.user.id === ownerId)) {
+      users.push(
+        this.chatUsersRepository.create({
+          user: await this.usersService.findOne(ownerId),
+          role: Role.OWNER,
+        }),
+      );
+    }
+
     const chat = this.chatRepository.create({
       ...createChatDto,
       users: users,
@@ -128,16 +138,19 @@ export class ChatService {
     const chat = await this.findOne(chatId);
     if (!chat) throw new BadRequestException('Chat room does not exist');
 
-    //const isUserInChat = chat.users.some((u) => u.id === userId);
-    //if (!isUserInChat) throw new BadRequestException('User not in chat room');
-
     const newMessage = this.messageRepository.create({
       content: message,
       sender: user,
       chat: chat,
     });
+    const storedMessage = await this.messageRepository.save(newMessage);
 
-    return await this.messageRepository.save(newMessage);
+    if (storedMessage) {
+      chat.updatedAt = storedMessage.createdAt;
+      await this.chatRepository.save(chat);
+    }
+
+    return storedMessage;
   }
 
   // Let the user join the chat room
@@ -165,8 +178,7 @@ export class ChatService {
     const user = await this.usersService.findOne(userId);
     if (!user) throw new BadRequestException('User does not exist');
 
-    const chats = await this.chatRepository
-      .query(`
+    const chats = await this.chatRepository.query(`
       select
         chat.id as id,
         chat.name as name,
@@ -260,6 +272,7 @@ export class ChatService {
       .leftJoinAndSelect('message.sender', 'sender')
       .leftJoinAndSelect('message.chat', 'chat')
       .where('chat.id = :chatId', { chatId: chatId })
+      .orderBy('message.createdAt', 'ASC')
       .getMany();
   }
 }
