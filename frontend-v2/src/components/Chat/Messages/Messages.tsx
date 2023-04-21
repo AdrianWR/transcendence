@@ -1,4 +1,4 @@
-import { Container, Flex, ScrollArea, Text, Title } from '@mantine/core';
+import { Container, Flex, ScrollArea, Text, Title, Tooltip } from '@mantine/core';
 import { FC, useEffect, useRef } from 'react';
 import { IMessage } from '../../../context/ChatContext';
 import { useSocket } from '../../../hooks/socket';
@@ -17,15 +17,34 @@ const MessageItem: FC<IMessage> = ({ content, sender, updatedAt }) => {
   const isCurrentUser = user?.id === sender.id;
 
   return (
-    <div>
-      <Flex align={isCurrentUser ? 'flex-end' : 'flex-start'} className={styles['chat-message']}>
-        <Text className={styles['chat-message-sender']}>{sender.username}</Text>
-        <Text className={styles['chat-message-content']}>{content}</Text>
+    <Flex align={isCurrentUser ? 'flex-end' : 'flex-start'} className={styles['chat-message']}>
+      <Text className={styles['chat-message-sender']}>
+        {isCurrentUser ? 'You' : sender.username}
+      </Text>
+      <Text
+        className={styles['chat-message-content']}
+        style={{
+          backgroundColor: isCurrentUser ? '#F46036' : 'white',
+          color: isCurrentUser ? 'white' : 'black',
+        }}
+      >
+        {content}
+      </Text>
+      <Tooltip
+        label={new Date(updatedAt).toLocaleTimeString([], {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+        position='bottom'
+      >
         <Text className={styles['chat-message-timestamp']}>
           {new Date(updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Text>
-      </Flex>
-    </div>
+      </Tooltip>
+    </Flex>
   );
 };
 
@@ -51,7 +70,6 @@ const Messages: FC = () => {
     <Container
       style={{
         overflowY: 'auto',
-        overflowX: 'hidden',
         backgroundColor: 'rgba(67, 67, 67, 0.7)',
         height: '100%',
         width: '100%',
@@ -61,7 +79,8 @@ const Messages: FC = () => {
     >
       <ScrollArea
         h='85%'
-        type='always'
+        type='auto'
+        className='custom-scroll-bar'
         offsetScrollbars={true}
         scrollbarSize={16}
         viewportRef={viewport}

@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, createContext, useEffect, useState, useCallback } from 'react';
-import { alert } from '../components/Notifications';
+import { alert, success } from '../components/Notifications';
 import { useSocket } from '../hooks/socket';
 import { IUser } from './AuthContext';
 
@@ -59,7 +59,11 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
     });
 
     socket?.on('apiError', (message: string) => {
-      alert(message, 'Chat Socket');
+      alert(message, 'Chat');
+    });
+
+    socket?.on('apiSuccess', (message: string) => {
+      success(message, 'Chat');
     });
   }, [socket]);
 

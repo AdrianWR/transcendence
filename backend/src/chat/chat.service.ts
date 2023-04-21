@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { ChatUsers, Role } from './entities/chat-users.entity';
-import { Chat } from './entities/chat.entity';
+import { Chat, CHAT_TYPE } from './entities/chat.entity';
 import { Message } from './entities/message.entity';
 
 @Injectable()
@@ -43,7 +43,31 @@ export class ChatService {
     return await this.chatRepository.save(chat);
   }
 
+  async alreadyHaveDirectMessage(userId: number, friendId: number) {
+    const userFriendChats = await this.chatUsersRepository.find({
+      relations: ['user', 'chat'],
+      where: { user: { id: In([userId, friendId]) }, chat: { type: CHAT_TYPE.DIRECT } },
+    });
+
+    const usersByChatId: { [chatId: number]: number[] } = {};
+
+    return userFriendChats.some(({ user, chat }) => {
+      const chatUsers = usersByChatId[chat.id] || [];
+
+      if (chatUsers.length) usersByChatId[chat.id].push(user.id);
+      else usersByChatId[chat.id] = [user.id];
+
+      if (chatUsers.length == 2) return true;
+
+      return false;
+    });
+  }
+
   async createDirectMessageRoom(userId: number, friendId: number) {
+    const hasDM = await this.alreadyHaveDirectMessage(userId, friendId);
+
+    if (hasDM) throw new BadRequestException('User already has DM with this friend');
+
     const users = await Promise.all(
       [userId, friendId].map(async (id) => {
         const user = await this.usersService.findOne(id);

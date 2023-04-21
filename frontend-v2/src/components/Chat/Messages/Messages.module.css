@@ -1,21 +1,20 @@
 .chat-message {
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
+  margin: 0 6px 16px 6px;
 }
 
 .chat-message-sender {
   font-size: 14px;
   font-weight: bold;
-  color: #555;
-  margin-bottom: 4px;
+  color: grey;
+  margin-bottom: 2px;
 }
 
 .chat-message-content {
-  background-color: #f0f0f0;
   padding: 8px;
   border-radius: 8px;
-  max-width: 80%;
+  max-width: 25vw;
   word-wrap: break-word;
   line-height: 1.5;
   font-size: 16px;

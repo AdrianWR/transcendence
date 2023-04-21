@@ -1,6 +1,6 @@
-import { Avatar, Box, DefaultProps, Flex, Group, Stack, Text, UnstyledButton } from '@mantine/core';
+import { Avatar, DefaultProps, Flex, Text, UnstyledButton } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
-import { FC, PropsWithChildren, useEffect, useState } from 'react';
+import { FC, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { IChat } from '../../context/ChatContext';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useChatContext } from '../../hooks/useChatContext';
@@ -25,6 +25,8 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
     }
   }, [chat, user]);
 
+  const isActiveChat = useMemo(() => activeChat?.id === chat.id, [activeChat, chat]);
+
   return (
     <UnstyledButton
       onClick={() => setActiveChat(chat)}
@@ -33,25 +35,32 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
         margin: '8px 0',
       }}
     >
-      <Group
-        py={'xs'}
-        pl={'sm'}
+      <Flex
+        py='xs'
+        pl='sm'
+        mih={60}
+        align='center'
         ref={ref}
         style={{
-          backgroundColor: hovered || activeChat?.id === chat.id ? 'black' : 'transparent',
+          backgroundColor: hovered || isActiveChat ? '#2D2D2D' : 'transparent',
           cursor: 'pointer',
           borderRadius: 4,
-          border: hovered ? '1px solid rgba(244, 96, 54, 1)' : '1px solid transparent',
+          opacity: hovered ? 0.7 : 1,
+          border:
+            hovered || isActiveChat ? '1px solid rgba(244, 96, 54, 1)' : '1px solid transparent',
         }}
       >
-        <Avatar src={chat.avatar} radius='xl' size='sm' />
-        <Stack spacing='xs' align='flex-start' justify='space-around'>
-          <Text size='md' weight='bold'>
-            {chatName}
-          </Text>
-          <Text size='xs'>{chat.lastMessage ?? ''}</Text>
-        </Stack>
-      </Group>
+        <Avatar
+          src={chat.avatar}
+          radius='xl'
+          size='sm'
+          mr={12}
+          color={isActiveChat ? 'secondary' : 'white'}
+        />
+        <Text size='md' weight='bold' color='white'>
+          {chatName}
+        </Text>
+      </Flex>
     </UnstyledButton>
   );
 };

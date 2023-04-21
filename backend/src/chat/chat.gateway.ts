@@ -90,15 +90,14 @@ export class ChatGateway implements OnGatewayConnection {
     @ConnectedSocket() client: Socket,
   ) {
     try {
-      throw new Error('Erro teste');
       this.logger.debug(`create dm - ${userId} : ${friendId}`);
       await this.chatService.createDirectMessageRoom(
         userId,
         friendId,
       );
-
       const chats = await this.chatService.findChatRoomsByUserId(userId);
 
+      client.emit('apiSuccess', 'Successfully created direct message');
       client.emit('listChats', chats);
     } catch (err) {
       client.emit('apiError', err.message);

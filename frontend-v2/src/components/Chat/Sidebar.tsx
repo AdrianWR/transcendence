@@ -1,16 +1,4 @@
-import {
-  Box,
-  Button,
-  DefaultProps,
-  Flex,
-  Group,
-  MantineNumberSize,
-  Modal,
-  Selectors,
-  Tabs,
-  Text,
-  UnstyledButton,
-} from '@mantine/core';
+import { Box, DefaultProps, Flex, Group, Modal, Tabs, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconMessages, IconPlus } from '@tabler/icons-react';
 import { FC } from 'react';
@@ -64,12 +52,10 @@ const Navbar: FC<DefaultProps> = () => {
 
 const Sidebar: FC = () => {
   return (
-    <Box style={{ flex: 1 }}>
-      <Flex direction='column' h='100%'>
-        <Navbar />
-        <SideBarFriends />
-      </Flex>
-    </Box>
+    <Flex direction='column' h='100%' style={{ flex: 1 }}>
+      <Navbar />
+      <SideBarFriends />
+    </Flex>
   );
 };
 
