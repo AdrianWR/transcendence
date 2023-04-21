@@ -24,6 +24,7 @@ import { CreateChatDto } from './dto/create-chat.dto';
   cors: '*',
 })
 export class ChatGateway implements OnGatewayConnection {
+  private connectedUsers = new Map<number, Socket>();
   private readonly logger = new Logger(ChatGateway.name);
 
   @WebSocketServer()
@@ -38,38 +39,24 @@ export class ChatGateway implements OnGatewayConnection {
       return;
     }
 
+    // Store the user id and socket id in a map
+    this.connectedUsers.set(userId, client);
+
+    // Fetch the user's chats and join the socket rooms
     const chats = await this.chatService.findChatRoomsByUserId(userId);
-
+    chats.forEach((chat) => client.join(`chat:${chat.id}`));
     client.emit('listChats', chats);
-  }
 
-  // Join a socket room
-  @SubscribeMessage('join')
-  async joinRoom(
-    @MessageBody(new ParseIntPipe()) chatId: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    client.join(`chat:${chatId}`);
-
-    const messages = await this.chatService.findMessagesByChatId(chatId);
+    // Fetch the user's active chat messages and send them to the client
+    const messages = await this.chatService.findMessagesByChatId(chats[0].id);
     client.emit('listMessages', messages);
   }
 
-  // Leave a socket room
-  @SubscribeMessage('leaveRoom')
-  async leaveRoom(
-    @MessageBody(new ParseIntPipe()) chatId: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    client.leave(`chat:${chatId}`);
-  }
-
-  @SubscribeMessage('requestChats')
+  @SubscribeMessage('listChats')
   async requestChats(
     @SocketUser('id') userId: number,
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.debug('requestChats');
     const chats = await this.chatService.findChatRoomsByUserId(userId);
     client.emit('listChats', chats);
   }
@@ -85,7 +72,18 @@ export class ChatGateway implements OnGatewayConnection {
       return;
     }
 
-    this.server.to(`chat:${chat.id}`).emit('join', chat);
+    await Promise.all(
+      chat.users.map(async (chatUsers) => {
+        const socket = this.connectedUsers.get(chatUsers.user.id);
+        if (socket) {
+          socket.join(`chat:${chat.id}`);
+          const chats = await this.chatService.findChatRoomsByUserId(
+            chatUsers.user.id,
+          );
+          socket.emit('listChats', chats);
+        }
+      }),
+    );
   }
 
   @SubscribeMessage('createDirectMessage')
@@ -96,11 +94,23 @@ export class ChatGateway implements OnGatewayConnection {
   ) {
     try {
       this.logger.debug(`create dm - ${userId} : ${friendId}`);
-      await this.chatService.createDirectMessageRoom(userId, friendId);
-      const chats = await this.chatService.findChatRoomsByUserId(userId);
+      const chat = await this.chatService.createDirectMessageRoom(
+        userId,
+        friendId,
+      );
 
-      client.emit('apiSuccess', 'Successfully created direct message');
-      client.emit('listChats', chats);
+      await Promise.all(
+        chat.users.map(async (chatUsers) => {
+          const socket = this.connectedUsers.get(chatUsers.user.id);
+          if (socket) {
+            socket.join(`chat:${chat.id}`);
+            const chats = await this.chatService.findChatRoomsByUserId(
+              chatUsers.user.id,
+            );
+            socket.emit('listChats', chats);
+          }
+        }),
+      );
     } catch (err) {
       client.emit('apiError', err.message);
     }
@@ -109,7 +119,17 @@ export class ChatGateway implements OnGatewayConnection {
   @SubscribeMessage('joinChat')
   async joinChat(@MessageBody(new ValidationPipe()) joinChatDto: JoinChatDto) {
     const { chatId, userIds } = joinChatDto;
-    return await this.chatService.joinChat(chatId, userIds);
+    const chat = await this.chatService.joinChat(chatId, userIds);
+
+    // Join chat users to the new room
+    chat.users.forEach((user) => {
+      const socket = this.connectedUsers.get(user.user.id);
+      if (socket) {
+        socket.join(`chat:${chat.id}`);
+      }
+    });
+
+    this.server.to(`chat:${chat.id}`).emit('listChats', chat);
   }
 
   @SubscribeMessage('leaveChat')
@@ -141,6 +161,17 @@ export class ChatGateway implements OnGatewayConnection {
       content,
     );
     this.server.to(`chat:${chatId}`).emit('newMessage', newMessage);
+  }
+
+  @SubscribeMessage('listMessages')
+  async listMessages(
+    @MessageBody(new ParseIntPipe()) chatId: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const messages = await this.chatService.findMessagesByChatId(chatId);
+
+    // client.emit('listMessages', messages);
+    client.emit('listMessages', messages);
   }
 
   @SubscribeMessage('promoteUser')

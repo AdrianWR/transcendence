@@ -29,7 +29,10 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
 
   return (
     <UnstyledButton
-      onClick={() => setActiveChat(chat)}
+      onClick={() => {
+        setActiveChat(chat);
+        console.log('activeChat: ', activeChat);
+      }}
       style={{
         width: '98%',
         margin: '8px 0',
@@ -77,7 +80,7 @@ const SidebarFriends: FC<PropsWithChildren> = () => {
       className='custom-scroll-bar'
       style={{ borderRadius: '0 0 0 10px', overflow: 'auto' }}
     >
-      {chats?.map((chat) => (
+      {chats.map((chat) => (
         <ChatItem key={chat.id} chat={chat} />
       ))}
     </Flex>

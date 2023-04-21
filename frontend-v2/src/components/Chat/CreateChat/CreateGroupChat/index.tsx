@@ -1,33 +1,27 @@
 import { Button, Radio, Stack, Text, TextInput } from '@mantine/core';
-import { FC, PropsWithChildren, useState } from 'react';
-import { useSocket } from '../../../../hooks/socket';
+import { FC, useCallback, useState } from 'react';
+import { IChatType, ICreateChatDto } from '../../../../context/ChatContext';
+import { useChatContext } from '../../../../hooks/useChatContext';
 import styles from './CreateGroupChat.module.css';
 
-// interface ICreateGroupChatProps extends PropsWithChildren<{}> {
-//   onSubmit: (chat: CreateChatDto) => void
-// }
+interface IGroupChatModalProps {
+  close(): void;
+}
 
-type ChatType = 'public' | 'private' | 'protected';
-
-type CreateChatDto = {
-  name: string;
-  type: ChatType;
-  password?: string;
-};
-
-const CreateGroupChatComponent: FC<PropsWithChildren> = () => {
-  const { socket } = useSocket();
-  const [chat, setChat] = useState<CreateChatDto>({
+const GroupChatCreateModal: FC<IGroupChatModalProps> = ({ close }) => {
+  const { createGroupChat } = useChatContext();
+  const [chat, setChat] = useState<ICreateChatDto>({
     name: '',
     type: 'public',
   });
 
-  const handleSubmit = async (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-    console.log(chat);
-
-    socket?.emit('createChat', chat);
-  };
+  const emitCreateGrouChat = useCallback(
+    async (createChatDto: ICreateChatDto) => {
+      createGroupChat(createChatDto);
+      close();
+    },
+    [createGroupChat],
+  );
 
   return (
     <Stack className={styles['create-group-chat']}>
@@ -45,7 +39,7 @@ const CreateGroupChatComponent: FC<PropsWithChildren> = () => {
         name='chat-type'
         defaultValue='public'
         onChange={(value) => {
-          setChat((chat) => ({ ...chat, type: value as ChatType }));
+          setChat((chat) => ({ ...chat, type: value as IChatType }));
         }}
         className={styles['create-group-chat-radio-group']}
       >
@@ -74,7 +68,7 @@ const CreateGroupChatComponent: FC<PropsWithChildren> = () => {
 
       <Button
         variant='filled'
-        onClick={handleSubmit}
+        onClick={() => emitCreateGrouChat(chat)}
         disabled={!chat.name || (chat.type === 'protected' && !chat.password)}
         className={styles['create-group-chat-button']}
       >
@@ -84,4 +78,4 @@ const CreateGroupChatComponent: FC<PropsWithChildren> = () => {
   );
 };
 
-export default CreateGroupChatComponent;
+export default GroupChatCreateModal;

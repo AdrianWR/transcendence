@@ -196,6 +196,7 @@ export class ChatService {
       JOIN users ON chat_users.user_id = users.id
       WHERE chat.id IN (select chat_id from chat_users where user_id = ${userId})
       GROUP BY chat.id
+      ORDER BY chat."updatedAt" DESC
       `);
 
     return chats;
