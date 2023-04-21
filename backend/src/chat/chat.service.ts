@@ -19,7 +19,10 @@ export class ChatService {
   ) {}
 
   async findOne(id: number) {
-    return await this.chatRepository.findOne({ where: { id: id } });
+    return await this.chatRepository.findOne({
+      where: { id: id },
+      relations: ['users', 'users.user'],
+    });
   }
 
   async createChatRoom(ownerId: number, createChatDto: CreateChatDto) {
@@ -158,8 +161,11 @@ export class ChatService {
     const chat = await this.findOne(chatId);
     if (!chat) throw new BadRequestException('Chat room does not exist');
 
+    const usersInChat = chat.users.map((u) => u.user.id);
+    const usersToJoin = userIds.filter((id) => !usersInChat.includes(id));
+
     const users = await Promise.all(
-      userIds.map(async (id) => {
+      usersToJoin.map(async (id) => {
         const user = await this.usersService.findOne(id);
         if (!user) throw new BadRequestException('User does not exist');
 
@@ -189,7 +195,9 @@ export class ChatService {
           'username', users.username,
           'firstName', users."firstName",
           'lastName', users."lastName",
-          'email', users.email
+          'email', users.email,
+          'role', chat_users.role,
+          'status', chat_users.status
         )) as users
       from chat
       JOIN chat_users ON chat_id = chat.id

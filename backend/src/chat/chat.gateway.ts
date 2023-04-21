@@ -117,19 +117,30 @@ export class ChatGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('joinChat')
-  async joinChat(@MessageBody(new ValidationPipe()) joinChatDto: JoinChatDto) {
+  async joinChat(
+    @MessageBody(new ValidationPipe()) joinChatDto: JoinChatDto,
+    @ConnectedSocket() client: Socket,
+  ) {
     const { chatId, userIds } = joinChatDto;
     const chat = await this.chatService.joinChat(chatId, userIds);
 
-    // Join chat users to the new room
-    chat.users.forEach((user) => {
-      const socket = this.connectedUsers.get(user.user.id);
-      if (socket) {
-        socket.join(`chat:${chat.id}`);
-      }
-    });
-
-    this.server.to(`chat:${chat.id}`).emit('listChats', chat);
+    try {
+      // Join chat users to the new room
+      await Promise.all(
+        chat.users.map(async (chatUsers) => {
+          const socket = this.connectedUsers.get(chatUsers.user.id);
+          if (socket) {
+            socket.join(`chat:${chat.id}`);
+            const chats = await this.chatService.findChatRoomsByUserId(
+              chatUsers.user.id,
+            );
+            socket.emit('listChats', chats);
+          }
+        }),
+      );
+    } catch (err) {
+      client.emit('apiError', err.message);
+    }
   }
 
   @SubscribeMessage('leaveChat')

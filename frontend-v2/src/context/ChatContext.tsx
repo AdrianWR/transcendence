@@ -52,6 +52,7 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
     socket?.emit('listChats');
 
     socket?.on('listChats', (chats: IChat[]) => {
+      console.log('chats: ', chats);
       setChats(chats);
       setActiveChat(chats[0]);
     });
