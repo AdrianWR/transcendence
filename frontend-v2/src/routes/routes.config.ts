@@ -14,6 +14,7 @@ export interface IRoutesConfig {
   isPrivate?: boolean; // route needs user authenticated
   showOnNavbar?: boolean; // show this route on navbar
   noLayout?: boolean; // the page does not have a default layout (navbar, image background and footer)
+  navPath?: string; // sometimes navbar path might be different from routes (e.g. when you route params)
 }
 
 const routesConfig: IRoutesConfig[] = [
@@ -31,10 +32,11 @@ const routesConfig: IRoutesConfig[] = [
   },
   {
     name: 'Profile',
-    path: '/profile',
+    path: '/profile/:userId',
     component: Profile,
     isPrivate: true,
     showOnNavbar: true,
+    navPath: '/profile/me',
   },
   {
     name: 'Login',
@@ -45,6 +47,7 @@ const routesConfig: IRoutesConfig[] = [
     name: 'Login Success',
     path: '/login/success',
     component: LoginSuccess,
+    noLayout: true,
   },
   {
     name: 'Chat',

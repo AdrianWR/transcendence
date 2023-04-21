@@ -26,3 +26,21 @@ a {
   color: #4979ff;
   text-decoration: underline;
 }
+
+.custom-scroll-bar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scroll-bar::-webkit-scrollbar-track {
+  background: #434343;
+  border-radius: 6px;
+}
+
+.custom-scroll-bar::-webkit-scrollbar-thumb {
+  background: #F46036;
+  border-radius: 6px;
+}
+
+.custom-scroll-bar::-webkit-scrollbar-thumb:hover {
+  background: rgba(244, 96, 54, 0.6);
+}

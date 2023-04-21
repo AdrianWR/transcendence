@@ -13,7 +13,7 @@ export type CreateUserDto = {
 export const useSignUp = () => {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { dispatch } = useAuthContext();
+  const { updateUser } = useAuthContext();
 
   const signUp = async (createUserDto: CreateUserDto) => {
     setIsLoading(true);
@@ -24,7 +24,7 @@ export const useSignUp = () => {
       const json = await response.data;
 
       localStorage.setItem('user', JSON.stringify(json));
-      dispatch({ type: 'LOGIN', payload: json });
+      updateUser(json);
       setIsLoading(false);
     } catch (err) {
       if (err instanceof AxiosError) {

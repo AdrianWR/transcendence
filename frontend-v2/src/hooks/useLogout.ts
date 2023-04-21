@@ -3,7 +3,7 @@ import api from '../services/api';
 import { useAuthContext } from './useAuthContext';
 
 export const useLogout = () => {
-  const { dispatch } = useAuthContext();
+  const { updateUser } = useAuthContext();
 
   const logout = async () => {
     // Remove http-only cookies
@@ -15,11 +15,8 @@ export const useLogout = () => {
       }
     }
 
-    // Remove user from local storage
+    updateUser(null);
     localStorage.removeItem('user');
-
-    // Dispatch logout action
-    dispatch({ type: 'LOGOUT' });
   };
 
   return { logout };

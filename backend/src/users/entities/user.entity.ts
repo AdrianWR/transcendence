@@ -4,9 +4,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ChatUsers } from '../../chat/entities/chat-users.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -53,6 +55,9 @@ export class User extends BaseEntity {
 
     return `${process.env.BACKEND_URL}/${process.env.USER_PICTURE_PATH}/${this.avatar}`;
   }
+
+  @OneToMany(() => ChatUsers, (chatUsers) => chatUsers.user)
+  chats: ChatUsers[];
 
   @CreateDateColumn({
     type: 'timestamp',

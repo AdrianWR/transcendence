@@ -12,7 +12,6 @@ import databaseConfig from './config/database.config';
 import { FriendsModule } from './friends/friends.module';
 import { GameModule } from './game/game.module';
 import { UsersModule } from './users/users.module';
-import { ChannelsModule } from './channels/channels.module';
 
 @Module({
   imports: [
@@ -38,7 +37,7 @@ import { ChannelsModule } from './channels/channels.module';
       serveRoot: '/public/',
     }),
     UsersModule,
-    ChannelsModule,
+    //ChannelsModule,
     GameModule,
     ChatModule,
     AuthModule,
