@@ -1,6 +1,7 @@
 import { FCWithLayout } from '../App';
 import About from '../pages/About';
 import ChatPage from '../pages/Chat';
+import Game from '../pages/Game';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
 import LoginSuccess from '../pages/Login/Success';
@@ -53,6 +54,15 @@ const routesConfig: IRoutesConfig[] = [
     path: '/chat',
     component: ChatPage,
     showOnNavbar: true,
+    isPrivate: true,
+  },
+  {
+    name: 'Game',
+    path: '/game',
+    component: Game,
+    showOnNavbar: true,
+    noLayout: false,
+    isPrivate: true,
   },
 ];
 
