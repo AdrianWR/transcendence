@@ -11,13 +11,6 @@ const Navbar: FC<DefaultProps> = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const { socket } = useSocket();
 
-  // useEffect(() => {
-  //   socket?.on('listMessages', () => {
-  //     console.log('listMessages');
-  //     close();
-  //   });
-  // }, [socket]);
-
   return (
     <>
       <Modal size='xl' title='Create a New Chat' opened={opened} onClose={close}>

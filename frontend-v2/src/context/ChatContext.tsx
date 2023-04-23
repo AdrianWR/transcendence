@@ -5,6 +5,18 @@ import { IUser } from './AuthContext';
 
 export type IChatType = 'public' | 'private' | 'protected';
 
+export type IRole = 'owner' | 'admin' | 'member';
+
+export type IChatUser = {
+  email: string;
+  firstName: string;
+  id: number;
+  lastName: string;
+  role: 'owner' | 'admin' | 'member';
+  status: 'active' | 'muted' | 'banned';
+  username: string;
+};
+
 export type ICreateChatDto = {
   name: string;
   type: IChatType;
@@ -28,7 +40,7 @@ export type IChat = {
   updatedAt: string;
   lastMessage?: string;
   avatar?: string;
-  users: IUser[];
+  users: IChatUser[];
 };
 
 export type IChatContext = {
@@ -52,7 +64,6 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
     socket?.emit('listChats');
 
     socket?.on('listChats', (chats: IChat[]) => {
-      console.log('chats: ', chats);
       setChats(chats);
       setActiveChat(chats[0]);
     });
@@ -89,8 +100,6 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
     }
 
     socket?.on('listMessages', (messages: IMessage[]) => {
-      console.log('activeChat ID: ', activeChat?.id);
-      console.log('messages[0].chat.id: ', messages[0]?.chat.id);
       if (!messages.length) {
         setMessages([]);
       } else if (activeChat?.id === messages[0]?.chat.id) {

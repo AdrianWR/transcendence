@@ -32,9 +32,19 @@ const ListAllUsersCard: FC<ListAllUsersCardProps> = ({ mode, close }) => {
 
   useEffect(() => {
     api.get('/users').then((response) => {
-      console.log('Users List: ', response.data);
-      setUsersList(response.data);
-      setFilteredUsersList(response.data);
+      let users;
+
+      if (mode === 'chat') {
+        users = response.data.filter((user: IUser) => {
+          if (activeChat?.users) {
+            return !activeChat.users.find((chatUser) => chatUser.id === user.id);
+          }
+        });
+      } else {
+        users = response.data;
+      }
+      setUsersList(users);
+      setFilteredUsersList(users);
     });
   }, []);
 

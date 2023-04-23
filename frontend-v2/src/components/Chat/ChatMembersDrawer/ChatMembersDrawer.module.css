@@ -30,3 +30,7 @@
 .search-input input:focus {
     border: 1px solid rgba(244, 96, 54, 1);
 }
+
+.badge {
+  margin: 0 2px;
+}
