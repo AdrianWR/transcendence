@@ -11,7 +11,7 @@ const MessageInput = () => {
   const [isSending, setIsSending] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 
-  const { activeChat } = useChatContext();
+  const { activeChat, isBlocked } = useChatContext();
   const { socket } = useSocket();
   const { user } = useAuthContext();
 
@@ -50,12 +50,12 @@ const MessageInput = () => {
             placeholder='Type your message...'
             value={message}
             onChange={handleChange}
-            disabled={isSending || isMuted}
+            disabled={isSending || isMuted || isBlocked}
             required
           />
           <Button
             type='submit'
-            disabled={isSending || isMuted}
+            disabled={isSending || isMuted || isBlocked}
             className={styles['chat-input-button']}
           >
             <IconSend size='1.2rem' />

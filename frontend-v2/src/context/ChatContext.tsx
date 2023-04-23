@@ -3,17 +3,19 @@ import { alert, success } from '../components/Notifications';
 import { useSocket } from '../hooks/socket';
 import { IUser } from './AuthContext';
 
-export type IChatType = 'public' | 'private' | 'protected';
+export type IChatType = 'direct' | 'public' | 'private' | 'protected';
 
 export type IRole = 'owner' | 'admin' | 'member';
+
+export type IStatus = 'active' | 'muted' | 'banned';
 
 export type IChatUser = {
   email: string;
   firstName: string;
   id: number;
   lastName: string;
-  role: 'owner' | 'admin' | 'member';
-  status: 'active' | 'muted' | 'banned';
+  role: IRole;
+  status: IStatus;
   username: string;
 };
 
@@ -35,7 +37,7 @@ export type IMessage = {
 export type IChat = {
   id: number;
   name: string;
-  type: 'public' | 'private' | 'protected by password' | 'direct';
+  type: IChatType;
   createdAt: string;
   updatedAt: string;
   lastMessage?: string;
@@ -48,6 +50,8 @@ export type IChatContext = {
   setActiveChat: (chat: IChat | null) => void;
   createDirectMessage(friendId: number): void;
   createGroupChat(createChatDto: ICreateChatDto): void;
+  isBlocked: boolean;
+  setIsBlocked: (isBlocked: boolean) => void;
   chats: IChat[];
   messages: IMessage[];
 };
@@ -58,6 +62,7 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [activeChat, setActiveChat] = useState<IChat | null>(null);
   const [chats, setChats] = useState<IChat[]>([]);
+  const [isBlocked, setIsBlocked] = useState(false);
   const { socket } = useSocket();
 
   useEffect(() => {
@@ -99,6 +104,12 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
       socket?.emit('listMessages', activeChat.id);
     }
 
+    if (activeChat?.type === 'protected') {
+      setIsBlocked(true);
+    } else {
+      setIsBlocked(false);
+    }
+
     socket?.on('listMessages', (messages: IMessage[]) => {
       if (!messages.length) {
         setMessages([]);
@@ -135,6 +146,8 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
         messages,
         createDirectMessage,
         createGroupChat,
+        isBlocked,
+        setIsBlocked,
       }}
     >
       {children}

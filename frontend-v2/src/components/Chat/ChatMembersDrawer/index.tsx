@@ -16,6 +16,7 @@ import { useDisclosure } from '@mantine/hooks';
 import {
   IconBan,
   IconCrown,
+  IconKarate,
   IconLock,
   IconLockOff,
   IconMicrophone,
@@ -69,7 +70,7 @@ const KickButton: FC<MemberWithLoadingButtonProps> = ({ member, setIsLoading }) 
         </Text>
         <Flex justify='space-between' mt='md' gap='md'>
           <Button
-            leftIcon={<IconBan />}
+            leftIcon={<IconKarate />}
             variant='outline'
             color='red'
             size='sm'
@@ -113,6 +114,7 @@ const KickButton: FC<MemberWithLoadingButtonProps> = ({ member, setIsLoading }) 
 const MuteButton: FC<MemberButtonProps> = ({ member }) => {
   const { socket } = useSocket();
   const { activeChat } = useChatContext();
+  const { user } = useAuthContext();
 
   const toggleMute = useCallback(
     (member: IChatUser) => {
@@ -125,20 +127,22 @@ const MuteButton: FC<MemberButtonProps> = ({ member }) => {
     [activeChat, socket],
   );
 
+  const userRole = activeChat?.users.find((m) => m.id === user?.id)?.role;
+
   return (
     <div hidden={member.role === 'owner'}>
-      <Tooltip label='Mute' position='left-start'>
+      <Tooltip label={member.status === 'active' ? 'Mute' : 'Unmute'} position='left-start'>
         <ActionIcon
           variant='subtle'
           color='lightBlue'
           radius='xl'
           size='lg'
-          disabled={member.status !== 'active' && member.status !== 'muted'}
+          disabled={!(userRole === 'owner' || (userRole === 'admin' && member.role !== 'owner'))}
           onClick={() => {
             toggleMute(member);
           }}
         >
-          {member.status === 'muted' ? <IconMicrophone /> : <IconMicrophoneOff />}
+          {member.status === 'muted' ? <IconMicrophoneOff /> : <IconMicrophone />}
         </ActionIcon>
       </Tooltip>
     </div>
@@ -182,7 +186,7 @@ const AdminButton: FC<MemberWithLoadingButtonProps> = ({ member, setIsLoading })
             toggleAdmin(member);
           }}
         >
-          {member.role === 'admin' ? <IconLockOff /> : <IconLock />}
+          {member.role === 'admin' ? <IconLock /> : <IconLockOff />}
         </ActionIcon>
       </Tooltip>
     </div>
@@ -222,9 +226,8 @@ const ChatMembersDrawer: FC<{ close: () => void }> = ({ close }) => {
     setMembersList(activeChat?.users || []);
     setFilteredMembersList(sortMembersList(activeChat?.users || []));
 
-    if (activeChat?.users.find(({ id }) => id === user?.id)?.role === ('owner' || 'admin')) {
-      setIsActiveChatAdmin(true);
-    }
+    const role = activeChat?.users.find(({ id }) => id === user?.id)?.role;
+    setIsActiveChatAdmin(role === 'member' ? false : true);
   }, [activeChat]);
 
   const handleSearch = useCallback(
@@ -350,10 +353,10 @@ const ChatMembersDrawer: FC<{ close: () => void }> = ({ close }) => {
               >
                 {socketUsersList[member.id]?.status || 'offline'}
               </Badge>
+              <MuteButton member={member} />
               {isActiveChatAdmin && (
                 <>
                   <AdminButton member={member} setIsLoading={setIsLoading} />
-                  <MuteButton member={member} />
                   <KickButton member={member} setIsLoading={setIsLoading} />
                 </>
               )}

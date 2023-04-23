@@ -17,6 +17,7 @@ import { Server, Socket } from 'socket.io';
 import { SocketUser } from '../users/users.decorator';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
+import { UpdateChatDto } from './dto/update-chat.dto';
 import { Role, Status } from './entities/chat-users.entity';
 
 @UseInterceptors(ClassSerializerInterceptor)
@@ -146,6 +147,19 @@ export class ChatGateway implements OnGatewayConnection {
     }
   }
 
+  @SubscribeMessage('updateChat')
+  async updateChat(
+    @SocketUser('id') userId: number,
+    @MessageBody(new ValidationPipe()) updateChatDto: UpdateChatDto,
+  ) {
+    try {
+      await this.chatService.updateChat(updateChatDto);
+    } catch (err) {
+      return err.message;
+    }
+    return '';
+  }
+
   @SubscribeMessage('leaveChat')
   async leaveChat(
     @SocketUser('id') userId: number,
@@ -225,25 +239,22 @@ export class ChatGateway implements OnGatewayConnection {
     @MessageBody(new ValidationPipe()) updateMember: UpdateMemberDto,
     @ConnectedSocket() client: Socket,
   ) {
-    await this.chatService.updateMember(
-      userId,
-      updateMember.chatId,
-      updateMember.userId,
-      updateMember.role,
-      updateMember.status,
-    );
-
     // Notify the user that they have been modified
-    const socket = this.connectedUsers.get(updateMember.userId);
-    if (socket) {
-      const chats = await this.chatService.findChatRoomsByUserId(
+    try {
+      const chat = await this.chatService.updateMember(
+        userId,
+        updateMember.chatId,
         updateMember.userId,
+        updateMember.role,
+        updateMember.status,
       );
-      socket.emit('listChats', chats);
+      await this.listChatsForUsersInTheRoom(chat.id);
+      return chat;
+    } catch (err) {
+      client.emit('apiError', err.message);
     }
 
-    // Notify the requester that the user has been modified
-    return await this.listChats(userId, client);
+    return await this.chatService.findOne(updateMember.chatId);
   }
 
   @SubscribeMessage('deleteMember')
@@ -252,22 +263,68 @@ export class ChatGateway implements OnGatewayConnection {
     @MessageBody(new ValidationPipe()) deleteMember: DeleteMemberDto,
     @ConnectedSocket() client: Socket,
   ) {
-    await this.chatService.deleteMember(
-      userId,
-      deleteMember.chatId,
-      deleteMember.userId,
-    );
-
-    // Notify the user that they have been deleted
-    const socket = this.connectedUsers.get(deleteMember.userId);
-    if (socket) {
-      const chats = await this.chatService.findChatRoomsByUserId(
+    // Notify the users in the socket room that the user has been deleted
+    try {
+      const chat = await this.chatService.deleteMember(
+        userId,
+        deleteMember.chatId,
         deleteMember.userId,
       );
-      socket.emit('listChats', chats);
+
+      // Kick the user out of the room
+      const socket = this.connectedUsers.get(deleteMember.userId);
+      if (socket) {
+        socket.leave(`chat:${deleteMember.chatId}`);
+        const chats = await this.chatService.findChatRoomsByUserId(
+          deleteMember.userId,
+        );
+        socket.emit('listChats', chats);
+      }
+
+      await this.listChatsForUsersInTheRoom(deleteMember.chatId);
+      return chat;
+    } catch (err) {
+      client.emit('apiError', err.message);
     }
 
-    return await this.listChats(userId, client);
+    return true;
+  }
+
+  @SubscribeMessage('authenticateChat')
+  async authenticateChat(
+    @SocketUser('id') userId: number,
+    @MessageBody(new ValidationPipe()) authenticateChatDto: AuthenticateChatDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    try {
+      const authenticated = await this.chatService.authenticateChat(
+        userId,
+        authenticateChatDto.chatId,
+        authenticateChatDto.password,
+      );
+
+      return authenticated;
+    } catch (err) {
+      client.emit('apiError', err.message);
+    }
+
+    return false;
+  }
+
+  async listChatsForUsersInTheRoom(chatId: number) {
+    const chat = await this.chatService.findOne(chatId);
+    await Promise.all(
+      chat.users.map(async (chatUsers) => {
+        const socket = this.connectedUsers.get(chatUsers.user.id);
+        if (socket) {
+          socket.join(`chat:${chat.id}`);
+          const chats = await this.chatService.findChatRoomsByUserId(
+            chatUsers.user.id,
+          );
+          socket.emit('listChats', chats);
+        }
+      }),
+    );
   }
 }
 
@@ -301,4 +358,9 @@ export type UpdateMemberDto = {
 export type DeleteMemberDto = {
   chatId: number;
   userId: number;
+};
+
+export type AuthenticateChatDto = {
+  chatId: number;
+  password: string;
 };

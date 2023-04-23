@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as argon2 from 'argon2';
 import { In, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { CreateChatDto } from './dto/create-chat.dto';
+import { UpdateChatDto } from './dto/update-chat.dto';
 import { ChatUsers, Role, Status } from './entities/chat-users.entity';
 import { CHAT_TYPE, Chat } from './entities/chat.entity';
 import { Message } from './entities/message.entity';
@@ -48,8 +50,13 @@ export class ChatService {
       );
     }
 
+    const hashedPassword = createChatDto.password
+      ? await argon2.hash(createChatDto.password)
+      : null;
+
     const chat = this.chatRepository.create({
       ...createChatDto,
+      password: hashedPassword,
       users: users,
     });
 
@@ -186,6 +193,21 @@ export class ChatService {
 
     chat.users.push(...users);
     return await this.chatRepository.save(chat);
+  }
+
+  async updateChat(updateChatDto: UpdateChatDto) {
+    const chat = await this.findOne(updateChatDto.id);
+    if (!chat) throw new BadRequestException('Chat room does not exist');
+
+    if (updateChatDto.password) {
+      const hashedPassword = await argon2.hash(updateChatDto.password);
+      updateChatDto.password = hashedPassword;
+    }
+
+    return await this.chatRepository.save({
+      ...chat,
+      password: updateChatDto.password,
+    });
   }
 
   async findChatRoomsByUserId(userId: number) {
@@ -354,5 +376,21 @@ export class ChatService {
 
     chat.users = chat.users.filter((u) => u.user.id !== userId);
     return await this.chatRepository.save(chat);
+  }
+
+  async authenticateChat(userId: number, chatId: number, password: string) {
+    const chat = await this.findOne(chatId);
+    if (!chat) throw new BadRequestException('Chat room does not exist');
+
+    const isUserInChat = chat.users.some((u) => u.user.id === userId);
+    if (!isUserInChat) throw new BadRequestException('User not in chat room');
+
+    const user = await this.usersService.findOne(userId);
+    if (!user) throw new BadRequestException('User does not exist');
+
+    const isPasswordCorrect = await argon2.verify(chat.password, password);
+    if (!isPasswordCorrect) throw new BadRequestException('Wrong password');
+
+    return true;
   }
 }

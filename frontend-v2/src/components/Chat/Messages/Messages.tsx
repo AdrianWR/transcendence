@@ -55,7 +55,7 @@ const Messages: FC = () => {
   const [isMuted, setIsMuted] = useState(false);
 
   const { user } = useAuthContext();
-  const { activeChat, messages } = useChatContext();
+  const { activeChat, messages, isBlocked } = useChatContext();
 
   const scrollToBottom = () => {
     if (viewport.current) {
@@ -105,9 +105,22 @@ const Messages: FC = () => {
             >
               <Flex align='center' direction='column' justify='center' style={{ height: '100%' }}>
                 <Title my='lg' align='center' color='white'>
-                  You are muted in this chat
+                  You are muted in this chat.
                 </Title>
                 <IconMicrophoneOff size={50} color='white' />
+              </Flex>
+            </Overlay>
+          )}
+          {isBlocked && (
+            <Overlay
+              opacity={0.5}
+              blur={10}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            >
+              <Flex align='center' direction='column' justify='center' style={{ height: '100%' }}>
+                <Title my='lg' align='center' color='white'>
+                  You are blocked in this chat. Input the password to see the messages.
+                </Title>
               </Flex>
             </Overlay>
           )}

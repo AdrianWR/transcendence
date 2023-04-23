@@ -32,6 +32,9 @@ export class Chat {
   })
   users: ChatUsers[];
 
+  @Column({ nullable: true })
+  password: string;
+
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
