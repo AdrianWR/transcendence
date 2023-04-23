@@ -193,7 +193,7 @@ const AdminButton: FC<MemberWithLoadingButtonProps> = ({ member, setIsLoading })
   );
 };
 
-const ChatMembersDrawer: FC<{ close: () => void }> = ({ close }) => {
+const ChatMembersDrawer: FC<{ close: () => void }> = () => {
   const { user } = useAuthContext();
   const { activeChat } = useChatContext();
   const { socketUsersList } = useSocket();
@@ -330,7 +330,7 @@ const ChatMembersDrawer: FC<{ close: () => void }> = ({ close }) => {
                   size={48}
                   mr={20}
                   className={styles['friend-avatar']}
-                  src={'/images/cat-pirate.jpg'}
+                  src={member.avatar || '/images/cat-pirate.jpg'}
                   alt='friend avatar'
                 />
               </Link>
@@ -354,11 +354,9 @@ const ChatMembersDrawer: FC<{ close: () => void }> = ({ close }) => {
                 {socketUsersList[member.id]?.status || 'offline'}
               </Badge>
               <MuteButton member={member} />
-              {isActiveChatAdmin && (
-                <>
-                  <AdminButton member={member} setIsLoading={setIsLoading} />
-                  <KickButton member={member} setIsLoading={setIsLoading} />
-                </>
+              {isActiveChatAdmin && <AdminButton member={member} setIsLoading={setIsLoading} />}
+              {(isActiveChatAdmin || user?.id === member.id) && (
+                <KickButton member={member} setIsLoading={setIsLoading} />
               )}
             </Flex>
           </Card>

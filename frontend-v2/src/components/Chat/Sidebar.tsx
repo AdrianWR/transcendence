@@ -1,38 +1,36 @@
 import { DefaultProps, Flex, Group, Modal, Tabs, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconMessage2Share, IconMessages, IconPlus } from '@tabler/icons-react';
+import { IconMessage2Share, IconMessagePlus, IconMessages, IconPlus } from '@tabler/icons-react';
 import { FC } from 'react';
-import { useSocket } from '../../hooks/socket';
 import GroupChatCreateModal from './CreateChat/CreateGroupChat';
 import DirectMessageCreateModal from './DirectMessageCreateModal';
 import SideBarFriends from './SidebarFriends';
 
 const Navbar: FC<DefaultProps> = () => {
   const [opened, { open, close }] = useDisclosure(false);
-  const { socket } = useSocket();
 
   return (
     <>
       <Modal size='xl' title='Create a New Chat' opened={opened} onClose={close}>
-        <Tabs color='secondary' defaultValue='direct'>
+        <Tabs color='secondary' defaultValue='create-group-chat'>
           <Tabs.List grow>
-            <Tabs.Tab value='group' icon={<IconMessage2Share size='0.8rem' />}>
+            <Tabs.Tab value='create-group-chat' icon={<IconMessage2Share size='0.8rem' />}>
               Create Group Chat
             </Tabs.Tab>
-            <Tabs.Tab value='direct' icon={<IconMessages size='0.8rem' />}>
+            <Tabs.Tab value='create-direct-chat' icon={<IconMessages size='0.8rem' />}>
               Direct Message
             </Tabs.Tab>
-            <Tabs.Tab value='two'>Two</Tabs.Tab>
-            <Tabs.Tab value='three'>Three</Tabs.Tab>
+            <Tabs.Tab value='join-group-chat' icon={<IconMessagePlus size='0.8rem' />}>
+              Join Chat
+            </Tabs.Tab>
           </Tabs.List>
-          <Tabs.Panel value='group'>
+          <Tabs.Panel value='create-group-chat'>
             <GroupChatCreateModal close={close} />
           </Tabs.Panel>
-          <Tabs.Panel value='direct'>
+          <Tabs.Panel value='create-direct-chat'>
             <DirectMessageCreateModal close={close} />
           </Tabs.Panel>
-          <Tabs.Panel value='two'>Two content</Tabs.Panel>
-          <Tabs.Panel value='three'>Three content</Tabs.Panel>
+          <Tabs.Panel value='join-group-chat'>Join Chat Content</Tabs.Panel>
         </Tabs>
       </Modal>
 
