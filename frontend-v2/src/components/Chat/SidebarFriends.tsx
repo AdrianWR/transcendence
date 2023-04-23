@@ -1,4 +1,4 @@
-import { Avatar, DefaultProps, Flex, Text, UnstyledButton } from '@mantine/core';
+import { Avatar, DefaultProps, Flex, Stack, Text, UnstyledButton } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
 import { FC, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { IChat } from '../../context/ChatContext';
@@ -60,9 +60,14 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
           mr={12}
           color={isActiveChat ? 'secondary' : 'white'}
         />
-        <Text size='md' weight='bold' color='white'>
-          {chatName}
-        </Text>
+        <Stack>
+          <Text size='md' weight='bold' color='white'>
+            {chatName}
+          </Text>
+          <Text size='sm' color='white'>
+            {chat.lastMessage ?? ''}
+          </Text>
+        </Stack>
       </Flex>
     </UnstyledButton>
   );

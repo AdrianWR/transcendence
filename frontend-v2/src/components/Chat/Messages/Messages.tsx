@@ -1,4 +1,4 @@
-import { Container, Flex, Overlay, ScrollArea, Text, Title } from '@mantine/core';
+import { Container, Flex, Overlay, ScrollArea, Text, Title, Tooltip } from '@mantine/core';
 import { IconMicrophoneOff } from '@tabler/icons-react';
 import { FC, useEffect, useRef, useState } from 'react';
 import { IMessage } from '../../../context/ChatContext';

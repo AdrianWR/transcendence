@@ -71,7 +71,7 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
 
     socket?.on('listChats', (chats: IChat[]) => {
       setChats(chats);
-      setActiveChat(chats[0]);
+      if (!activeChat) setActiveChat(chats[0]);
     });
 
     socket?.on('updateChats', () => {
@@ -120,6 +120,7 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
     });
 
     socket?.on('newMessage', (message: IMessage) => {
+      console.log('newMessage');
       if (activeChat?.id === message.chat.id) {
         setMessages((messages) => [...messages, message]);
       }

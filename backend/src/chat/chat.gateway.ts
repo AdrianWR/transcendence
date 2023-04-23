@@ -50,8 +50,10 @@ export class ChatGateway implements OnGatewayConnection {
     client.emit('listChats', chats);
 
     // Fetch the user's active chat messages and send them to the client
-    const messages = await this.chatService.findMessagesByChatId(chats[0].id);
-    client.emit('listMessages', messages);
+    if (chats.length > 0) {
+      const messages = await this.chatService.findMessagesByChatId(chats[0].id);
+      client.emit('listMessages', messages);
+    }
   }
 
   @SubscribeMessage('listChats')
@@ -188,6 +190,7 @@ export class ChatGateway implements OnGatewayConnection {
       chatId,
       content,
     );
+    await this.listChatsForUsersInTheRoom(chatId);
     this.server.to(`chat:${chatId}`).emit('newMessage', newMessage);
   }
 
@@ -202,36 +205,6 @@ export class ChatGateway implements OnGatewayConnection {
 
     return messages;
   }
-
-  // @SubscribeMessage('promoteToAdmin')
-  // async promoteUser(
-  //   @SocketUser('id') userId: number,
-  //   @MessageBody(new ValidationPipe()) promoteToAdminDto: PromoteToAdminDto,
-  //   @ConnectedSocket() client: Socket,
-  // ) {
-  //   await this.chatService.promoteUser(
-  //     userId,
-  //     promoteToAdminDto.chatId,
-  //     promoteToAdminDto.userId,
-  //   );
-
-  //   return await this.listChats(userId, client);
-  // }
-
-  // @SubscribeMessage('demoteToMember')
-  // async demoteUser(
-  //   @SocketUser('id') userId: number,
-  //   @MessageBody(new ValidationPipe()) demoteToMemberDto: DemoteToMemberDto,
-  //   @ConnectedSocket() client: Socket,
-  // ) {
-  //   await this.chatService.demoteUser(
-  //     userId,
-  //     demoteToMemberDto.chatId,
-  //     demoteToMemberDto.userId,
-  //   );
-
-  //   return await this.listChats(userId, client);
-  // }
 
   @SubscribeMessage('updateMember')
   async muteMember(

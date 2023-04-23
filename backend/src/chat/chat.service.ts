@@ -164,7 +164,7 @@ export class ChatService {
     const storedMessage = await this.messageRepository.save(newMessage);
 
     if (storedMessage) {
-      chat.updatedAt = storedMessage.createdAt;
+      chat.lastMessage = storedMessage.content;
       await this.chatRepository.save(chat);
     }
 
@@ -220,6 +220,7 @@ export class ChatService {
         chat.name as name,
         chat.type as type,
         chat."createdAt" as "createdAt",
+        chat."last_message" as "lastMessage",
         JSON_AGG(JSON_BUILD_OBJECT(
           'id', users.id,
           'username', users.username,
