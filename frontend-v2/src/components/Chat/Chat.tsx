@@ -149,33 +149,37 @@ const Chat: FC = () => {
               {chatName}
             </Text>
             {activeChat?.type !== 'direct' && (
-              <Tooltip label='Add a member' position='top-start'>
+              <div hidden={!activeChat}>
+                <Tooltip label='Add a member' position='top-start'>
+                  <ActionIcon
+                    variant='filled'
+                    color='lightBlue'
+                    radius='xl'
+                    size='lg'
+                    onClick={() => {
+                      addMemberOpen();
+                    }}
+                  >
+                    <IconMoodPlus />
+                  </ActionIcon>
+                </Tooltip>
+              </div>
+            )}
+            <div hidden={!activeChat}>
+              <Tooltip label='Members' position='top-start'>
                 <ActionIcon
                   variant='filled'
-                  color='lightBlue'
+                  color='secondary'
                   radius='xl'
                   size='lg'
                   onClick={() => {
-                    addMemberOpen();
+                    membersOpen();
                   }}
                 >
-                  <IconMoodPlus />
+                  <IconUsers />
                 </ActionIcon>
               </Tooltip>
-            )}
-            <Tooltip label='Members' position='top-start'>
-              <ActionIcon
-                variant='filled'
-                color='secondary'
-                radius='xl'
-                size='lg'
-                onClick={() => {
-                  membersOpen();
-                }}
-              >
-                <IconUsers />
-              </ActionIcon>
-            </Tooltip>
+            </div>
             {activeChat?.users.find(({ id }) => id === user?.id)?.role === 'owner' &&
               activeChat?.type === 'protected' && (
                 <Tooltip label='Edit' position='top-start'>
