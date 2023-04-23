@@ -292,7 +292,6 @@ const ChatMembersDrawer: FC<{ close: () => void }> = ({ close }) => {
         visible={isLoading}
         overlayBlur={1}
       />
-
       <TextInput
         px={8}
         mb={12}

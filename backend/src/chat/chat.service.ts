@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { CreateChatDto } from './dto/create-chat.dto';
-import { ChatUsers, Role } from './entities/chat-users.entity';
-import { Chat, CHAT_TYPE } from './entities/chat.entity';
+import { ChatUsers, Role, Status } from './entities/chat-users.entity';
+import { CHAT_TYPE, Chat } from './entities/chat.entity';
 import { Message } from './entities/message.entity';
 
 @Injectable()
@@ -59,7 +59,10 @@ export class ChatService {
   async alreadyHaveDirectMessage(userId: number, friendId: number) {
     const userFriendChats = await this.chatUsersRepository.find({
       relations: ['user', 'chat'],
-      where: { user: { id: In([userId, friendId]) }, chat: { type: CHAT_TYPE.DIRECT } },
+      where: {
+        user: { id: In([userId, friendId]) },
+        chat: { type: CHAT_TYPE.DIRECT },
+      },
     });
 
     const usersByChatId: { [chatId: number]: number[] } = {};
@@ -79,7 +82,8 @@ export class ChatService {
   async createDirectMessageRoom(userId: number, friendId: number) {
     const hasDM = await this.alreadyHaveDirectMessage(userId, friendId);
 
-    if (hasDM) throw new BadRequestException('User already has DM with this friend');
+    if (hasDM)
+      throw new BadRequestException('User already has DM with this friend');
 
     const users = await Promise.all(
       [userId, friendId].map(async (id) => {
@@ -140,6 +144,10 @@ export class ChatService {
 
     const chat = await this.findOne(chatId);
     if (!chat) throw new BadRequestException('Chat room does not exist');
+
+    const userStatusInChat = chat.users.find((u) => u.user.id === userId);
+    if (userStatusInChat.status === (Status.MUTED || Status.BANNED))
+      throw new BadRequestException('User is muted or banned');
 
     const newMessage = this.messageRepository.create({
       content: message,
@@ -222,22 +230,24 @@ export class ChatService {
     const chat = await this.findOne(chatId);
     if (!chat) throw new BadRequestException('Chat room does not exist');
 
-    const isRequesterInChat = chat.users.some((u) => u.id === requesterId);
-    if (!isRequesterInChat)
-      throw new BadRequestException('Requester not in chat room');
+    // const isRequesterInChat = chat.users.some((u) => u.id === requesterId);
+    // if (!isRequesterInChat)
+    //   throw new BadRequestException('Requester not in chat room');
 
-    const isUserInChat = chat.users.some((u) => u.id === userId);
-    if (!isUserInChat) throw new BadRequestException('User not in chat room');
+    // const isUserInChat = chat.users.some((u) => u.id === userId);
+    // if (!isUserInChat) throw new BadRequestException('User not in chat room');
 
-    const requesterRole = chat.users.find((u) => u.id === requesterId).role;
+    const requesterRole = chat.users.find(
+      (u) => u.user.id === requesterId,
+    ).role;
     if (requesterRole !== Role.OWNER && requesterRole !== Role.ADMIN)
       throw new BadRequestException('Requester is not an admin or owner');
 
-    const userRole = chat.users.find((u) => u.id === userId).role;
+    const userRole = chat.users.find((u) => u.user.id === userId).role;
     if (userRole === Role.OWNER || userRole === Role.ADMIN)
       throw new BadRequestException('User is already an admin or owner');
 
-    chat.users.find((u) => u.id === userId).role = role;
+    chat.users.find((u) => u.user.id === userId).role = role;
     return await this.chatRepository.save(chat);
   }
 
@@ -253,22 +263,24 @@ export class ChatService {
     const chat = await this.findOne(chatId);
     if (!chat) throw new BadRequestException('Chat room does not exist');
 
-    const isRequesterInChat = chat.users.some((u) => u.id === requesterId);
+    const isRequesterInChat = chat.users.some((u) => u.user.id === requesterId);
     if (!isRequesterInChat)
       throw new BadRequestException('Requester not in chat room');
 
-    const isUserInChat = chat.users.some((u) => u.id === userId);
+    const isUserInChat = chat.users.some((u) => u.user.id === userId);
     if (!isUserInChat) throw new BadRequestException('User not in chat room');
 
-    const requesterRole = chat.users.find((u) => u.id === requesterId).role;
+    const requesterRole = chat.users.find(
+      (u) => u.user.id === requesterId,
+    ).role;
     if (requesterRole !== Role.OWNER && requesterRole !== Role.ADMIN)
       throw new BadRequestException('Requester is not an admin or owner');
 
-    const userRole = chat.users.find((u) => u.id === userId).role;
+    const userRole = chat.users.find((u) => u.user.id === userId).role;
     if (userRole !== Role.ADMIN)
       throw new BadRequestException('User is not an admin');
 
-    chat.users.find((u) => u.id === userId).role = role;
+    chat.users.find((u) => u.user.id === userId).role = role;
     return await this.chatRepository.save(chat);
   }
 
@@ -283,5 +295,64 @@ export class ChatService {
       .where('chat.id = :chatId', { chatId: chatId })
       .orderBy('message.createdAt', 'ASC')
       .getMany();
+  }
+
+  async updateMember(
+    requesterId: number,
+    chatId: number,
+    userId: number,
+    role?: Role,
+    status?: Status,
+  ) {
+    const chat = await this.findOne(chatId);
+    if (!chat) throw new BadRequestException('Chat room does not exist');
+
+    const isRequesterInChat = chat.users.some((u) => u.user.id === requesterId);
+    if (!isRequesterInChat)
+      throw new BadRequestException('Requester not in chat room');
+
+    const isUserInChat = chat.users.some((u) => u.user.id === userId);
+    if (!isUserInChat) throw new BadRequestException('User not in chat room');
+
+    const requesterRole = chat.users.find(
+      (u) => u.user.id === requesterId,
+    ).role;
+    if (requesterRole !== Role.OWNER && requesterRole !== Role.ADMIN)
+      throw new BadRequestException('Requester is not an admin or owner');
+
+    const userRole = chat.users.find((u) => u.user.id === userId).role;
+    if (userRole === Role.OWNER)
+      throw new BadRequestException('User is an owner');
+
+    const user = chat.users.find((u) => u.user.id === userId);
+    if (role) user.role = role;
+    if (status) user.status = status;
+
+    return await this.chatRepository.save(chat);
+  }
+
+  async deleteMember(requesterId: number, chatId: number, userId: number) {
+    const chat = await this.findOne(chatId);
+    if (!chat) throw new BadRequestException('Chat room does not exist');
+
+    const isRequesterInChat = chat.users.some((u) => u.user.id === requesterId);
+    if (!isRequesterInChat)
+      throw new BadRequestException('Requester not in chat room');
+
+    const isUserInChat = chat.users.some((u) => u.user.id === userId);
+    if (!isUserInChat) throw new BadRequestException('User not in chat room');
+
+    const requesterRole = chat.users.find(
+      (u) => u.user.id === requesterId,
+    ).role;
+    if (requesterRole !== Role.OWNER && requesterRole !== Role.ADMIN)
+      throw new BadRequestException('Requester is not an admin or owner');
+
+    const userRole = chat.users.find((u) => u.user.id === userId).role;
+    if (userRole === Role.OWNER)
+      throw new BadRequestException('User is an owner');
+
+    chat.users = chat.users.filter((u) => u.user.id !== userId);
+    return await this.chatRepository.save(chat);
   }
 }

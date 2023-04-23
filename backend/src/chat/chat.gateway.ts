@@ -17,6 +17,7 @@ import { Server, Socket } from 'socket.io';
 import { SocketUser } from '../users/users.decorator';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
+import { Role, Status } from './entities/chat-users.entity';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @WebSocketGateway({
@@ -53,12 +54,14 @@ export class ChatGateway implements OnGatewayConnection {
   }
 
   @SubscribeMessage('listChats')
-  async requestChats(
+  async listChats(
     @SocketUser('id') userId: number,
     @ConnectedSocket() client: Socket,
   ) {
     const chats = await this.chatService.findChatRoomsByUserId(userId);
     client.emit('listChats', chats);
+
+    return chats;
   }
 
   @SubscribeMessage('createChat')
@@ -181,26 +184,90 @@ export class ChatGateway implements OnGatewayConnection {
   ) {
     const messages = await this.chatService.findMessagesByChatId(chatId);
 
-    // client.emit('listMessages', messages);
     client.emit('listMessages', messages);
+
+    return messages;
   }
 
-  @SubscribeMessage('promoteUser')
-  async promoteUser(
+  // @SubscribeMessage('promoteToAdmin')
+  // async promoteUser(
+  //   @SocketUser('id') userId: number,
+  //   @MessageBody(new ValidationPipe()) promoteToAdminDto: PromoteToAdminDto,
+  //   @ConnectedSocket() client: Socket,
+  // ) {
+  //   await this.chatService.promoteUser(
+  //     userId,
+  //     promoteToAdminDto.chatId,
+  //     promoteToAdminDto.userId,
+  //   );
+
+  //   return await this.listChats(userId, client);
+  // }
+
+  // @SubscribeMessage('demoteToMember')
+  // async demoteUser(
+  //   @SocketUser('id') userId: number,
+  //   @MessageBody(new ValidationPipe()) demoteToMemberDto: DemoteToMemberDto,
+  //   @ConnectedSocket() client: Socket,
+  // ) {
+  //   await this.chatService.demoteUser(
+  //     userId,
+  //     demoteToMemberDto.chatId,
+  //     demoteToMemberDto.userId,
+  //   );
+
+  //   return await this.listChats(userId, client);
+  // }
+
+  @SubscribeMessage('updateMember')
+  async muteMember(
     @SocketUser('id') userId: number,
-    @MessageBody(new ParseIntPipe()) chatId: number,
-    @MessageBody(new ParseIntPipe()) userIdToPromote: number,
+    @MessageBody(new ValidationPipe()) updateMember: UpdateMemberDto,
+    @ConnectedSocket() client: Socket,
   ) {
-    return await this.chatService.promoteUser(userId, chatId, userIdToPromote);
+    await this.chatService.updateMember(
+      userId,
+      updateMember.chatId,
+      updateMember.userId,
+      updateMember.role,
+      updateMember.status,
+    );
+
+    // Notify the user that they have been modified
+    const socket = this.connectedUsers.get(updateMember.userId);
+    if (socket) {
+      const chats = await this.chatService.findChatRoomsByUserId(
+        updateMember.userId,
+      );
+      socket.emit('listChats', chats);
+    }
+
+    // Notify the requester that the user has been modified
+    return await this.listChats(userId, client);
   }
 
-  @SubscribeMessage('demoteUser')
-  async demoteUser(
+  @SubscribeMessage('deleteMember')
+  async deleteMember(
     @SocketUser('id') userId: number,
-    @MessageBody(new ParseIntPipe()) chatId: number,
-    @MessageBody(new ParseIntPipe()) userIdToDemote: number,
+    @MessageBody(new ValidationPipe()) deleteMember: DeleteMemberDto,
+    @ConnectedSocket() client: Socket,
   ) {
-    return await this.chatService.demoteUser(userId, chatId, userIdToDemote);
+    await this.chatService.deleteMember(
+      userId,
+      deleteMember.chatId,
+      deleteMember.userId,
+    );
+
+    // Notify the user that they have been deleted
+    const socket = this.connectedUsers.get(deleteMember.userId);
+    if (socket) {
+      const chats = await this.chatService.findChatRoomsByUserId(
+        deleteMember.userId,
+      );
+      socket.emit('listChats', chats);
+    }
+
+    return await this.listChats(userId, client);
   }
 }
 
@@ -213,3 +280,25 @@ export interface JoinChatDto {
   chatId: number;
   userIds: number[];
 }
+
+export interface PromoteToAdminDto {
+  chatId: number;
+  userId: number;
+}
+
+export interface DemoteToMemberDto {
+  chatId: number;
+  userId: number;
+}
+
+export type UpdateMemberDto = {
+  chatId: number;
+  userId: number;
+  role?: Role;
+  status?: Status;
+};
+
+export type DeleteMemberDto = {
+  chatId: number;
+  userId: number;
+};

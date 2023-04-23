@@ -40,7 +40,7 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('updateUser')
   updateUsers(client: Socket, userData: UserSocketData): void {
-    this.logger.debug(`${userData.id} : ${userData.email} : ${userData.status}`);
+    // this.logger.debug(`${userData.id} : ${userData.email} : ${userData.status}`);
     this.users[client.id] = userData;
     this.server.to('users').emit('usersList', Object.values(this.users));
   }
