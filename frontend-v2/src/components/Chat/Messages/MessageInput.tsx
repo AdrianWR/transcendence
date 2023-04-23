@@ -1,4 +1,5 @@
-import { TextInput } from '@mantine/core';
+import { Button, TextInput } from '@mantine/core';
+import { IconSend } from '@tabler/icons-react';
 import { SetStateAction, useState } from 'react';
 import { useSocket } from '../../../hooks/socket';
 import { useChatContext } from '../../../hooks/useChatContext';
@@ -20,7 +21,7 @@ const MessageInput = () => {
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     setIsSending(true);
-    await onSend(message);
+    onSend(message);
     setIsSending(false);
     setMessage('');
   };
@@ -31,19 +32,21 @@ const MessageInput = () => {
 
   return (
     <form onSubmit={handleSubmit} className={styles['chat-input']}>
-      <TextInput
-        className={styles['chat-input-field']}
-        placeholder='Type your message...'
-        value={message}
-        onChange={handleChange}
-        disabled={isSending}
-        required
-        rightSection={
-          <button type='submit' className={styles['chat=input-button']}>
-            Send
-          </button>
-        }
-      />
+      {activeChat ? (
+        <>
+          <TextInput
+            className={styles['chat-input-field']}
+            placeholder='Type your message...'
+            value={message}
+            onChange={handleChange}
+            disabled={isSending}
+            required
+          />
+          <Button type='submit' className={styles['chat-input-button']}>
+            <IconSend size='1.2rem' />
+          </Button>
+        </>
+      ) : null}
     </form>
   );
 };

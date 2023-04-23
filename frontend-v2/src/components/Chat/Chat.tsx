@@ -1,20 +1,35 @@
-import { Avatar, DefaultProps, Group, Text } from '@mantine/core';
-import { FC } from 'react';
+import { Avatar, Flex, Group, Text } from '@mantine/core';
+import { IconMessages } from '@tabler/icons-react';
+import { FC, useEffect, useState } from 'react';
+import { useAuthContext } from '../../hooks/useAuthContext';
+import { useChatContext } from '../../hooks/useChatContext';
 import Messages from './Messages/Messages';
 
-// interface ChatProps extends DefaultProps {}
+const Chat: FC = () => {
+  const { activeChat } = useChatContext();
+  const { user } = useAuthContext();
+  const [chatName, setChatName] = useState('Chats');
 
-const Chat: FC<DefaultProps> = ({ className }) => {
+  useEffect(() => {
+    if (activeChat?.type === 'direct') {
+      const { firstName, lastName } = activeChat?.users.find(({ id }) => id != user?.id) || {};
+
+      setChatName(firstName ? `${firstName} ${lastName}` : 'Direct Message');
+    } else {
+      setChatName(activeChat?.name || 'Chats');
+    }
+  }, [activeChat, user]);
+
   return (
-    <div className={className}>
-      <Group p='lg' style={{ backgroundColor: '#2f252f', height: '30%' }}>
-        <Avatar radius='xl' size='md' color='green' />
+    <Flex direction='column' style={{ flex: 2 }}>
+      <Group p='lg' h={72} style={{ backgroundColor: '#2f252f', borderRadius: '0 10px 0 0' }}>
+        <IconMessages size={32} color='green' />
         <Text color='white' size='xl'>
-          Chats
+          {chatName}
         </Text>
       </Group>
       <Messages />
-    </div>
+    </Flex>
   );
 };
 

@@ -17,12 +17,12 @@ import api from '../../../services/api';
 import { AxiosError } from 'axios';
 import { alert, success } from '../../Notifications';
 import { Link } from 'react-router-dom';
-import styles from './FriendsListCard.module.css';
+import styles from './DirectMessageCreateModal.module.css';
 import { IUser } from '../../../context/AuthContext';
-import { IconMoodPlus, IconSearch, IconUsers } from '@tabler/icons-react';
+import { IconMoodPlus, IconSearch, IconSend, IconUsers } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
-import FriendRequestsModal from '../FriendRequestsModal';
 import { useSocket } from '../../../hooks/socket';
+import { useChatContext } from '../../../hooks/useChatContext';
 
 export interface IFriendRequest {
   id: number;
@@ -34,32 +34,29 @@ export interface IFriendRequest {
   recipient: IUser;
 }
 
-interface FriendsListCardProps {
-  userId: number | undefined;
-}
-
 interface SocketUser extends IUser {
   status: 'online' | 'offline' | 'game' | 'chat';
 }
 
-const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
+interface IDMModalProps {
+  close(): void;
+}
+
+const DirectMessageCreateModal: FC<IDMModalProps> = ({ close }) => {
   const { user } = useAuthContext();
   const { socketUsersList } = useSocket();
-  const notificationTitle = 'Friends List';
+  const { createDirectMessage } = useChatContext();
+  const notificationTitle = 'Direct Message';
   const [friendsList, setFriendsList] = useState([] as IUser[]);
   const [filteredFriendsList, setFilteredFriendsList] = useState([] as IUser[]);
-  const [friendRequestsList, setFriendRequestsList] = useState([] as IFriendRequest[]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isAlreadyFriend, setIsAlreadyFriend] = useState(true);
   const [friendSearched, setFriendSearched] = useState('');
-  const [isLoggedUser, setIsLoggedUser] = useState(false);
-  const [opened, { open, close }] = useDisclosure(false);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!user?.id) return;
     setIsLoading(true);
     api
-      .get(`/friends/${userId}`)
+      .get(`/friends/${user?.id}`)
       .then(({ data }) => {
         setFriendsList(data);
         setFilteredFriendsList(data);
@@ -74,41 +71,7 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
         }
       })
       .finally(() => setIsLoading(false));
-  }, [userId]);
-
-  useEffect(() => {
-    if (!userId || userId !== user?.id) {
-      setIsLoggedUser(false);
-      close();
-      return;
-    }
-    close();
-    setIsLoggedUser(true);
-    setIsLoading(true);
-    api
-      .get('/friends/requests')
-      .then(({ data }) => {
-        setFriendRequestsList(data);
-
-        success('Successfully fetched user friend requests', notificationTitle);
-      })
-      .catch((err) => {
-        if (err instanceof AxiosError) {
-          alert(err.response?.data.message, notificationTitle);
-        } else {
-          alert('Error occured while fetching friend requests', notificationTitle);
-        }
-      })
-      .finally(() => setIsLoading(false));
-  }, [userId, user]);
-
-  useEffect(() => {
-    if (userId === user?.id) setIsAlreadyFriend(true);
-    else if (friendsList.some(({ id }) => id === user?.id)) setIsAlreadyFriend(true);
-    else setIsAlreadyFriend(false);
-
-    setFilteredFriendsList(friendsList);
-  }, [user, friendsList]);
+  }, [user?.id]);
 
   const handleSearch = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,21 +92,13 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
     [friendsList],
   );
 
-  const sendFriendRequest = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      await api.post('/friends/requests', { id: userId });
-      success('Friend request successfully sent', notificationTitle);
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        alert(err.response?.data.message, notificationTitle);
-      } else {
-        alert('Failed to send friend request', notificationTitle);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId]);
+  const emitCreateDM = useCallback(
+    async (friendId: number) => {
+      createDirectMessage(friendId);
+      close();
+    },
+    [createDirectMessage],
+  );
 
   const getStatusColor = useCallback((color: string) => {
     switch (color) {
@@ -161,7 +116,7 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
   }, []);
 
   return (
-    <Card shadow='xl' px={20} p={16} h={380} style={{ position: 'relative' }}>
+    <Card shadow='xl' px={20} p={16} h={400} style={{ position: 'relative' }}>
       <LoadingOverlay
         loaderProps={{ color: 'secondary', variant: 'bars' }}
         overlayOpacity={0.2}
@@ -169,36 +124,6 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
         overlayBlur={1}
       />
 
-      <FriendRequestsModal
-        opened={opened}
-        close={close}
-        friendRequestsList={friendRequestsList}
-        updateFriendRequestsList={setFriendRequestsList}
-        friendsList={friendsList}
-        updateFriendsList={setFriendsList}
-      />
-
-      <Flex justify='space-between'>
-        <Title color='white' order={2} mb={12}>
-          Friends List
-        </Title>
-        {isLoggedUser && (
-          <Tooltip label='Check pending requests'>
-            <Indicator color='red' offset={4} disabled={!friendRequestsList.length}>
-              <Button onClick={open} radius='xl' color='lightBlue'>
-                <IconUsers size='1.2rem' />
-              </Button>
-            </Indicator>
-          </Tooltip>
-        )}
-        {!isAlreadyFriend && (
-          <Tooltip label='Send friend request'>
-            <Button onClick={sendFriendRequest} radius='xl' color='green'>
-              <IconMoodPlus size='1.2rem' />
-            </Button>
-          </Tooltip>
-        )}
-      </Flex>
       <TextInput
         px={8}
         mb={12}
@@ -214,7 +139,7 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
         align='center'
         mb={24}
         px={8}
-        mah={250}
+        h='85%'
         style={{ overflow: 'auto' }}
       >
         {filteredFriendsList.map((friend) => (
@@ -227,8 +152,8 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
             mih={69}
             className={styles['friend-card']}
           >
-            <Link className={styles['link']} to={`/profile/${friend.id}`}>
-              <Flex align='center'>
+            <Flex align='center'>
+              <Link className={styles['link']} to={`/profile/${friend.id}`}>
                 <Avatar
                   radius='50%'
                   size={48}
@@ -237,21 +162,28 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
                   src={friend.avatarUrl || '/images/cat-pirate.jpg'}
                   alt='friend avatar'
                 />
-                <Flex direction='column'>
-                  <Title color='white' order={4}>
-                    {friend.firstName}
-                  </Title>
-                  <Text w={140} italic size='0.7rem' color='grey' truncate>
-                    {friend.username}
-                  </Text>
-                </Flex>
+              </Link>
+
+              <Flex direction='column'>
+                <Title color='white' order={4}>
+                  {friend.firstName}
+                </Title>
+                <Text w={140} italic size='0.7rem' color='grey' truncate>
+                  {friend.username}
+                </Text>
               </Flex>
+            </Flex>
+            <Flex align='center'>
               <Badge variant='dot' color={getStatusColor(socketUsersList[friend.id]?.status)}>
                 {socketUsersList[friend.id]?.status || 'offline'}
               </Badge>
-            </Link>
+              <Button onClick={() => emitCreateDM(friend.id)} radius={8} color='secondary' ml={16}>
+                <IconSend size='1rem' />
+              </Button>
+            </Flex>
           </Card>
         ))}
+
         {!filteredFriendsList.length && (
           <Text m={24} color='white'>
             No friends :(
@@ -262,4 +194,4 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
   );
 };
 
-export default FriendsListCard;
+export default DirectMessageCreateModal;

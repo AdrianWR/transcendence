@@ -39,6 +39,7 @@ export class ChatGateway implements OnGatewayConnection {
     }
 
     const chats = await this.chatService.findChatRoomsByUserId(userId);
+
     client.emit('listChats', chats);
   }
 
@@ -63,14 +64,14 @@ export class ChatGateway implements OnGatewayConnection {
     client.leave(`chat:${chatId}`);
   }
 
-  @SubscribeMessage('requestRooms')
-  async requestRooms(
+  @SubscribeMessage('requestChats')
+  async requestChats(
     @SocketUser('id') userId: number,
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.debug('requestRooms');
-    const rooms = await this.chatService.findChatRoomsByUserId(userId);
-    client.emit('listRooms', rooms);
+    this.logger.debug('requestChats');
+    const chats = await this.chatService.findChatRoomsByUserId(userId);
+    client.emit('listChats', chats);
   }
 
   @SubscribeMessage('createChat')
@@ -86,18 +87,21 @@ export class ChatGateway implements OnGatewayConnection {
   async createDirectMessage(
     @SocketUser('id') userId: number,
     @MessageBody(new ValidationPipe()) friendId: number,
+    @ConnectedSocket() client: Socket,
   ) {
-    const chat = await this.chatService.createDirectMessageRoom(
-      userId,
-      friendId,
-    );
-    return chat;
-  }
+    try {
+      this.logger.debug(`create dm - ${userId} : ${friendId}`);
+      await this.chatService.createDirectMessageRoom(
+        userId,
+        friendId,
+      );
+      const chats = await this.chatService.findChatRoomsByUserId(userId);
 
-  @SubscribeMessage('listChats')
-  async listRooms(@SocketUser('id') userId: number) {
-    const chats = await this.chatService.findChatRoomsByUserId(userId);
-    return chats;
+      client.emit('apiSuccess', 'Successfully created direct message');
+      client.emit('listChats', chats);
+    } catch (err) {
+      client.emit('apiError', err.message);
+    }
   }
 
   @SubscribeMessage('joinChat')

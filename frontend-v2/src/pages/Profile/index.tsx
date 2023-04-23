@@ -6,12 +6,18 @@ import FriendsListCard from '../../components/Profile/FriendsListCard';
 import MatchHistoryCard from '../../components/Profile/MatchHistoryCard';
 import ProfileCard from '../../components/Profile/ProfileCard';
 import UserStatsCard from '../../components/Profile/UserStatsCard';
+import { useSocket } from '../../hooks/socket';
 import { useAuthContext } from '../../hooks/useAuthContext';
 
 const Profile: FCWithLayout = () => {
   const { userId } = useParams();
   const { user } = useAuthContext();
   const [currentUserId, setCurrentUserId] = useState<number | undefined>(Number(userId));
+  const { socket, updateSocketUserStatus } = useSocket();
+
+  useEffect(() => {
+    if (socket) updateSocketUserStatus('online');
+  }, [socket]);
 
   useEffect(() => {
     if (Number(userId) === user?.id) history.replaceState(null, '', '/profile/me');
