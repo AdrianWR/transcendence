@@ -1,15 +1,26 @@
 import { Button, TextInput } from '@mantine/core';
 import { IconSend } from '@tabler/icons-react';
-import { SetStateAction, useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import { useSocket } from '../../../hooks/socket';
+import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useChatContext } from '../../../hooks/useChatContext';
 import styles from './Messages.module.css';
 
 const MessageInput = () => {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const { activeChat } = useChatContext();
+  const [isMuted, setIsMuted] = useState(false);
+
+  const { activeChat, isBlocked } = useChatContext();
   const { socket } = useSocket();
+  const { user } = useAuthContext();
+
+  useEffect(() => {
+    if (activeChat) {
+      // Check if user status in active chat is muted
+      setIsMuted(activeChat.users.find((u) => u.id === user?.id)?.status === 'muted');
+    }
+  }, [activeChat]);
 
   const onSend = (message: string) => {
     socket?.emit('sendMessage', {
@@ -39,10 +50,14 @@ const MessageInput = () => {
             placeholder='Type your message...'
             value={message}
             onChange={handleChange}
-            disabled={isSending}
+            disabled={isSending || isMuted || isBlocked}
             required
           />
-          <Button type='submit' className={styles['chat-input-button']}>
+          <Button
+            type='submit'
+            disabled={isSending || isMuted || isBlocked}
+            className={styles['chat-input-button']}
+          >
             <IconSend size='1.2rem' />
           </Button>
         </>

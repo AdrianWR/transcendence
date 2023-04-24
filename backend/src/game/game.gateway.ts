@@ -34,7 +34,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   handleConnection(@ConnectedSocket() client: Socket) {
-    this.logger.debug(`Client connected: ${client.id}`);
+    // this.logger.debug(`Client connected: ${client.id}`);
     this.positions[client.id] = { x: 0.5, y: 0.5 };
 
     setInterval(() => {

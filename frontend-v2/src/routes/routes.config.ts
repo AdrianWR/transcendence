@@ -55,7 +55,6 @@ const routesConfig: IRoutesConfig[] = [
     component: ChatPage,
     isPrivate: true,
     showOnNavbar: true,
-    isPrivate: true,
   },
   {
     name: 'Game',

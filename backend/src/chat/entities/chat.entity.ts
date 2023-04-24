@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -31,6 +32,13 @@ export class Chat {
     cascade: true,
   })
   users: ChatUsers[];
+
+  @Exclude()
+  @Column({ nullable: true })
+  password: string;
+
+  @Column({ name: 'last_message', nullable: true })
+  lastMessage: string;
 
   @CreateDateColumn({
     type: 'timestamp',

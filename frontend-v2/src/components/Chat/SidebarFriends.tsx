@@ -1,4 +1,4 @@
-import { Avatar, DefaultProps, Flex, Text, UnstyledButton } from '@mantine/core';
+import { Avatar, DefaultProps, Flex, Stack, Text, UnstyledButton } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
 import { FC, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { IChat } from '../../context/ChatContext';
@@ -29,7 +29,10 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
 
   return (
     <UnstyledButton
-      onClick={() => setActiveChat(chat)}
+      onClick={() => {
+        setActiveChat(chat);
+        console.log('activeChat: ', activeChat);
+      }}
       style={{
         width: '98%',
         margin: '8px 0',
@@ -57,9 +60,14 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
           mr={12}
           color={isActiveChat ? 'secondary' : 'white'}
         />
-        <Text size='md' weight='bold' color='white'>
-          {chatName}
-        </Text>
+        <Stack>
+          <Text size='md' weight='bold' color='white'>
+            {chatName}
+          </Text>
+          <Text size='sm' color='white'>
+            {chat.lastMessage ?? ''}
+          </Text>
+        </Stack>
       </Flex>
     </UnstyledButton>
   );
@@ -77,7 +85,7 @@ const SidebarFriends: FC<PropsWithChildren> = () => {
       className='custom-scroll-bar'
       style={{ borderRadius: '0 0 0 10px', overflow: 'auto' }}
     >
-      {chats?.map((chat) => (
+      {chats.map((chat) => (
         <ChatItem key={chat.id} chat={chat} />
       ))}
     </Flex>

@@ -1,7 +1,7 @@
-import { Container, Flex, ScrollArea, Text, Title, Tooltip } from '@mantine/core';
-import { FC, useEffect, useRef } from 'react';
+import { Container, Flex, Overlay, ScrollArea, Text, Title, Tooltip } from '@mantine/core';
+import { IconMicrophoneOff } from '@tabler/icons-react';
+import { FC, useEffect, useRef, useState } from 'react';
 import { IMessage } from '../../../context/ChatContext';
-import { useSocket } from '../../../hooks/socket';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useChatContext } from '../../../hooks/useChatContext';
 import MessageInput from './MessageInput';
@@ -52,8 +52,10 @@ const MessageItem: FC<IMessage> = ({ content, sender, updatedAt }) => {
 // and renders it.
 const Messages: FC = () => {
   const viewport = useRef<HTMLDivElement>(null);
+  const [isMuted, setIsMuted] = useState(false);
 
-  const { activeChat, messages } = useChatContext();
+  const { user } = useAuthContext();
+  const { activeChat, messages, isBlocked } = useChatContext();
 
   const scrollToBottom = () => {
     if (viewport.current) {
@@ -64,38 +66,71 @@ const Messages: FC = () => {
   useEffect(() => {
     // Auto scroll to bottom
     scrollToBottom();
-  });
+
+    // Check if user status in active chat is muted
+    setIsMuted(activeChat?.users.find((u) => u.id === user?.id)?.status === 'muted');
+  }, [messages, activeChat]);
 
   return (
-    <Container
-      style={{
-        overflowY: 'auto',
-        backgroundColor: 'rgba(67, 67, 67, 0.7)',
-        height: '100%',
-        width: '100%',
-        borderRadius: '0 0 10px 0',
-        padding: 0,
-      }}
-    >
-      <ScrollArea
-        h='85%'
-        type='auto'
-        className='custom-scroll-bar'
-        offsetScrollbars={true}
-        scrollbarSize={16}
-        viewportRef={viewport}
+    <>
+      <Container
+        style={{
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          backgroundColor: 'rgba(67, 67, 67, 0.7)',
+          height: '100%',
+          width: '100%',
+          borderRadius: '0 0 10px 0',
+          padding: 0,
+        }}
       >
-        {!activeChat && (
-          <Title my='20%' align='center' color='white'>
-            Select a chat or create a new one
-          </Title>
-        )}
-        {messages.map((message) => (
-          <MessageItem key={message.id} {...message} />
-        ))}
-      </ScrollArea>
-      <MessageInput />
-    </Container>
+        <ScrollArea
+          h='85%'
+          type='always'
+          offsetScrollbars={true}
+          className='custom-scroll-bar'
+          scrollbarSize={16}
+          viewportRef={viewport}
+        >
+          {!activeChat && (
+            <Title my='20%' align='center' color='white'>
+              Select a chat or create a new one
+            </Title>
+          )}
+          {isMuted && (
+            <Overlay
+              opacity={0.5}
+              blur={10}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            >
+              <Flex align='center' direction='column' justify='center' style={{ height: '100%' }}>
+                <Title my='lg' align='center' color='white'>
+                  You are muted in this chat.
+                </Title>
+                <IconMicrophoneOff size={50} color='white' />
+              </Flex>
+            </Overlay>
+          )}
+          {isBlocked && (
+            <Overlay
+              opacity={0.5}
+              blur={10}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            >
+              <Flex align='center' direction='column' justify='center' style={{ height: '100%' }}>
+                <Title my='lg' align='center' color='white'>
+                  You are blocked in this chat. Input the password to see the messages.
+                </Title>
+              </Flex>
+            </Overlay>
+          )}
+          {messages.map((message) => (
+            <MessageItem key={message.id} {...message} />
+          ))}
+        </ScrollArea>
+        <MessageInput />
+      </Container>
+    </>
   );
 };
 
