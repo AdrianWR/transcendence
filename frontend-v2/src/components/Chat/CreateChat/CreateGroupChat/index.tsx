@@ -2,6 +2,7 @@ import { Button, Radio, Stack, Text, TextInput } from '@mantine/core';
 import { FC, useCallback, useState } from 'react';
 import { IChatType, ICreateChatDto } from '../../../../context/ChatContext';
 import { useChatContext } from '../../../../hooks/useChatContext';
+import RegisterPasswordForm from '../../../RegisterPasswordForm';
 import styles from './CreateGroupChat.module.css';
 
 interface IGroupChatModalProps {
@@ -57,12 +58,10 @@ const GroupChatCreateModal: FC<IGroupChatModalProps> = ({ close }) => {
       </Radio.Group>
 
       <div hidden={chat.type !== 'protected'} style={{ justifyContent: 'center' }}>
-        <Text className={styles['create-group-chat-label']}>Chat Password</Text>
-        <TextInput
-          onChange={(event) => {
-            setChat((chat) => ({ ...chat, password: event.target.value }));
+        <RegisterPasswordForm
+          handleSubmit={(password) => {
+            setChat((chat) => ({ ...chat, password }));
           }}
-          className={styles['create-group-chat-input']}
         />
       </div>
 

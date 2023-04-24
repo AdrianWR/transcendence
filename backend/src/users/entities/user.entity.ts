@@ -56,7 +56,10 @@ export class User extends BaseEntity {
     return `${process.env.BACKEND_URL}/${process.env.USER_PICTURE_PATH}/${this.avatar}`;
   }
 
-  @OneToMany(() => ChatUsers, (chatUsers) => chatUsers.user)
+  @OneToMany(() => ChatUsers, (chatUsers) => chatUsers.user, {
+    eager: true,
+    cascade: true,
+  })
   chats: ChatUsers[];
 
   @CreateDateColumn({

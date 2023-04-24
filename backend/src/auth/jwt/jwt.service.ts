@@ -37,7 +37,7 @@ export class JwtAuthService {
 
   async generateJwt(
     user: User,
-    mfaAuthenticated: boolean = false,
+    mfaAuthenticated: boolean = true,
   ): Promise<AuthTokenDto> {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(

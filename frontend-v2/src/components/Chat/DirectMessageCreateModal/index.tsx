@@ -1,28 +1,25 @@
 import {
+  Avatar,
+  Badge,
+  Button,
   Card,
   Flex,
   LoadingOverlay,
-  Title,
   Text,
-  Badge,
-  Avatar,
   TextInput,
-  Button,
-  Tooltip,
-  Indicator,
+  Title,
 } from '@mantine/core';
-import { FC, useCallback, useEffect, useState } from 'react';
-import { useAuthContext } from '../../../hooks/useAuthContext';
-import api from '../../../services/api';
+import { IconSearch, IconSend } from '@tabler/icons-react';
 import { AxiosError } from 'axios';
-import { alert, success } from '../../Notifications';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import styles from './DirectMessageCreateModal.module.css';
 import { IUser } from '../../../context/AuthContext';
-import { IconMoodPlus, IconSearch, IconSend, IconUsers } from '@tabler/icons-react';
-import { useDisclosure } from '@mantine/hooks';
 import { useSocket } from '../../../hooks/socket';
+import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useChatContext } from '../../../hooks/useChatContext';
+import api from '../../../services/api';
+import { alert } from '../../Notifications';
+import styles from './DirectMessageCreateModal.module.css';
 
 export interface IFriendRequest {
   id: number;
@@ -60,8 +57,6 @@ const DirectMessageCreateModal: FC<IDMModalProps> = ({ close }) => {
       .then(({ data }) => {
         setFriendsList(data);
         setFilteredFriendsList(data);
-
-        success('Successfully fetched user data', notificationTitle);
       })
       .catch((err) => {
         if (err instanceof AxiosError) {
