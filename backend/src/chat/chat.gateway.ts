@@ -19,6 +19,7 @@ import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { Role, Status } from './entities/chat-users.entity';
+import { Chat } from './entities/chat.entity';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @WebSocketGateway({
@@ -65,6 +66,14 @@ export class ChatGateway implements OnGatewayConnection {
     client.emit('listChats', chats);
 
     return chats;
+  }
+
+  @SubscribeMessage('listPublicChats')
+  async listPublicChats(
+    @SocketUser('id') userId: number,
+    @ConnectedSocket() client: Socket,
+  ) {
+    return await this.chatService.findPublicChatRooms(userId);
   }
 
   @SubscribeMessage('createChat')
@@ -127,26 +136,19 @@ export class ChatGateway implements OnGatewayConnection {
     @MessageBody(new ValidationPipe()) joinChatDto: JoinChatDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const { chatId, userIds } = joinChatDto;
-    const chat = await this.chatService.joinChat(chatId, userIds);
+    let chat: Chat;
 
     try {
       // Join chat users to the new room
-      await Promise.all(
-        chat.users.map(async (chatUsers) => {
-          const socket = this.connectedUsers.get(chatUsers.user.id);
-          if (socket) {
-            socket.join(`chat:${chat.id}`);
-            const chats = await this.chatService.findChatRoomsByUserId(
-              chatUsers.user.id,
-            );
-            socket.emit('listChats', chats);
-          }
-        }),
-      );
+      const { chatId, userIds } = joinChatDto;
+      chat = await this.chatService.joinChat(chatId, userIds);
+      await this.listChatsForUsersInTheRoom(chat.id);
     } catch (err) {
       client.emit('apiError', err.message);
+      return;
     }
+
+    return chat;
   }
 
   @SubscribeMessage('updateChat')

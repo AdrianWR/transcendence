@@ -1,46 +1,27 @@
-import { Button, PasswordInput, Stack } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { FC, FormEvent } from 'react';
+import { Flex, Title } from '@mantine/core';
+import { FC, FormEvent, useState } from 'react';
 import { useSocket } from '../../../hooks/socket';
 import { useChatContext } from '../../../hooks/useChatContext';
 import { alert, success } from '../../Notifications';
-
-type ChangePasswordFormType = {
-  password: string;
-  confirmPassword: string;
-};
+import RegisterPasswordForm from '../../RegisterPasswordForm';
 
 type ChatSettingsModalProps = {
-  close(): void;
+  close: () => void;
 };
 
-export const ChatSettingsModal: FC<ChatSettingsModalProps> = ({ close }) => {
+const ChatSettingsModal: FC<ChatSettingsModalProps> = ({ close }) => {
   const { socket } = useSocket();
   const { activeChat } = useChatContext();
+  const [password, setPassword] = useState<string>('');
 
-  const form = useForm<ChangePasswordFormType>({
-    initialValues: {
-      password: '',
-      confirmPassword: '',
-    },
-
-    validate: {
-      password: (value) => (value.length < 3 ? 'Password must be at least 3 characters' : null),
-      confirmPassword: (value, values) =>
-        value !== values.password ? 'Passwords do not match' : null,
-    },
-
-    validateInputOnChange: true,
-  });
-
-  const handleSubmit = async (values: ChangePasswordFormType, e: FormEvent) => {
+  const handleSubmit = async (password: string, e: FormEvent) => {
     e.preventDefault();
 
     socket?.emit(
       'updateChat',
       {
         id: activeChat?.id,
-        password: values.password,
+        password: password,
       },
       (error: string) => {
         if (error) {
@@ -54,26 +35,20 @@ export const ChatSettingsModal: FC<ChatSettingsModalProps> = ({ close }) => {
   };
 
   return (
-    <form onSubmit={form.onSubmit(async (values, event) => handleSubmit(values, event))}>
-      <Stack>
-        <PasswordInput
-          withAsterisk
-          label='Password'
-          placeholder='Your password'
-          required
-          {...form.getInputProps('password')}
-        />
-
-        <PasswordInput
-          withAsterisk
-          label='Confirm Password'
-          placeholder='Your password'
-          required
-          {...form.getInputProps('confirmPassword')}
-        />
-      </Stack>
-      <Button type='submit'>Change Password</Button>
-    </form>
+    <Flex direction='column' align='center' justify='space-between'>
+      <Title
+        style={{
+          fontSize: '1rem',
+          fontWeight: 'bold',
+          marginBottom: '1rem',
+        }}
+      >
+        Change Password
+      </Title>
+      <RegisterPasswordForm
+        handleSubmit={(password: string, e: FormEvent) => handleSubmit(password, e)}
+      />
+    </Flex>
   );
 };
 

@@ -28,6 +28,7 @@ api.interceptors.response.use(
         await refreshToken();
         return api(originalConfig);
       } catch (err) {
+        console.log('Refresh Err: ', err);
         if (err instanceof AxiosError) {
           localStorage.clear();
           return Promise.reject(err);

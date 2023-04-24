@@ -52,4 +52,18 @@ export class Chat {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   public updatedAt: Date;
+
+  // @ManyToMany((type) => Chat, (chat) => chat.users)
+  // @JoinTable({
+  //   name: 'chat_users',
+  //   joinColumn: {
+  //     name: 'chat_id',
+  //     referencedColumnName: 'id',
+  //   },
+  //   inverseJoinColumn: {
+  //     name: 'user_id',
+  //     referencedColumnName: 'id',
+  //   },
+  // })
+  // newUsers: Chat[];
 }

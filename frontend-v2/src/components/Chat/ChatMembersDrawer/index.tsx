@@ -344,7 +344,7 @@ const ChatMembersDrawer: FC<{ close: () => void }> = () => {
                 </Text>
               </Flex>
             </Flex>
-            <Flex align='center'>
+            <Flex align='center' gap={2}>
               {getBadge(getMemberRole(member))}
               <Badge
                 variant='dot'

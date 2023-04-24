@@ -114,7 +114,7 @@ const Chat: FC = () => {
 
   return (
     <>
-      <Modal opened={addMemberOpened} onClose={addMemberClose} title='Add a Friend'>
+      <Modal opened={addMemberOpened} onClose={addMemberClose} title='Add a Member'>
         <AddFriendModal close={addMemberClose} />
       </Modal>
       <Drawer

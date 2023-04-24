@@ -31,7 +31,6 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
     <UnstyledButton
       onClick={() => {
         setActiveChat(chat);
-        console.log('activeChat: ', activeChat);
       }}
       style={{
         width: '98%',
@@ -60,7 +59,7 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
           mr={12}
           color={isActiveChat ? 'secondary' : 'white'}
         />
-        <Stack>
+        <Stack spacing={1}>
           <Text size='md' weight='bold' color='white'>
             {chatName}
           </Text>

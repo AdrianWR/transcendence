@@ -6,7 +6,7 @@ import { UsersService } from '../users/users.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { ChatUsers, Role, Status } from './entities/chat-users.entity';
-import { CHAT_TYPE, Chat } from './entities/chat.entity';
+import { Chat, CHAT_TYPE as ChatType } from './entities/chat.entity';
 import { Message } from './entities/message.entity';
 
 @Injectable()
@@ -68,7 +68,7 @@ export class ChatService {
       relations: ['user', 'chat'],
       where: {
         user: { id: In([userId, friendId]) },
-        chat: { type: CHAT_TYPE.DIRECT },
+        chat: { type: ChatType.DIRECT },
       },
     });
 
@@ -247,6 +247,41 @@ export class ChatService {
     return chats;
   }
 
+  async findPublicChatRooms(userId: number) {
+    // Find all public chat rooms that the user is not a member of
+    const chats = await this.chatRepository.query(`
+      select
+        chat.id as id,
+        chat.name as name,
+        chat.type as type,
+        chat."createdAt" as "createdAt",
+        chat."last_message" as "lastMessage",
+        JSON_AGG(JSON_BUILD_OBJECT(
+          'id', users.id,
+          'username', users.username,
+          'firstName', users."firstName",
+          'lastName', users."lastName",
+          'email', users.email,
+          'role', chat_users.role,
+          'status', chat_users.status,
+          'avatar',
+            (CASE
+                WHEN users.avatar IS NOT NULL
+                THEN CONCAT('${process.env.BACKEND_URL}/${process.env.USER_PICTURE_PATH}/', users.avatar)
+                ELSE users.avatar
+              END)
+        )) as users
+      from chat
+      JOIN chat_users ON chat_id = chat.id
+      JOIN users ON chat_users.user_id = users.id
+      WHERE chat.type = 'public' AND chat.id NOT IN (select chat_id from chat_users where user_id = ${userId})
+      GROUP BY chat.id
+      ORDER BY chat."updatedAt" DESC
+      `);
+
+    return chats;
+  }
+
   async findMessagesByChatId(chatId: number) {
     const chat = await this.findOne(chatId);
     if (!chat) throw new BadRequestException('Chat room does not exist');
@@ -319,8 +354,10 @@ export class ChatService {
     if (userRole === Role.OWNER)
       throw new BadRequestException('User is an owner');
 
-    chat.users = chat.users.filter((u) => u.user.id !== userId);
-    return await this.chatRepository.save(chat);
+    const chat_users = await this.chatUsersRepository.findOne({
+      where: { chat: { id: chatId }, user: { id: userId } },
+    });
+    return await this.chatUsersRepository.remove(chat_users);
   }
 
   async authenticateChat(userId: number, chatId: number, password: string) {

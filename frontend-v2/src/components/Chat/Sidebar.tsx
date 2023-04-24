@@ -3,6 +3,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconMessage2Share, IconMessagePlus, IconMessages, IconPlus } from '@tabler/icons-react';
 import { FC } from 'react';
 import GroupChatCreateModal from './CreateChat/CreateGroupChat';
+import JoinGroupChatModal from './CreateChat/JoinGroupChat';
 import DirectMessageCreateModal from './DirectMessageCreateModal';
 import SideBarFriends from './SidebarFriends';
 
@@ -30,7 +31,9 @@ const Navbar: FC<DefaultProps> = () => {
           <Tabs.Panel value='create-direct-chat'>
             <DirectMessageCreateModal close={close} />
           </Tabs.Panel>
-          <Tabs.Panel value='join-group-chat'>Join Chat Content</Tabs.Panel>
+          <Tabs.Panel value='join-group-chat'>
+            <JoinGroupChatModal close={close} />
+          </Tabs.Panel>
         </Tabs>
       </Modal>
 
