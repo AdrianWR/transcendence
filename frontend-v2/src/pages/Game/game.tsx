@@ -2,7 +2,7 @@ import { Flex } from '@mantine/core';
 import { FCWithLayout } from '../../App';
 import Pong from '../../components/Game';
 
-const Game: FCWithLayout = () => {
+const GamePage: FCWithLayout = () => {
   return (
     <Flex
       style={{ flex: 1 }}
@@ -17,4 +17,4 @@ const Game: FCWithLayout = () => {
   );
 };
 
-export default Game;
+export default GamePage;

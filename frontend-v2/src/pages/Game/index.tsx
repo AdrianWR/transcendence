@@ -1,9 +1,10 @@
 import { Container, Group, Stack } from '@mantine/core';
+import { FCWithLayout } from '../../App';
 import GameMenuCard from '../../components/Game/GameMenuCard';
 import Matchmaker from '../../components/Game/Matchmaker';
 import styles from './Game.module.css';
 
-const GameMenu = () => {
+const MatchmakerPage: FCWithLayout = () => {
   return (
     <Container className={styles['container']}>
       <Stack
@@ -21,4 +22,4 @@ const GameMenu = () => {
   );
 };
 
-export default GameMenu;
+export default MatchmakerPage;
