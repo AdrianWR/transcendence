@@ -55,6 +55,8 @@ export type IChatContext = {
   setIsBlocked: (isBlocked: boolean) => void;
   chats: IChat[];
   messages: IMessage[];
+  authenticateChat(password: string): void;
+  protectedChats: IChat[];
 };
 
 export const ChatContext = createContext<IChatContext | null>(null);
@@ -65,6 +67,13 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const [chats, setChats] = useState<IChat[]>([]);
   const [isBlocked, setIsBlocked] = useState(false);
   const { socket } = useSocket();
+
+  // Enable session storage for protected chats
+  const [protectedChats, setProtectedChats] = useState<IChat[]>(() => {
+    const storageChats = sessionStorage.getItem('protectedChats');
+    if (storageChats) return JSON.parse(storageChats) as IChat[];
+    return [];
+  });
 
   useEffect(() => {
     socket?.emit('listChats');
@@ -78,17 +87,18 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
       socket?.emit('listChats');
     });
 
-    socket?.on('apiError', (message: string) => {
-      alert(message, 'Chat');
-    });
-
     socket?.on('apiSuccess', (message: string) => {
       success(message, 'Chat');
+    });
+
+    socket?.on('apiError', (message: string) => {
+      alert(message, 'Chat');
     });
 
     return () => {
       socket?.off('listChats');
       socket?.off('updateChats');
+      socket?.off('apiSuccess');
       socket?.off('apiError');
     };
   }, [socket]);
@@ -105,7 +115,10 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
       socket?.emit('listMessages', activeChat.id);
     }
 
-    if (activeChat?.type === 'protected') {
+    if (
+      activeChat?.type === 'protected' &&
+      !protectedChats.find((chat) => chat.id === activeChat.id)
+    ) {
       setIsBlocked(true);
     } else {
       setIsBlocked(false);
@@ -139,6 +152,38 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
     [socket],
   );
 
+  const storeProtectecdChat = useCallback(
+    (chat: IChat) => {
+      const storageChats = sessionStorage.getItem('protectedChats');
+      if (storageChats) {
+        const chats = JSON.parse(storageChats) as IChat[];
+        sessionStorage.setItem('protectedChats', JSON.stringify([...chats, chat]));
+      } else {
+        sessionStorage.setItem('protectedChats', JSON.stringify([chat]));
+      }
+    },
+    [socket],
+  );
+
+  const authenticateChat = useCallback(
+    (password: string) => {
+      if (activeChat?.type === 'protected') {
+        socket?.emit(
+          'authenticateChat',
+          { chatId: activeChat.id, password },
+          (isAuthenticated: boolean) => {
+            if (isAuthenticated) {
+              storeProtectecdChat(activeChat);
+              setProtectedChats((chats) => [...chats, activeChat]);
+              setIsBlocked(false);
+            }
+          },
+        );
+      }
+    },
+    [socket, activeChat],
+  );
+
   return (
     <ChatContext.Provider
       value={{
@@ -150,6 +195,8 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
         createGroupChat,
         isBlocked,
         setIsBlocked,
+        authenticateChat,
+        protectedChats,
       }}
     >
       {children}
