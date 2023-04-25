@@ -1,20 +1,24 @@
-import { Flex } from '@mantine/core';
-import { FCWithLayout } from '../../App';
-import Pong from '../../components/Game';
+import { Container, Group, Stack } from '@mantine/core';
+import GameMenuCard from '../../components/Game/GameMenuCard';
+import Matchmaker from '../../components/Game/Matchmaker';
+import styles from './Game.module.css';
 
-const Game: FCWithLayout = () => {
+const GameMenu = () => {
   return (
-    <Flex
-      style={{ flex: 1 }}
-      direction={{ base: 'column', sm: 'row' }}
-      justify='space-around'
-      align='center'
-      mx={32}
-      p={{ base: 32, sm: 0 }}
-    >
-      <Pong />
-    </Flex>
+    <Container className={styles['container']}>
+      <Stack
+        styles={{
+          marginTop: '10%',
+        }}
+      >
+        <Group>
+          <GameMenuCard route='/game'>Create a new game room</GameMenuCard>
+          <GameMenuCard route='/game'>Join a random game room</GameMenuCard>
+        </Group>
+        <Matchmaker />
+      </Stack>
+    </Container>
   );
 };
 
-export default Game;
+export default GameMenu;
