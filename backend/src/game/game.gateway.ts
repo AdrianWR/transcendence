@@ -8,6 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { GameService } from './game.service';
 
 export const FRONTEND_URL = process.env.FRONTEND_URL;
 
@@ -26,31 +27,23 @@ interface Positions {
   },
 })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private positions: Positions = {};
   private readonly frameRate = 30;
   private readonly logger: Logger = new Logger(GameGateway.name);
+
+  constructor(private readonly gameService: GameService) {}
 
   @WebSocketServer()
   server: Server;
 
   handleConnection(@ConnectedSocket() client: Socket) {
-    // this.logger.debug(`Client connected: ${client.id}`);
-    this.positions[client.id] = { x: 0.5, y: 0.5 };
-
-    setInterval(() => {
-      this.server.emit('positions', this.positions);
-    }, 1000 / this.frameRate);
+    // setInterval(() => {
+    //   this.server.emit('positions', this.positions);
+    // }, 1000 / this.frameRate);
   }
 
-  handleDisconnect(@ConnectedSocket() client: Socket) {
-    this.logger.debug(`Client disconnected: ${client.id}`);
-    delete this.positions[client.id];
-  }
+  handleDisconnect(@ConnectedSocket() client: Socket) {}
 
-  @SubscribeMessage('updatePosition')
-  updatePositions(client: Socket, payload: any): void {
-    this.logger.debug(`Update position for socket: ${client.id}`);
-    this.positions[client.id].x = payload.x;
-    this.positions[client.id].y = payload.y;
-  }
+  @SubscribeMessage('updateGame')
+  async updatePositions(client: Socket, payload: any) {}
+  a;
 }

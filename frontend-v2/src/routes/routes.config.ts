@@ -1,7 +1,8 @@
 import { FCWithLayout } from '../App';
 import About from '../pages/About';
 import ChatPage from '../pages/Chat';
-import Game from '../pages/Game';
+import MatchmakerPage from '../pages/Game';
+import GamePage from '../pages/Game/game';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
 import LoginSuccess from '../pages/Login/Success';
@@ -57,9 +58,16 @@ const routesConfig: IRoutesConfig[] = [
     showOnNavbar: true,
   },
   {
-    name: 'Game',
+    name: 'Matchmaker',
     path: '/game',
-    component: Game,
+    component: MatchmakerPage,
+    isPrivate: true,
+    showOnNavbar: true,
+  },
+  {
+    name: 'Game',
+    path: '/game/:gameId',
+    component: GamePage,
     showOnNavbar: true,
     noLayout: false,
     isPrivate: true,

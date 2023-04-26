@@ -31,13 +31,14 @@ const AddFriendModal: FC<{ close: () => void }> = ({ close }) => {
 };
 
 const Chat: FC = () => {
-  const { activeChat, isBlocked, setIsBlocked } = useChatContext();
+  const { activeChat, isBlocked, setIsBlocked, authenticateChat, protectedChats } =
+    useChatContext();
   const { user } = useAuthContext();
   const [chatName, setChatName] = useState('Chats');
+  const [password, setPassword] = useState('');
   const [membersOpened, { open: membersOpen, close: membersClose }] = useDisclosure(false);
   const [addMemberOpened, { open: addMemberOpen, close: addMemberClose }] = useDisclosure(false);
   const [editOpened, { open: editOpen, close: editClose }] = useDisclosure(false);
-  const [password, setPassword] = useState('');
   const { socket } = useSocket();
 
   useEffect(() => {
@@ -49,30 +50,15 @@ const Chat: FC = () => {
       setChatName(activeChat?.name || 'Chats');
     }
 
-    if (activeChat?.type === 'protected') {
+    if (
+      activeChat?.type === 'protected' &&
+      protectedChats.find((chat) => chat.id === activeChat.id)
+    ) {
       setIsBlocked(true);
     }
 
     setPassword('');
   }, [activeChat, user]);
-
-  const authenticateChat = useCallback(
-    (password: string) => {
-      setPassword('');
-      if (activeChat?.type === 'protected') {
-        socket?.emit(
-          'authenticateChat',
-          { chatId: activeChat.id, password },
-          (isAuthenticated: boolean) => {
-            if (isAuthenticated) {
-              setIsBlocked(false);
-            }
-          },
-        );
-      }
-    },
-    [socket, activeChat],
-  );
 
   const getChatTypeBadge = useCallback(() => {
     const type = activeChat?.type;
@@ -99,7 +85,10 @@ const Chat: FC = () => {
                   color='red'
                   radius='xl'
                   size='lg'
-                  onClick={() => authenticateChat(password)}
+                  onClick={() => {
+                    authenticateChat(password);
+                    setPassword('');
+                  }}
                 >
                   <IconArrowBadgeRight size={24} />
                 </ActionIcon>
