@@ -1,16 +1,15 @@
-import { Paper, Title } from '@mantine/core';
+import { Paper, Title, UnstyledButton } from '@mantine/core';
 import { FC, PropsWithChildren } from 'react';
-import { Link } from 'react-router-dom';
 import styles from './GameMenuCard.module.css';
 
 interface GameMenuCardProps extends PropsWithChildren {
-  route: string;
   backgroundColor?: string;
+  onClick?: () => void;
 }
 
-const GameMenuCard: FC<GameMenuCardProps> = ({ children, backgroundColor, route }) => {
+const GameMenuCard: FC<GameMenuCardProps> = ({ children, onClick }) => {
   return (
-    <Link to={route}>
+    <UnstyledButton onClick={onClick}>
       <Paper
         styles={{
           backgroundColor: 'red',
@@ -21,7 +20,7 @@ const GameMenuCard: FC<GameMenuCardProps> = ({ children, backgroundColor, route 
           {children}
         </Title>
       </Paper>
-    </Link>
+    </UnstyledButton>
   );
 };
 

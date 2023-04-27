@@ -10,6 +10,12 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
+export enum GameStatus {
+  WAITING = 'waiting',
+  PLAYING = 'playing',
+  FINISHED = 'finished',
+}
+
 @Entity({ name: 'game' })
 export class Game extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -33,16 +39,18 @@ export class Game extends BaseEntity {
   @Column({ name: 'player_two_score', default: 0 })
   public playerTwoScore: number;
 
-  @Column({ name: 'is_finished', default: false })
-  public isFinished: boolean;
+  @Column({ name: 'status', default: GameStatus.WAITING })
+  public status: GameStatus;
 
   @CreateDateColumn({
+    name: 'created_at',
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
   public createdAt: Date;
 
   @UpdateDateColumn({
+    name: 'updated_at',
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',

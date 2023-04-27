@@ -4,6 +4,7 @@ import { FC, ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthContextProvider } from './context/AuthContext';
 import { ChatContextProvider } from './context/ChatContext';
+import { GameContextProvider } from './context/GameContext';
 import { SocketProvider } from './hooks/socket';
 import MyRoutes from './routes';
 import './styles/global.css';
@@ -19,10 +20,12 @@ const App: FC = () => {
       <AuthContextProvider>
         <SocketProvider>
           <ChatContextProvider>
-            <MantineProvider withGlobalStyles withNormalizeCSS theme={myTheme}>
-              <Notifications />
-              <MyRoutes />
-            </MantineProvider>
+            <GameContextProvider>
+              <MantineProvider withGlobalStyles withNormalizeCSS theme={myTheme}>
+                <Notifications />
+                <MyRoutes />
+              </MantineProvider>
+            </GameContextProvider>
           </ChatContextProvider>
         </SocketProvider>
       </AuthContextProvider>

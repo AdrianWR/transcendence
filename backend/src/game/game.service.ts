@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
 import { CreateGameDto } from './dto/create-game.dto';
-import { Game } from './entities/game.entity';
+import { Game, GameStatus } from './entities/game.entity';
 
 interface MatchState {
   ball: {
@@ -45,7 +45,9 @@ export class MatchService {
 
   async createGame(gameDto: CreateGameDto) {
     const playerOne = await this.usersService.findOne(gameDto.playerOne);
-    const playerTwo = await this.usersService.findOne(gameDto.playerTwo);
+    const playerTwo = gameDto.playerTwo
+      ? await this.usersService.findOne(gameDto.playerTwo)
+      : null;
 
     const game = this.gameRepository.create({
       playerOne,
@@ -74,5 +76,13 @@ export class MatchService {
     game.playerTwo = playerTwo;
 
     return this.gameRepository.save(game);
+  }
+
+  async getCurrentMatches() {
+    return this.gameRepository.find({
+      where: { status: GameStatus.WAITING || GameStatus.PLAYING },
+      order: { createdAt: 'ASC' },
+      relations: ['playerOne', 'playerTwo'],
+    });
   }
 }
