@@ -7,7 +7,7 @@ export type IChatType = 'direct' | 'public' | 'private' | 'protected';
 
 export type IRole = 'owner' | 'admin' | 'member';
 
-export type IStatus = 'active' | 'muted' | 'banned';
+export type IStatus = 'active' | 'muted' | 'banned' | 'blocked';
 
 export type IChatUser = {
   email: string;
@@ -57,6 +57,8 @@ export type IChatContext = {
   messages: IMessage[];
   authenticateChat(password: string): void;
   protectedChats: IChat[];
+  updateFriendListChats: (friendId: number, chatId: number) => void;
+  listChats: () => void;
 };
 
 export const ChatContext = createContext<IChatContext | null>(null);
@@ -109,6 +111,17 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
     },
     [socket],
   );
+
+  const updateFriendListChats = useCallback(
+    (friendId: number, chatId: number) => {
+      socket?.emit('updateUserChatList', { friendId, chatId });
+    },
+    [socket],
+  );
+
+  const listChats = useCallback(() => {
+    socket?.emit('listChats');
+  }, [socket]);
 
   useEffect(() => {
     if (activeChat) {
@@ -196,6 +209,8 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
         setIsBlocked,
         authenticateChat,
         protectedChats,
+        updateFriendListChats,
+        listChats,
       }}
     >
       {children}
