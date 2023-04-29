@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { JwtTwoFactorGuard } from '../auth/2fa/2fa.guard';
 import { CreateGameDto } from './dto/create-game.dto';
-import { MatchService } from './game.service';
+import { MatchService } from './match.service';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(JwtTwoFactorGuard)

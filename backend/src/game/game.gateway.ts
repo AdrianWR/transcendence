@@ -5,29 +5,19 @@ import {
 } from '@nestjs/common';
 import {
   ConnectedSocket,
-  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { instanceToPlain } from 'class-transformer';
 import { Server, Socket } from 'socket.io';
-import { SocketUser } from '../users/users.decorator';
-import { GameService, MatchService } from './game.service';
-
-export const FRONTEND_URL = process.env.FRONTEND_URL;
-
-interface Positions {
-  [id: string]: {
-    x: number;
-    y: number;
-  };
-}
+import { GameService } from './game.service';
+import { MatchService } from './match.service';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @WebSocketGateway({
+  namespace: 'game',
   transports: ['websocket'],
   cors: {
     origin: '*',
@@ -35,7 +25,7 @@ interface Positions {
   },
 })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private readonly frameRate = 30;
+  private readonly frameRate = 60;
   private readonly logger: Logger = new Logger(GameGateway.name);
 
   constructor(
@@ -46,54 +36,35 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  handleConnection(@ConnectedSocket() client: Socket) {
-    // setInterval(() => {
-    //   this.server.emit('positions', this.positions);
-    // }, 1000 / this.frameRate);
+  async handleConnection(@ConnectedSocket() client: Socket) {
+    const gameId = client.handshake.auth?.id;
+    const userId = client.handshake.auth?.user.id;
+
+    // Join the client to the game room
+    client.join(`game:${gameId}`);
+
+    // Handle the game connection
+    await this.gameService.handleGameConnection(gameId, userId);
+
+    setInterval(async () => {
+      const game = await this.gameService.getGameState(gameId);
+      client.to(`game:${gameId}`).emit('updateGame', game);
+    }, 1000 / this.frameRate);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    // Abort the game rooms if the user disconnects
+    // Handle the game disconnection
+    client.leave(`game:${client.handshake.auth?.id}`);
+
+    this.logger.debug(`Client disconnected: ${client.id}`);
   }
 
   @SubscribeMessage('updateGame')
-  async updatePositions(client: Socket, payload: any) {}
+  async updateGame(client: Socket, playerY: number) {
+    const gameId = client.handshake.auth?.id;
+    const userId = client.handshake.auth?.user.id;
 
-  @SubscribeMessage('createGame')
-  async createGame(client: Socket, payload: any) {
-    const game = await this.matchService.createGame(payload);
-
-    if (game) {
-      const currentMatches = instanceToPlain(
-        await this.matchService.getCurrentMatches(),
-      );
-      this.server.emit('listCurrentMatches', currentMatches);
-    } else {
-      client.emit('apiError', 'Unable to create game');
-    }
-
-    return game;
-  }
-
-  @SubscribeMessage('joinGame')
-  async joinGame(
-    @SocketUser('id') userId: number,
-    @MessageBody() gameId: string,
-  ) {
-    const game = await this.matchService.joinGame(gameId, userId);
-
-    if (game) {
-      const currentMatches = instanceToPlain(
-        await this.matchService.getCurrentMatches(),
-      );
-      this.server.emit('listCurrentMatches', currentMatches);
-    }
-
-    return game;
-  }
-
-  @SubscribeMessage('listCurrentMatches')
-  async listCurrentMatches(client: Socket, payload: any) {
-    return await this.matchService.getCurrentMatches();
+    // Update the game state
+    await this.gameService.updateGameState(gameId, userId, playerY);
   }
 }

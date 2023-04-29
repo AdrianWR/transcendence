@@ -1,6 +1,6 @@
 import { Flex } from '@mantine/core';
 import { FCWithLayout } from '../../App';
-import Pong from '../../components/Game';
+import GameCanvas from '../../components/Game/Canvas';
 
 const GamePage: FCWithLayout = () => {
   return (
@@ -12,7 +12,7 @@ const GamePage: FCWithLayout = () => {
       mx={32}
       p={{ base: 32, sm: 0 }}
     >
-      <Pong />
+      <GameCanvas />
     </Flex>
   );
 };
