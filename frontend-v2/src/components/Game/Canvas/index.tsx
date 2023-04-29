@@ -89,6 +89,7 @@ const GameCanvas: FC = () => {
     });
 
     gameSocket.current.on('updateGame', (game) => {
+      console.log(game);
       setGame(game);
     });
 
@@ -174,7 +175,7 @@ const GameCanvas: FC = () => {
 
   return (
     <>
-      {game.isActive && (
+      {!game.isActive && (
         <Overlay
           zIndex={1000}
           color='gray'

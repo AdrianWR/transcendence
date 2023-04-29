@@ -22,13 +22,14 @@ interface IPlayer {
     y: number;
   };
   score: number;
+  isConnected: boolean;
 }
 
 export interface IGameState {
   id?: string;
   isActive: boolean;
-  playerOne?: IPlayer;
-  playerTwo?: IPlayer;
+  playerOne: IPlayer;
+  playerTwo: IPlayer;
   ball: IBall;
 }
 
@@ -42,11 +43,11 @@ export class GameService {
   // Data structure to store all the game states
   private gameMap = new Map<string, IGameState>();
 
-  async getGameState(gameId: string) {
+  getGameState(gameId: string) {
     return this.gameMap.get(gameId);
   }
 
-  async getCurrentGames() {
+  getCurrentGames() {
     return this.gameMap;
   }
 
@@ -55,12 +56,12 @@ export class GameService {
     const gameState = this.gameMap.get(gameId);
 
     // Check if the game is active
-    // if (!gameState.isActive) return;
+    if (!gameState.isActive) return;
 
     // If player One, update player One position
-    if (gameState.playerOne.id === userId) {
+    if (gameState.playerOne?.id === userId) {
       gameState.playerOne.position.y = playerY;
-    } else if (gameState.playerTwo.id === userId) {
+    } else if (gameState.playerTwo?.id === userId) {
       gameState.playerTwo.position.y = playerY;
     } else {
       return;
@@ -84,13 +85,12 @@ export class GameService {
     return game;
   }
 
-  // Create a new game
-  async handleGameConnection(gameId: string, userId: number) {
-    // Check if the game exists
+  async createOrSelectGameState(gameId: string) {
     const game = await this.getGame(gameId);
+
     if (!this.gameMap.has(gameId)) {
-      this.gameMap.set(gameId, {
-        id: gameId,
+      this.gameMap.set(game.id, {
+        id: game.id,
         isActive: false,
         playerOne: {
           id: game.playerOne.id,
@@ -99,6 +99,7 @@ export class GameService {
             y: 190,
           },
           score: game.playerOneScore,
+          isConnected: false,
         },
         playerTwo: {
           id: game.playerTwo.id,
@@ -107,6 +108,7 @@ export class GameService {
             y: 190,
           },
           score: game.playerTwoScore,
+          isConnected: false,
         },
         ball: {
           position: {
@@ -121,7 +123,75 @@ export class GameService {
       });
     }
 
+    return this.gameMap.get(game.id);
+  }
+
+  // Create a new game
+  async handleGameConnection(gameId: string, userId: number) {
+    // Get the game state
+    const game = await this.createOrSelectGameState(gameId);
+
+    if (game.playerOne.id === userId) {
+      this.gameMap.set(gameId, {
+        ...this.gameMap.get(gameId),
+        playerOne: {
+          ...this.gameMap.get(gameId).playerOne,
+          isConnected: true,
+        },
+      });
+    } else if (game.playerTwo.id === userId) {
+      this.gameMap.set(gameId, {
+        ...this.gameMap.get(gameId),
+        playerTwo: {
+          ...this.gameMap.get(gameId).playerTwo,
+          isConnected: true,
+        },
+      });
+    }
+
+    this.gameMap.set(gameId, {
+      ...this.gameMap.get(gameId),
+      isActive: this.isRoomReady(game.id),
+    });
+
     return this.gameMap.get(gameId);
+  }
+
+  handleGameDisconnection(gameId: string, userId: number) {
+    // Get the game state
+    const game = this.getGameState(gameId);
+
+    if (game.playerOne.id === userId) {
+      this.gameMap.set(gameId, {
+        ...this.gameMap.get(gameId),
+        playerOne: {
+          ...this.gameMap.get(gameId).playerOne,
+          isConnected: false,
+        },
+      });
+    }
+
+    if (game.playerTwo.id === userId) {
+      this.gameMap.set(gameId, {
+        ...this.gameMap.get(gameId),
+        playerTwo: {
+          ...this.gameMap.get(gameId).playerTwo,
+          isConnected: false,
+        },
+      });
+    }
+
+    this.gameMap.set(gameId, {
+      ...this.gameMap.get(gameId),
+      isActive: this.isRoomReady(game.id),
+    });
+
+    return this.gameMap.get(gameId);
+  }
+
+  isRoomReady(gameId: string) {
+    const game = this.getGameState(gameId);
+    return game.playerOne.isConnected && game.playerTwo.isConnected;
   }
 
   async deleteGame(gameId: string) {
@@ -129,22 +199,22 @@ export class GameService {
   }
 
   async startGame(gameId: string) {
-    const game = await this.gameRepository.findOne({
-      where: { id: gameId },
-      relations: ['playerOne', 'playerTwo'],
-    });
-    if (!game) {
-      throw new Error('Game not found');
-    }
-    if (!game.playerTwo) {
-      throw new Error('Game does not have two players');
-    }
+    // const game = await this.gameRepository.findOne({
+    //   where: { id: gameId },
+    //   relations: ['playerOne', 'playerTwo'],
+    // });
+    // if (!game) {
+    //   throw new Error('Game not found');
+    // }
+    // if (!game.playerTwo) {
+    //   throw new Error('Game does not have two players');
+    // }
 
     this.gameMap.set(gameId, {
       ...this.gameMap.get(gameId),
       isActive: true,
     });
 
-    return game;
+    // return game;
   }
 }

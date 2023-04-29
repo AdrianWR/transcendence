@@ -55,16 +55,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(@ConnectedSocket() client: Socket) {
-    const { id } = this.getConnectionId(client);
+    const { id, user } = this.getConnectionId(client);
 
     // Handle the game disconnection
+    this.gameService.handleGameDisconnection(id, user.id);
     client.leave(`game:${id}`);
 
     // Check if room is empty. If so, delete the game from memory
-    const room = this.server.sockets.adapter?.rooms.get(`game:${id}`);
-    if (!room) {
-      await this.gameService.deleteGame(id);
-    }
+    // const room = this.server.sockets.adapter?.rooms.get(`game:${id}`);
+    // if (!room) {
+    //   await this.gameService.deleteGame(id);
+    // }
   }
 
   @SubscribeMessage('updateGame')
@@ -78,10 +79,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @Interval(1000 / GameGateway.frameRate)
   async handleGameUpdates() {
     // Get all the games
-    const games = await this.gameService.getCurrentGames();
+    const games = this.gameService.getCurrentGames();
 
     // Send the game updates to all the clients
-    games.forEach((game) => {
+    games.forEach(async (game) => {
       this.server.to(`game:${game.id}`).emit('updateGame', game);
     });
   }
