@@ -47,6 +47,26 @@ export class MatchService {
     return this.gameRepository.save(game);
   }
 
+  // this.matchService.updateGame(game.id, {
+  //   playerOneScore: playerOne.score,
+  //   playerTwoScore: playerTwo.score,
+  // });
+
+  async updateMatch(gameId: string, gameDto: Partial<Game>) {
+    const game = await this.gameRepository.findOne({
+      where: { id: gameId },
+      relations: ['playerOne', 'playerTwo'],
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    const updatedGame = this.gameRepository.merge(game, gameDto);
+
+    return this.gameRepository.save(updatedGame);
+  }
+
   async getCurrentMatches() {
     return this.gameRepository.find({
       where: { status: GameStatus.WAITING || GameStatus.PLAYING },

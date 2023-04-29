@@ -85,5 +85,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     games.forEach(async (game) => {
       this.server.to(`game:${game.id}`).emit('updateGame', game);
     });
+
+    this.server.emit(
+      'listCurrentMatches',
+      await this.matchService.getCurrentMatches(),
+    );
   }
 }

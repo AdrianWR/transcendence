@@ -1,10 +1,13 @@
-import { Overlay } from '@mantine/core';
+import { Avatar, Flex, Overlay, Stack, Text } from '@mantine/core';
 import p5Types from 'p5';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import Sketch from 'react-p5';
 import { useLocation } from 'react-router-dom';
 import { Socket, io } from 'socket.io-client';
+import { IUser } from '../../../context/AuthContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
+import api from '../../../services/api';
+import styles from './Canvas.module.css';
 
 interface IBall {
   position: {
@@ -15,10 +18,11 @@ interface IBall {
     dx: number;
     dy: number;
   };
+  diameter: number;
 }
 
 interface IPlayer {
-  id?: number;
+  id: number;
   position: {
     x: number;
     y: number;
@@ -27,10 +31,10 @@ interface IPlayer {
 }
 
 export interface IGameState {
-  id?: string;
-  isActive: boolean;
-  playerOne?: IPlayer;
-  playerTwo?: IPlayer;
+  id: string;
+  status: 'waiting' | 'playing' | 'paused' | 'finished';
+  playerOne: IPlayer;
+  playerTwo: IPlayer;
   ball: IBall;
 }
 
@@ -48,37 +52,11 @@ const GameCanvas: FC = () => {
   const { user } = useAuthContext();
   const gameSocket = useRef<Socket | null>(null);
   const location = useLocation();
-  const [game, setGame] = useState<IGameState>({
-    isActive: false,
-    playerOne: {
-      position: {
-        x: 0,
-        y: 0,
-      },
-      score: 0,
-    },
-    playerTwo: {
-      position: {
-        x: 0,
-        y: 0,
-      },
-      score: 0,
-    },
-    ball: {
-      position: {
-        x: 0,
-        y: 0,
-      },
-      velocity: {
-        dx: 0,
-        dy: 0,
-      },
-    },
-  });
+  const [playerOneUser, setPlayerOneUser] = useState<IUser>();
+  const [playerTwoUser, setPlayerTwoUser] = useState<IUser>();
+  const [game, setGame] = useState<IGameState | null>(null);
 
   useEffect(() => {
-    console.log('Location', location.pathname);
-
     gameSocket.current = io(`${process.env.REACT_APP_BACKEND_URL}/game`, {
       transports: ['websocket'],
       withCredentials: true,
@@ -100,6 +78,15 @@ const GameCanvas: FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    api
+      .get<IUser>(`/users/${game?.playerOne.id}`)
+      .then((response) => setPlayerOneUser(response.data));
+    api
+      .get<IUser>(`/users/${game?.playerTwo.id}`)
+      .then((response) => setPlayerTwoUser(response.data));
+  }, [game]);
+
   const moveUp = (player: IPlayer) => {
     if (player.position.y > 0) {
       return (player.position.y -= 4);
@@ -115,9 +102,11 @@ const GameCanvas: FC = () => {
   };
 
   const activePlayer = useMemo(() => {
-    if (game.playerOne?.id === user?.id) {
+    if (!game || !user) return null;
+
+    if (game.playerOne.id === user.id) {
       return game.playerOne;
-    } else if (game.playerTwo?.id === user?.id) {
+    } else if (game.playerTwo.id === user.id) {
       return game.playerTwo;
     }
     return null;
@@ -128,6 +117,7 @@ const GameCanvas: FC = () => {
   };
 
   const draw = (p5: p5Types) => {
+    if (!game) return;
     p5.background(55, 20, 200);
     p5.frameRate(60);
 
@@ -140,42 +130,14 @@ const GameCanvas: FC = () => {
       }
     }
 
-    if (game.playerOne) {
-      p5.rect(game.playerOne.position.x, game.playerOne.position.y, 20, 120);
-    }
-
-    if (game.playerTwo) {
-      p5.rect(game.playerTwo.position.x, game.playerTwo.position.y, 20, 120);
-    }
-
-    // p5.rect(game.playerTwo?.position.x, playerTwo.position.y, playerTwo.width, playerTwo.length);
-
-    // jogador2.current?.desenhar();
-    // p5.rect(playerTwo.position.x, playerTwo.position.y, playerTwo.width, PlayerTwo.height);
-    // if (jogo.current?.isActive == true) {
-    //   // Draw ball
-    //   p5.circle(ball.posicaoX, ball.posicaoY, Ball.diameter);
-    //   bola1.current?.drawBall();
-    //   bola1.current?.move();
-    //   bola1.current?.checkBorders();
-    //   playerOne.current?.move();
-    //   jogador2.current?.move();
-    //   if (playerOne.current) {
-    //     bola1.current?.checkPlayerCollision(playerOne.current);
-    //   }
-    //   if (jogador2.current) {
-    //     bola1.current?.checkPlayerCollision(jogador2.current);
-    //   }
-    // } else {
-    //   if (p5.keyIsDown(p5.ENTER)) {
-    //     jogo.current?.iniciar();
-    //   }
-    // }
+    p5.rect(game.playerOne.position.x, game.playerOne.position.y, 20, 120);
+    p5.rect(game.playerTwo.position.x, game.playerTwo.position.y, 20, 120);
+    p5.circle(game.ball.position.x, game.ball.position.y, game.ball.diameter);
   };
 
   return (
     <>
-      {!game.isActive && (
+      {game && game.status !== 'playing' && (
         <Overlay
           zIndex={1000}
           color='gray'
@@ -191,7 +153,26 @@ const GameCanvas: FC = () => {
           <h1>Waiting for another player...</h1>
         </Overlay>
       )}
-      <Sketch setup={setup} draw={draw} />
+      <Stack>
+        <Flex direction='row' align='center' justify='space-between' gap='lg'>
+          <Avatar src={playerOneUser?.avatarUrl} size='lg' radius='xl' />
+          <Stack spacing={1} align='center'>
+            <Text className={styles['match-card-player-name']}>{playerOneUser?.username}</Text>
+            <Text color='secondary' className={styles['match-card-player-score']}>
+              {game?.playerOne.score}
+            </Text>
+          </Stack>
+          <Text>VS</Text>
+          <Stack spacing={1} align='center'>
+            <Text className={styles['match-card-player-name']}>{playerTwoUser?.username}</Text>
+            <Text color='secondary' className={styles['match-card-player-score']}>
+              {game?.playerTwo?.score}
+            </Text>
+          </Stack>
+          <Avatar src={playerTwoUser?.avatarUrl} size='lg' radius='xl' />
+        </Flex>
+        <Sketch setup={setup} draw={draw} />
+      </Stack>
     </>
   );
 };
