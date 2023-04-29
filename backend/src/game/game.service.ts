@@ -46,6 +46,10 @@ export class GameService {
     return this.gameMap.get(gameId);
   }
 
+  async getCurrentGames() {
+    return this.gameMap;
+  }
+
   async updateGameState(gameId: string, userId: number, playerY: number) {
     // Get the game state
     const gameState = this.gameMap.get(gameId);
@@ -118,6 +122,10 @@ export class GameService {
     }
 
     return this.gameMap.get(gameId);
+  }
+
+  async deleteGame(gameId: string) {
+    this.gameMap.delete(gameId);
   }
 
   async startGame(gameId: string) {

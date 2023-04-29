@@ -3,6 +3,7 @@ import {
   Logger,
   UseInterceptors,
 } from '@nestjs/common';
+import { Interval } from '@nestjs/schedule';
 import {
   ConnectedSocket,
   OnGatewayConnection,
@@ -25,7 +26,7 @@ import { MatchService } from './match.service';
   },
 })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private readonly frameRate = 60;
+  private static readonly frameRate = 60;
   private readonly logger: Logger = new Logger(GameGateway.name);
 
   constructor(
@@ -36,35 +37,52 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  async handleConnection(@ConnectedSocket() client: Socket) {
-    const gameId = client.handshake.auth?.id;
-    const userId = client.handshake.auth?.user.id;
-
-    // Join the client to the game room
-    client.join(`game:${gameId}`);
-
-    // Handle the game connection
-    await this.gameService.handleGameConnection(gameId, userId);
-
-    setInterval(async () => {
-      const game = await this.gameService.getGameState(gameId);
-      client.to(`game:${gameId}`).emit('updateGame', game);
-    }, 1000 / this.frameRate);
+  private getConnectionId(client: Socket) {
+    return {
+      id: client.handshake.auth?.id,
+      user: client.handshake.auth?.user,
+    };
   }
 
-  handleDisconnect(@ConnectedSocket() client: Socket) {
-    // Handle the game disconnection
-    client.leave(`game:${client.handshake.auth?.id}`);
+  async handleConnection(@ConnectedSocket() client: Socket) {
+    const { id, user } = this.getConnectionId(client);
 
-    this.logger.debug(`Client disconnected: ${client.id}`);
+    // Join the client to the game room
+    client.join(`game:${id}`);
+
+    // Handle the game connection
+    await this.gameService.handleGameConnection(id, user.id);
+  }
+
+  async handleDisconnect(@ConnectedSocket() client: Socket) {
+    const { id } = this.getConnectionId(client);
+
+    // Handle the game disconnection
+    client.leave(`game:${id}`);
+
+    // Check if room is empty. If so, delete the game from memory
+    const room = this.server.sockets.adapter?.rooms.get(`game:${id}`);
+    if (!room) {
+      await this.gameService.deleteGame(id);
+    }
   }
 
   @SubscribeMessage('updateGame')
   async updateGame(client: Socket, playerY: number) {
-    const gameId = client.handshake.auth?.id;
-    const userId = client.handshake.auth?.user.id;
+    const { id, user } = this.getConnectionId(client);
 
     // Update the game state
-    await this.gameService.updateGameState(gameId, userId, playerY);
+    await this.gameService.updateGameState(id, user.id, playerY);
+  }
+
+  @Interval(1000 / GameGateway.frameRate)
+  async handleGameUpdates() {
+    // Get all the games
+    const games = await this.gameService.getCurrentGames();
+
+    // Send the game updates to all the clients
+    games.forEach((game) => {
+      this.server.to(`game:${game.id}`).emit('updateGame', game);
+    });
   }
 }
