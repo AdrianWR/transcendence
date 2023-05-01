@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
@@ -53,6 +53,7 @@ export class GameService {
   static BALL_DIAMETER = 10;
   static PLAYER_LENGTH = 100;
   static PLAYER_THICKNESS = 10;
+  static MAX_SCORE = 3;
 
   // Data structure to store all the game states
   private gameMap = new Map<string, IGameState>();
@@ -61,6 +62,7 @@ export class GameService {
     @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
     private matchService: MatchService,
     private schedulerRegistry: SchedulerRegistry,
+    private eventEmitter: EventEmitter2,
   ) {
     // Initialize the game map with all current games
     this.matchService.getCurrentMatches().then((matches) => {
@@ -79,6 +81,27 @@ export class GameService {
     this.gameMap.set(game.id, gameState);
 
     return gameState;
+  }
+
+  @OnEvent('match.updated', { async: true })
+  async updateGame(game: Game) {
+    // Get the game state
+    const gameState = this.gameMap.get(game.id);
+
+    // Update the match in the database
+    await this.matchService.updateMatch(game.id, {
+      playerOneScore: game.playerOneScore,
+      playerTwoScore: game.playerTwoScore,
+    });
+  }
+
+  @OnEvent('match.ended', { async: true })
+  async removeGame(game: Game) {
+    // Remove the game state
+    this.gameMap.delete(game.id);
+
+    // Finish the game in the database
+    await this.matchService.finishMatch(game.id);
   }
 
   getGameState(gameId: string) {
@@ -110,17 +133,6 @@ export class GameService {
 
     // Return the updated game state
     return gameState;
-  }
-
-  private async getGame(gameId: string) {
-    const game = this.gameRepository.findOne({
-      where: { id: gameId },
-      relations: ['playerOne', 'playerTwo'],
-    });
-
-    if (!game) throw new Error('Game not found');
-
-    return game;
   }
 
   async initGame(gameId: string) {
@@ -216,7 +228,7 @@ export class GameService {
 
   async handleGameConnection(gameId: string, userId: number) {
     // Get the game state
-    const game = await this.initGame(gameId);
+    //
     if (this.isSpectator(userId, gameId)) {
       return this.getGameState(gameId);
     }
@@ -365,10 +377,15 @@ export class GameService {
         ball.velocity = this.getRandomBallVelocity();
 
         // Update the game in the database
-        this.matchService.updateMatch(game.id, {
-          playerOneScore: playerOne.score,
-          playerTwoScore: playerTwo.score,
-        });
+        this.eventEmitter.emit('match.updated', game);
+      }
+
+      // Check if match is over
+      if (
+        playerOne.score >= GameService.MAX_SCORE ||
+        playerTwo.score >= GameService.MAX_SCORE
+      ) {
+        this.eventEmitter.emit('match.ended', { ...game, status: 'finished' });
       }
 
       // Update the game state

@@ -20,7 +20,7 @@ export class GameController {
   // Create a new game
   @Post()
   async createGame(@Body() gameDto: CreateGameDto) {
-    return this.matchService.createGame(gameDto);
+    return this.matchService.createMatch(gameDto);
   }
 
   @Get('/matches')

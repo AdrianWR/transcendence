@@ -26,7 +26,7 @@ export class MatchGateway {
 
   @SubscribeMessage('createGame')
   async createGame(client: Socket, payload: any) {
-    const game = await this.matchService.createGame(payload);
+    const game = await this.matchService.createMatch(payload);
 
     if (game) {
       const currentMatches = instanceToPlain(
@@ -45,7 +45,7 @@ export class MatchGateway {
     @SocketUser('id') userId: number,
     @MessageBody() gameId: string,
   ) {
-    const game = await this.matchService.joinGame(gameId, userId);
+    const game = await this.matchService.joinMatch(gameId, userId);
 
     if (game) {
       const currentMatches = instanceToPlain(

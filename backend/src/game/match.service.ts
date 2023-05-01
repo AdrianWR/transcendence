@@ -9,31 +9,31 @@ import { Game, GameStatus } from './entities/game.entity';
 @Injectable()
 export class MatchService {
   constructor(
-    @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
+    @InjectRepository(Game) private readonly matchRepository: Repository<Game>,
     private readonly usersService: UsersService,
     private eventEmitter: EventEmitter2,
   ) {}
 
-  async createGame(gameDto: CreateGameDto) {
+  async createMatch(gameDto: CreateGameDto) {
     const playerOne = await this.usersService.findOne(gameDto.playerOne);
     const playerTwo = gameDto.playerTwo
       ? await this.usersService.findOne(gameDto.playerTwo)
       : null;
 
-    const newGame = this.gameRepository.create({
+    const newGame = this.matchRepository.create({
       playerOne,
       playerTwo,
     });
 
-    const game = await this.gameRepository.save(newGame);
+    const game = await this.matchRepository.save(newGame);
 
     this.eventEmitter.emit('match.created', game);
 
     return game;
   }
 
-  async joinGame(gameId: string, userId: number) {
-    const game = await this.gameRepository.findOne({
+  async joinMatch(gameId: string, userId: number) {
+    const game = await this.matchRepository.findOne({
       where: { id: gameId },
       relations: ['playerOne', 'playerTwo'],
     });
@@ -50,16 +50,11 @@ export class MatchService {
 
     game.playerTwo = playerTwo;
 
-    return this.gameRepository.save(game);
+    return this.matchRepository.save(game);
   }
 
-  // this.matchService.updateGame(game.id, {
-  //   playerOneScore: playerOne.score,
-  //   playerTwoScore: playerTwo.score,
-  // });
-
   async updateMatch(gameId: string, gameDto: Partial<Game>) {
-    const game = await this.gameRepository.findOne({
+    const game = await this.matchRepository.findOne({
       where: { id: gameId },
       relations: ['playerOne', 'playerTwo'],
     });
@@ -68,13 +63,28 @@ export class MatchService {
       throw new Error('Game not found');
     }
 
-    const updatedGame = this.gameRepository.merge(game, gameDto);
+    const updatedGame = this.matchRepository.merge(game, gameDto);
 
-    return this.gameRepository.save(updatedGame);
+    return this.matchRepository.save(updatedGame);
+  }
+
+  async finishMatch(gameId: string) {
+    const game = await this.matchRepository.findOne({
+      where: { id: gameId },
+      relations: ['playerOne', 'playerTwo'],
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    game.status = GameStatus.FINISHED;
+
+    return this.matchRepository.save(game);
   }
 
   async getCurrentMatches() {
-    return this.gameRepository.find({
+    return this.matchRepository.find({
       where: { status: GameStatus.WAITING || GameStatus.PLAYING },
       order: { createdAt: 'ASC' },
       relations: ['playerOne', 'playerTwo'],
@@ -82,7 +92,7 @@ export class MatchService {
   }
 
   async getMatch(gameId: string) {
-    return this.gameRepository.findOne({
+    return this.matchRepository.findOne({
       where: { id: gameId },
       relations: ['playerOne', 'playerTwo'],
     });
