@@ -1,4 +1,4 @@
-import { Avatar, Flex, Overlay, Stack, Text } from '@mantine/core';
+import { Avatar, Container, Flex, Overlay, Stack, Text } from '@mantine/core';
 import p5Types from 'p5';
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import Sketch from 'react-p5';
@@ -27,27 +27,48 @@ interface IPlayer {
     x: number;
     y: number;
   };
+  thickness: number;
+  length: number;
   score: number;
 }
 
-export interface IGameState {
-  id: string;
-  status: 'waiting' | 'playing' | 'paused' | 'finished';
-  playerOne: IPlayer;
-  playerTwo: IPlayer;
-  ball: IBall;
-}
+type IStatus = 'waiting' | 'ready' | 'playing' | 'paused' | 'finished' | 'idle';
 
-export type ICanvas = {
+type ICanvas = {
   height: number;
   width: number;
 };
 
+export interface IGameState {
+  id: string;
+  status: IStatus;
+  playerOne: IPlayer;
+  playerTwo: IPlayer;
+  ball: IBall;
+  canvas: ICanvas;
+}
+
+interface IGameCanvasOverlayProps {
+  status?: IStatus | null;
+}
+
+const GameCanvasOverlay: FC<IGameCanvasOverlayProps> = ({ status }) => {
+  if (!status || status === 'playing') return null;
+
+  return (
+    <Overlay opacity={0.8} color='gray' className={styles['canvas-overlay']}>
+      <Text>
+        {status === 'waiting' && 'Waiting for another player...'}
+        {status === 'idle' && 'Game will start in 3, 2, 1...'}
+        {status === 'paused' && 'Game is paused...'}
+        {status === 'finished' && 'Game is finished...'}
+      </Text>
+    </Overlay>
+  );
+};
+
 const GameCanvas: FC = () => {
-  const canvas = {
-    height: 500,
-    width: 800,
-  };
+  const speed = 5;
 
   const { user } = useAuthContext();
   const gameSocket = useRef<Socket | null>(null);
@@ -67,7 +88,6 @@ const GameCanvas: FC = () => {
     });
 
     gameSocket.current.on('updateGame', (game) => {
-      console.log(game);
       setGame(game);
     });
 
@@ -89,14 +109,15 @@ const GameCanvas: FC = () => {
 
   const moveUp = (player: IPlayer) => {
     if (player.position.y > 0) {
-      return (player.position.y -= 4);
+      return (player.position.y -= speed);
     }
     return player.position.y;
   };
 
   const moveDown = (player: IPlayer) => {
-    if (player.position.y + 120 < canvas.height) {
-      return (player.position.y += 4);
+    if (!game) return;
+    if (player.position.y + player.length < game.canvas.height) {
+      return (player.position.y += speed);
     }
     return player.position.y;
   };
@@ -113,13 +134,35 @@ const GameCanvas: FC = () => {
   }, [game, user]);
 
   const setup = (p5: p5Types, canvasParentRef: Element) => {
-    p5.createCanvas(canvas.width, canvas.height).parent(canvasParentRef);
+    p5.createCanvas(800, 500).parent(canvasParentRef);
   };
 
   const draw = (p5: p5Types) => {
     if (!game) return;
-    p5.background(55, 20, 200);
+
+    p5.clear();
     p5.frameRate(60);
+
+    const { playerOne, playerTwo, ball } = game;
+
+    const drawPlayerBar = (player: IPlayer) => {
+      p5.rect(
+        player.position.x,
+        player.position.y,
+        player.thickness,
+        player.length,
+        10,
+        10,
+        10,
+        10,
+      );
+    };
+
+    p5.fill(255, 109, 66);
+    p5.noStroke();
+    drawPlayerBar(playerOne);
+    drawPlayerBar(playerTwo);
+    p5.circle(ball.position.x, ball.position.y, ball.diameter);
 
     // if user is an active player, listen for key presses
     if (activePlayer) {
@@ -129,50 +172,35 @@ const GameCanvas: FC = () => {
         gameSocket.current?.emit('updateGame', moveDown(activePlayer));
       }
     }
-
-    p5.rect(game.playerOne.position.x, game.playerOne.position.y, 20, 120);
-    p5.rect(game.playerTwo.position.x, game.playerTwo.position.y, 20, 120);
-    p5.circle(game.ball.position.x, game.ball.position.y, game.ball.diameter);
   };
 
   return (
     <>
-      {game && game.status !== 'playing' && (
-        <Overlay
-          zIndex={1000}
-          color='gray'
-          opacity={0.8}
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%',
-            overflow: 'hidden',
-          }}
-        >
-          <h1>Waiting for another player...</h1>
-        </Overlay>
-      )}
-      <Stack>
-        <Flex direction='row' align='center' justify='space-between' gap='lg'>
-          <Avatar src={playerOneUser?.avatarUrl} size='lg' radius='xl' />
-          <Stack spacing={1} align='center'>
-            <Text className={styles['match-card-player-name']}>{playerOneUser?.username}</Text>
-            <Text color='secondary' className={styles['match-card-player-score']}>
-              {game?.playerOne.score}
+      <Container className={styles['canvas-container']}>
+        <GameCanvasOverlay status={game?.status} />
+        <Stack align='center'>
+          <Flex align='center' gap='xl' className={styles['match-card-score-board']}>
+            <Avatar src={playerOneUser?.avatarUrl} size='lg' radius='xl' />
+            <Stack spacing={1} align='center'>
+              <Text className={styles['match-card-player-name']}>{playerOneUser?.username}</Text>
+              <Text color='secondary' className={styles['match-card-player-score']}>
+                {game?.playerOne.score}
+              </Text>
+            </Stack>
+            <Text size='xl' color='secondary'>
+              VS
             </Text>
-          </Stack>
-          <Text>VS</Text>
-          <Stack spacing={1} align='center'>
-            <Text className={styles['match-card-player-name']}>{playerTwoUser?.username}</Text>
-            <Text color='secondary' className={styles['match-card-player-score']}>
-              {game?.playerTwo?.score}
-            </Text>
-          </Stack>
-          <Avatar src={playerTwoUser?.avatarUrl} size='lg' radius='xl' />
-        </Flex>
-        <Sketch setup={setup} draw={draw} />
-      </Stack>
+            <Stack spacing={1} align='center'>
+              <Text className={styles['match-card-player-name']}>{playerTwoUser?.username}</Text>
+              <Text color='secondary' className={styles['match-card-player-score']}>
+                {game?.playerTwo?.score}
+              </Text>
+            </Stack>
+            <Avatar src={playerTwoUser?.avatarUrl} size='lg' radius='xl' />
+          </Flex>
+          <Sketch setup={setup} draw={draw} />
+        </Stack>
+      </Container>
     </>
   );
 };

@@ -133,7 +133,6 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
     });
 
     socket?.on('newMessage', (message: IMessage) => {
-      console.log('newMessage');
       if (activeChat?.id === message.chat.id) {
         setMessages((messages) => [...messages, message]);
       }

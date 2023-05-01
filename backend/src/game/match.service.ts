@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
@@ -10,6 +11,7 @@ export class MatchService {
   constructor(
     @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
     private readonly usersService: UsersService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async createGame(gameDto: CreateGameDto) {
@@ -18,12 +20,16 @@ export class MatchService {
       ? await this.usersService.findOne(gameDto.playerTwo)
       : null;
 
-    const game = this.gameRepository.create({
+    const newGame = this.gameRepository.create({
       playerOne,
       playerTwo,
     });
 
-    return this.gameRepository.save(game);
+    const game = await this.gameRepository.save(newGame);
+
+    this.eventEmitter.emit('match.created', game);
+
+    return game;
   }
 
   async joinGame(gameId: string, userId: number) {
@@ -71,6 +77,13 @@ export class MatchService {
     return this.gameRepository.find({
       where: { status: GameStatus.WAITING || GameStatus.PLAYING },
       order: { createdAt: 'ASC' },
+      relations: ['playerOne', 'playerTwo'],
+    });
+  }
+
+  async getMatch(gameId: string) {
+    return this.gameRepository.findOne({
+      where: { id: gameId },
       relations: ['playerOne', 'playerTwo'],
     });
   }

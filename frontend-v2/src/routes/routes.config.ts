@@ -68,7 +68,6 @@ const routesConfig: IRoutesConfig[] = [
     name: 'Game',
     path: '/game/:gameId',
     component: GamePage,
-    noLayout: false,
     isPrivate: true,
   },
 ];

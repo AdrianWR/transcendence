@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -38,8 +39,8 @@ import { UsersModule } from './users/users.module';
       serveRoot: '/public/',
     }),
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
     UsersModule,
-    //ChannelsModule,
     GameModule,
     ChatModule,
     AuthModule,

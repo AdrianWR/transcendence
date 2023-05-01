@@ -58,7 +58,6 @@ const JoinGroupChatModal: FC<JoinGroupChatModalProps> = ({ close }) => {
 
   useEffect(() => {
     socket?.emit('listPublicChats', (chats: IChat[]) => {
-      console.log('message received', chats);
       setPublicChats(chats);
     });
   }, []);

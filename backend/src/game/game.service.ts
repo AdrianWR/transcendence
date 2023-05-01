@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { Game } from './entities/game.entity';
 import { MatchService } from './match.service';
+
+type IStatus = 'waiting' | 'ready' | 'playing' | 'paused' | 'finished' | 'idle';
 
 interface IBall {
   position: {
@@ -30,23 +33,53 @@ interface IPlayer {
 }
 
 export interface IGameState {
-  id?: string;
-  status: 'waiting' | 'playing' | 'paused' | 'finished' | 'idle';
+  id: string;
+  status: IStatus;
   playerOne: IPlayer;
   playerTwo: IPlayer;
   ball: IBall;
+  canvas: {
+    width: number;
+    height: number;
+  };
 }
 
 @Injectable()
 export class GameService {
+  static FRAME_RATE = 60;
+  static FRAME_INTERVAL = 1000 / GameService.FRAME_RATE;
+  static CANVAS_WIDTH = 800;
+  static CANVAS_HEIGHT = 400;
+  static BALL_DIAMETER = 10;
+  static PLAYER_LENGTH = 100;
+  static PLAYER_THICKNESS = 10;
+
+  // Data structure to store all the game states
+  private gameMap = new Map<string, IGameState>();
+
   constructor(
     @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
     private matchService: MatchService,
     private schedulerRegistry: SchedulerRegistry,
-  ) {}
+  ) {
+    // Initialize the game map with all current games
+    this.matchService.getCurrentMatches().then((matches) => {
+      matches.forEach((match) => {
+        this.initGame(match.id);
+      });
+    });
+  }
 
-  // Data structure to store all the game states
-  private gameMap = new Map<string, IGameState>();
+  @OnEvent('match.created', { async: true })
+  async addGame(game: Game) {
+    // Create a new game state
+    const gameState = await this.initGame(game.id);
+
+    // Update the game state
+    this.gameMap.set(game.id, gameState);
+
+    return gameState;
+  }
 
   getGameState(gameId: string) {
     return this.gameMap.get(gameId);
@@ -56,7 +89,7 @@ export class GameService {
     return this.gameMap;
   }
 
-  async updateGameState(gameId: string, userId: number, playerY: number) {
+  async updateFromClient(gameId: string, userId: number, playerY: number) {
     // Get the game state
     const gameState = this.gameMap.get(gameId);
 
@@ -79,7 +112,7 @@ export class GameService {
     return gameState;
   }
 
-  async getGame(gameId: string) {
+  private async getGame(gameId: string) {
     const game = this.gameRepository.findOne({
       where: { id: gameId },
       relations: ['playerOne', 'playerTwo'],
@@ -90,8 +123,8 @@ export class GameService {
     return game;
   }
 
-  async createOrSelectGameState(gameId: string) {
-    const game = await this.getGame(gameId);
+  async initGame(gameId: string) {
+    const game = await this.matchService.getMatch(gameId);
 
     if (!this.gameMap.has(gameId)) {
       this.gameMap.set(game.id, {
@@ -101,34 +134,38 @@ export class GameService {
           id: game.playerOne.id,
           position: {
             x: 0,
-            y: 190,
+            y: GameService.CANVAS_HEIGHT / 2 - GameService.PLAYER_LENGTH / 2,
           },
-          thickness: 20,
-          length: 120,
+          thickness: GameService.PLAYER_THICKNESS,
+          length: GameService.PLAYER_LENGTH,
           score: game.playerOneScore,
           isConnected: false,
         },
         playerTwo: {
           id: game.playerTwo.id,
           position: {
-            x: 780,
-            y: 190,
+            x: GameService.CANVAS_WIDTH - GameService.PLAYER_THICKNESS,
+            y: GameService.CANVAS_HEIGHT / 2 - GameService.PLAYER_LENGTH / 2,
           },
-          thickness: 20,
-          length: 120,
+          thickness: GameService.PLAYER_THICKNESS,
+          length: GameService.PLAYER_LENGTH,
           score: game.playerTwoScore,
           isConnected: false,
         },
         ball: {
           position: {
-            x: 400,
-            y: 250,
+            x: GameService.CANVAS_WIDTH / 2 - GameService.BALL_DIAMETER / 2,
+            y: GameService.CANVAS_HEIGHT / 2 - GameService.BALL_DIAMETER / 2,
           },
           velocity: {
             dx: 0,
             dy: 0,
           },
-          diameter: 20,
+          diameter: GameService.BALL_DIAMETER,
+        },
+        canvas: {
+          width: GameService.CANVAS_WIDTH,
+          height: GameService.CANVAS_HEIGHT,
         },
       });
     }
@@ -136,76 +173,75 @@ export class GameService {
     return this.gameMap.get(game.id);
   }
 
-  async handleGameConnection(gameId: string, userId: number) {
-    // Get the game state
-    const game = await this.createOrSelectGameState(gameId);
+  private updateGameState(gameId: string, state: DeepPartial<IGameState>) {
+    this.gameMap.set(gameId, <IGameState>{
+      ...this.gameMap.get(gameId),
+      ...state,
+    });
+  }
+
+  private updateActivePlayer(
+    gameId: string,
+    userId: number,
+    playerState: Partial<IPlayer>,
+  ) {
+    const game = this.gameMap.get(gameId);
 
     if (game.playerOne.id === userId) {
-      this.gameMap.set(gameId, {
-        ...this.gameMap.get(gameId),
-        playerOne: {
-          ...this.gameMap.get(gameId).playerOne,
-          isConnected: true,
-        },
+      this.updateGameState(gameId, {
+        playerOne: { ...game.playerOne, ...playerState },
       });
     } else if (game.playerTwo.id === userId) {
-      this.gameMap.set(gameId, {
-        ...this.gameMap.get(gameId),
-        playerTwo: {
-          ...this.gameMap.get(gameId).playerTwo,
-          isConnected: true,
-        },
+      this.updateGameState(gameId, {
+        playerTwo: { ...game.playerTwo, ...playerState },
       });
-    } else {
-      return;
     }
 
-    this.gameMap.set(gameId, {
-      ...this.gameMap.get(gameId),
-      status: this.isRoomReady(gameId) ? 'idle' : 'waiting',
-    });
+    return this.gameMap.get(gameId);
+  }
 
+  private updateBall(gameId: string, ballState: Partial<IBall>) {
+    this.updateGameState(gameId, {
+      ball: { ...this.gameMap.get(gameId).ball, ...ballState },
+    });
+  }
+
+  private isSpectator(userId: number, gameId: string) {
+    const game = this.gameMap.get(gameId);
+
+    return (
+      game.playerOne.id !== userId && game.playerTwo.id !== userId && userId
+    );
+  }
+
+  async handleGameConnection(gameId: string, userId: number) {
+    // Get the game state
+    const game = await this.initGame(gameId);
+    if (this.isSpectator(userId, gameId)) {
+      return this.getGameState(gameId);
+    }
+
+    // Set active player as connected
+    this.updateActivePlayer(gameId, userId, { isConnected: true });
+
+    // Check if the game is ready
     if (this.isRoomReady(gameId)) {
-      this.schedulerRegistry.addTimeout(
-        `game-${gameId}`,
-        setTimeout(() => {
-          this.startGame(gameId);
-          this.schedulerRegistry.deleteTimeout(`game-${gameId}`);
-        }, 5000),
-      );
+      this.startGame(gameId);
     }
 
     return this.gameMap.get(gameId);
   }
 
   handleGameDisconnection(gameId: string, userId: number) {
-    // Get the game state
-    const game = this.getGameState(gameId);
-
-    if (game.playerOne.id === userId) {
-      this.gameMap.set(gameId, {
-        ...this.gameMap.get(gameId),
-        playerOne: {
-          ...this.gameMap.get(gameId).playerOne,
-          isConnected: false,
-        },
-      });
-    } else if (game.playerTwo.id === userId) {
-      this.gameMap.set(gameId, {
-        ...this.gameMap.get(gameId),
-        playerTwo: {
-          ...this.gameMap.get(gameId).playerTwo,
-          isConnected: false,
-        },
-      });
-    } else {
-      return;
+    if (this.isSpectator(userId, gameId)) {
+      return this.getGameState(gameId);
     }
 
-    this.gameMap.set(gameId, {
-      ...this.gameMap.get(gameId),
-      status: 'playing' ? 'paused' : 'finished',
-    });
+    // Set active player as disconnected
+    this.updateActivePlayer(gameId, userId, { isConnected: false });
+
+    // Pause the game
+    this.updateGameState(gameId, { status: 'paused' });
 
     return this.gameMap.get(gameId);
   }
@@ -219,32 +255,44 @@ export class GameService {
     this.gameMap.delete(gameId);
   }
 
+  private getRandomBallVelocity() {
+    const dx = Math.random() * 2 + 2;
+    const dy = Math.random() * 2 + 2;
+
+    return {
+      dx: Math.random() < 0.5 ? dx : -dx,
+      dy: Math.random() < 0.5 ? dy : -dy,
+    };
+  }
+
   async startGame(gameId: string) {
-    this.gameMap.set(gameId, {
-      ...this.gameMap.get(gameId),
-      status: 'playing',
-      ball: {
-        ...this.gameMap.get(gameId).ball,
-        velocity: {
-          dx: 3,
-          dy: -3,
-        },
-      },
-    });
+    this.updateGameState(gameId, { status: 'ready' });
+
+    // Check if timeout already exists
+    // try {
+    //   this.schedulerRegistry.getTimeout(`game-${gameId}`);
+    // } catch (e) {
+    //   // Timeout doesn't exist
+    //   this.schedulerRegistry.addTimeout(
+    //     `game-${gameId}`,
+    //     setTimeout(() => {
+    //       this.updateGameState(gameId, { status: 'playing' });
+    //       this.updateBall(gameId, { velocity: this.getRandomBallVelocity() });
+    //       this.schedulerRegistry.deleteTimeout(`game-${gameId}`);
+    //     }, 5000),
+    //   );
+    // }
+
+    this.updateGameState(gameId, { status: 'playing' });
+    this.updateBall(gameId, { velocity: this.getRandomBallVelocity() });
 
     return this.gameMap.get(gameId);
   }
 
-  @Interval(1000 / 60)
+  @Interval(GameService.FRAME_INTERVAL)
   async updateGames() {
     for (const game of this.gameMap.values()) {
       if (game.status !== 'playing') continue;
-
-      // Clear the timeout
-      // const timeouts = this.schedulerRegistry.getTimeouts();
-      // if (timeouts.find((timeout) => timeout === game.id)) {
-      //   this.schedulerRegistry.deleteTimeout(game.id);
-      // }
 
       const ball = game.ball;
       const playerOne = game.playerOne;
@@ -257,7 +305,7 @@ export class GameService {
       // Check if ball is colliding with walls
       if (
         ball.position.y - ball.diameter / 2 < 0 ||
-        ball.position.y + ball.diameter / 2 > 500
+        ball.position.y + ball.diameter / 2 > game.canvas.height
       ) {
         ball.velocity.dy *= -1;
       }
@@ -265,61 +313,56 @@ export class GameService {
       // Check if ball is colliding with player one
       if (
         ball.position.x - ball.diameter / 2 < playerOne.thickness &&
-        ball.position.y > game.playerOne.position.y &&
-        ball.position.y < game.playerOne.position.y + 120
+        ball.position.y > playerOne.position.y &&
+        ball.position.y < playerOne.position.y + playerOne.length
       ) {
         ball.velocity.dx *= -1;
       }
 
       // Check if ball is colliding with player two
       if (
-        ball.position.x + ball.diameter / 2 > 800 - playerTwo.thickness &&
-        ball.position.y > game.playerTwo.position.y &&
-        ball.position.y < game.playerTwo.position.y + 120
+        ball.position.x + ball.diameter / 2 >
+          game.canvas.width - playerTwo.thickness &&
+        ball.position.y > playerTwo.position.y &&
+        ball.position.y < playerTwo.position.y + playerTwo.length
       ) {
         ball.velocity.dx *= -1;
       }
 
       // Check if ball is out of bounds
-      if (ball.position.x < 0 || ball.position.x > 800) {
-        // Score for players
+      if (ball.position.x < 0 || ball.position.x > game.canvas.width) {
         if (ball.position.x < 0) {
           playerTwo.score++;
         } else {
           playerOne.score++;
         }
 
-        // Reset ball position
-        ball.position.x = 400;
-        ball.position.y = 250;
-
-        // Reset ball velocity
-        ball.velocity.dx = 0;
-        ball.velocity.dy = 0;
+        // Reset ball position and velocity
+        ball.position = {
+          x: game.canvas.width / 2,
+          y: game.canvas.height / 2,
+        };
+        ball.velocity = {
+          dx: 0,
+          dy: 0,
+        };
 
         // Update the game state
-        this.gameMap.set(game.id, {
-          ...this.gameMap.get(game.id),
-          status: 'idle',
-        });
+        this.updateGameState(game.id, { status: 'idle' });
 
-        this.schedulerRegistry.addTimeout(
-          game.id,
-          setTimeout(() => {
-            this.gameMap.set(game.id, {
-              ...this.gameMap.get(game.id),
-              status: 'playing',
-              ball: {
-                ...this.gameMap.get(game.id).ball,
-                velocity: {
-                  dx: 3,
-                  dy: -3,
-                },
-              },
-            });
-            this.schedulerRegistry.deleteTimeout(game.id);
-          }, 3000),
-        );
+        // this.schedulerRegistry.addTimeout(
+        //   game.id,
+        //   setTimeout(() => {
+        //     this.updateGameState(game.id, { status: 'playing' });
+        //     this.updateBall(game.id, {
+        //       velocity: this.getRandomBallVelocity(),
+        //     });
+        //     this.schedulerRegistry.deleteTimeout(game.id);
+        //   }, 3000),
+        // );
+
+        this.updateGameState(game.id, { status: 'playing' });
+        ball.velocity = this.getRandomBallVelocity();
 
         // Update the game in the database
         this.matchService.updateMatch(game.id, {
@@ -329,9 +372,10 @@ export class GameService {
       }
 
       // Update the game state
-      this.gameMap.set(game.id, {
-        ...this.gameMap.get(game.id),
+      this.updateGameState(game.id, {
         ball,
+        playerOne,
+        playerTwo,
       });
     }
   }

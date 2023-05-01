@@ -2,6 +2,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Logger,
   Req,
   Res,
   UseGuards,
@@ -14,6 +15,7 @@ import { JwtAuthService } from './jwt.service';
 
 @Controller('auth/jwt')
 export class JwtAuthController {
+  private readonly logger = new Logger(JwtAuthController.name);
   constructor(private jwtAuthService: JwtAuthService) {}
 
   @UseGuards(RefreshTokenGuard)
@@ -24,10 +26,16 @@ export class JwtAuthController {
     @Req() req: RequestType,
     @Res({ passthrough: true }) res: ResponseType,
   ) {
-    //const user = req.user;
     const refreshToken = req.cookies?.refreshToken;
-    const tokens = await this.jwtAuthService.refreshJwt(user.id, refreshToken);
-    await this.jwtAuthService.storeTokensInCookie(res, tokens);
+    try {
+      const tokens = await this.jwtAuthService.refreshJwt(
+        user.id,
+        refreshToken,
+      );
+      await this.jwtAuthService.storeTokensInCookie(res, tokens);
+    } catch (error) {
+      this.logger.error(error);
+    }
 
     return user;
   }

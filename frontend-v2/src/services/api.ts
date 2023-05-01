@@ -2,7 +2,7 @@ import axios, { AxiosError, HttpStatusCode } from 'axios';
 
 const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
-const refreshToken = () => {
+export const refreshToken = () => {
   return axios.get('auth/jwt/refresh', {
     baseURL: BASE_URL,
     withCredentials: true,
@@ -30,7 +30,7 @@ api.interceptors.response.use(
       } catch (err) {
         console.log('Refresh Err: ', err);
         if (err instanceof AxiosError) {
-          localStorage.clear();
+          localStorage.removeItem('user');
           return Promise.reject(err);
         }
       }

@@ -26,7 +26,7 @@ import { MatchService } from './match.service';
   },
 })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private static readonly frameRate = 60;
+  // private static readonly frameRate = GameService.frameRate;
   private readonly logger: Logger = new Logger(GameGateway.name);
 
   constructor(
@@ -73,10 +73,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { id, user } = this.getConnectionId(client);
 
     // Update the game state
-    await this.gameService.updateGameState(id, user.id, playerY);
+    await this.gameService.updateFromClient(id, user.id, playerY);
   }
 
-  @Interval(1000 / GameGateway.frameRate)
+  @Interval(GameService.FRAME_INTERVAL)
   async handleGameUpdates() {
     // Get all the games
     const games = this.gameService.getCurrentGames();
@@ -85,10 +85,5 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     games.forEach(async (game) => {
       this.server.to(`game:${game.id}`).emit('updateGame', game);
     });
-
-    this.server.emit(
-      'listCurrentMatches',
-      await this.matchService.getCurrentMatches(),
-    );
   }
 }

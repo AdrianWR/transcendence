@@ -69,7 +69,6 @@ const ListAllUsersCard: FC<ListAllUsersCardProps> = ({ mode, close }) => {
 
   const showChatButton = (user: IUser) => {
     const addMember = (user: IUser) => {
-      console.log('Add member: ', user);
       socket?.emit('joinChat', { chatId: activeChat?.id, userIds: [user.id] });
       close();
     };
