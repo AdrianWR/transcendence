@@ -1,4 +1,4 @@
-import { Exclude, Expose, Transform } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import {
   BaseEntity,
   Column,
@@ -38,9 +38,9 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   mfaSecret?: string;
 
-  @Transform(({ obj }) => `${process.env.BACKEND_URL}/users/${obj.id}/avatar`)
-  @Column({ type: 'bytea', nullable: true })
-  picture?: Uint8Array;
+  // @Transform(({ obj }) => `${process.env.BACKEND_URL}/users/${obj.id}/avatar`)
+  // @Column({ type: 'bytea', nullable: true })
+  // picture?: Uint8Array;
 
   @Exclude()
   @Column({ nullable: true })

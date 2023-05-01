@@ -42,13 +42,17 @@ const MatchCard: FC<MatchCardProps> = ({ match }) => {
     <Card className={styles['match-card']}>
       <Flex direction='row' align='center' justify='space-between' gap='lg'>
         {getStatusBadge(match)}
-        <Avatar src={match.playerOne.avatarUrl} size='lg' radius='xl' />
+        <Link to={`/profile/${match.playerOne?.id}`}>
+          <Avatar src={match.playerOne.avatarUrl} size='lg' radius='xl' />
+        </Link>
         <Stack spacing={1} align='center'>
           <Text className={styles['match-card-player-name']}>{match.playerOne.username}</Text>
           <Text className={styles['match-card-player-score']}>{match.playerOneScore}</Text>
         </Stack>
         <Text>VS</Text>
-        <Avatar src={match.playerTwo?.avatarUrl} size='lg' radius='xl' />
+        <Link to={`/profile/${match.playerTwo?.id}`}>
+          <Avatar src={match.playerTwo?.avatarUrl} size='lg' radius='xl' />
+        </Link>
         <Stack spacing={1} align='center'>
           <Text className={styles['match-card-player-name']}>
             {match.playerTwo?.username ?? 'Player 2'}

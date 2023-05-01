@@ -1,4 +1,4 @@
-import { Avatar, Container, Flex, Overlay, Stack, Text } from '@mantine/core';
+import { Avatar, Box, Container, Flex, Overlay, Stack, Text } from '@mantine/core';
 import { FC, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Socket, io } from 'socket.io-client';
@@ -69,7 +69,6 @@ const GameCanvas: FC = () => {
   return (
     <>
       <Container className={styles['canvas-container']}>
-        <GameCanvasOverlay status={game?.status} />
         <Stack align='center'>
           <Flex align='center' gap='xl' className={styles['match-card-score-board']}>
             <Avatar src={playerOneUser?.avatarUrl} size='lg' radius='xl' />
@@ -90,7 +89,12 @@ const GameCanvas: FC = () => {
             </Stack>
             <Avatar src={playerTwoUser?.avatarUrl} size='lg' radius='xl' />
           </Flex>
-          {game && <GameSketch game={game} socket={gameSocket} />}
+          {game && (
+            <Box className={styles['game-box']}>
+              <GameCanvasOverlay status={game?.status} />
+              <GameSketch game={game} socket={gameSocket} />
+            </Box>
+          )}
         </Stack>
       </Container>
     </>

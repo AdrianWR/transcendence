@@ -2,15 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { diskStorage } from 'multer';
+import { Game } from '../game/entities/game.entity';
 import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { diskStorage } from 'multer';
 import { UsersGateway } from './users.gateway';
+import { UsersService } from './users.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Game]),
     MulterModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

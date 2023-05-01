@@ -17,7 +17,7 @@ const GameSketch: FC<GameSketchProps> = ({ game, socket }) => {
   };
 
   const { user } = useAuthContext();
-  const speed = 5;
+  const speed = 10;
 
   const moveUp = (player: IPlayer) => {
     if (player.position.y > 0) {
@@ -49,7 +49,7 @@ const GameSketch: FC<GameSketchProps> = ({ game, socket }) => {
 
   const draw = (p5: p5Types) => {
     p5.clear();
-    p5.frameRate(60);
+    p5.frameRate(24);
 
     const { playerOne, playerTwo, ball } = game;
 

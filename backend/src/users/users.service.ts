@@ -10,6 +10,7 @@ import * as argon2 from 'argon2';
 import * as fsPromises from 'fs/promises';
 import { join } from 'path';
 import { Repository } from 'typeorm';
+import { Game, GameStatus } from '../game/entities/game.entity';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './types/create-user.dto';
 import { UpdateUserAvatarDto } from './types/update-user-avatar.dto';
@@ -21,7 +22,15 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(Game) private readonly matchRepository: Repository<Game>,
   ) {}
+
+  private generateUsername(user: CreateUserDto) {
+    return `${user?.email.substring(
+      0,
+      user?.email.indexOf('@'),
+    )}_${new Date().getTime()}`;
+  }
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find();
@@ -107,10 +116,6 @@ export class UsersService {
     return this.usersRepository.save(updatedUser);
   }
 
-  // async getChats(id: number): Promise<Chat[]> {
-  //   return (await this.findOne(id)).chats;
-  // }
-
   async remove(id: number) {
     const user = await this.usersRepository.findOne({ where: { id: +id } });
     if (!user) {
@@ -126,10 +131,61 @@ export class UsersService {
     });
   }
 
-  private generateUsername(user: CreateUserDto) {
-    return `${user?.email.substring(
-      0,
-      user?.email.indexOf('@'),
-    )}_${new Date().getTime()}`;
+  async getGameStats(userId: number) {
+    const user = await this.findOne(userId);
+
+    const games = await this.matchRepository.find({
+      where: [
+        { playerOne: { id: user.id }, status: GameStatus.FINISHED },
+        { playerTwo: { id: user.id }, status: GameStatus.FINISHED },
+      ],
+    });
+
+    const wins = games.filter(
+      (game) =>
+        (user.id === game.playerOne.id &&
+          game.playerOneScore > game.playerTwoScore) ||
+        (user.id === game.playerTwo.id &&
+          game.playerTwoScore > game.playerOneScore),
+    ).length;
+
+    return {
+      gamesPlayed: games.length,
+      wins: wins,
+      losses: games.length - wins,
+      rank: {
+        level: 3,
+        xp: 190,
+        nextLevelXp: 20,
+      },
+    };
+  }
+
+  async getMatchHistory(userId: number) {
+    const user = await this.findOne(userId);
+
+    const games = await this.matchRepository.find({
+      where: [{ playerOne: { id: user.id } }, { playerTwo: { id: user.id } }],
+    });
+
+    return games.map((game) => {
+      const opponent =
+        game.playerOne.id === user.id ? game.playerTwo : game.playerOne;
+
+      return {
+        id: game.id,
+        opponent: opponent.username,
+        opponentAvatar: opponent.avatar,
+        opponentScore:
+          game.playerOne.id === user.id
+            ? game.playerTwoScore
+            : game.playerOneScore,
+        userScore:
+          game.playerOne.id === user.id
+            ? game.playerOneScore
+            : game.playerTwoScore,
+        date: game.createdAt,
+      };
+    });
   }
 }

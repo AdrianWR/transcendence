@@ -1,4 +1,5 @@
 import { Container, Group, Stack } from '@mantine/core';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
 import GameMenuCard from '../../components/Game/GameMenuCard';
@@ -13,23 +14,17 @@ const MatchmakerPage: FCWithLayout = () => {
   const { socket } = useSocket();
   const navigate = useNavigate();
 
+  const createGame = useCallback(() => {
+    socket?.emit('createGame', { playerOne: user?.id }, (match: IMatch) => {
+      navigate(`/game/${match.id}`);
+    });
+  }, [socket, user]);
+
   return (
     <Container className={styles['container']}>
-      <Stack
-        styles={{
-          marginTop: '10%',
-        }}
-      >
-        <Group>
-          <GameMenuCard
-            onClick={() => {
-              socket?.emit('createGame', { playerOne: user?.id }, (match: IMatch) => {
-                navigate(`/game/${match.id}`);
-              });
-            }}
-          >
-            Create a new game room
-          </GameMenuCard>
+      <Stack>
+        <Group position='center' spacing='lg' grow>
+          <GameMenuCard onClick={createGame}>Create a new game room</GameMenuCard>
           <GameMenuCard>Join a random game room</GameMenuCard>
         </Group>
         <Matchmaker />

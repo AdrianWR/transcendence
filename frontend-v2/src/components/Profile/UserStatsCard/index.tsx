@@ -1,9 +1,9 @@
 import { Card, Flex, LoadingOverlay, Progress, Title } from '@mantine/core';
+import { AxiosError } from 'axios';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
-import { AxiosError } from 'axios';
-import { alert, success } from '../../Notifications';
+import { alert } from '../../Notifications';
 
 interface IUserStats {
   gamesPlayed: number;
@@ -36,9 +36,8 @@ const UserStatsCard: FC<UserStatsCardProps> = ({ userId }) => {
     api
       .get(`/users/${userId}/stats`) // change to endpoint with user stats
       .then(({ data }) => {
-        // setUserStats(data);
-
-        success('Successfully fetched user data', notificationTitle);
+        setUserStats(data);
+        // success('Successfully fetched user data', notificationTitle);
       })
       .catch((err) => {
         if (err instanceof AxiosError) {
@@ -49,16 +48,16 @@ const UserStatsCard: FC<UserStatsCardProps> = ({ userId }) => {
       })
       .finally(() =>
         setInterval(() => {
-          setUserStats({
-            gamesPlayed: 21,
-            wins: 10,
-            losses: 11,
-            rank: {
-              level: 3,
-              xp: 220,
-              nextLevelXp: 500,
-            },
-          });
+          // setUserStats({
+          //   gamesPlayed: 21,
+          //   wins: 10,
+          //   losses: 11,
+          //   rank: {
+          //     level: 3,
+          //     xp: 220,
+          //     nextLevelXp: 500,
+          //   },
+          // });
           setIsLoading(false);
         }, 2000),
       );

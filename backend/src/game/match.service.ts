@@ -89,7 +89,7 @@ export class MatchService {
 
   async getCurrentMatches() {
     return this.matchRepository.find({
-      where: { status: GameStatus.WAITING || GameStatus.PLAYING },
+      where: [{ status: GameStatus.WAITING }, { status: GameStatus.PLAYING }],
       order: { createdAt: 'ASC' },
       relations: ['playerOne', 'playerTwo'],
     });

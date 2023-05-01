@@ -3,7 +3,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
-import { Game } from './entities/game.entity';
+import { Game, GameStatus } from './entities/game.entity';
 import { MatchService } from './match.service';
 
 type IStatus = 'waiting' | 'ready' | 'playing' | 'paused' | 'finished' | 'idle';
@@ -46,11 +46,11 @@ export interface IGameState {
 
 @Injectable()
 export class GameService {
-  static FRAME_RATE = 60;
+  static FRAME_RATE = 24;
   static FRAME_INTERVAL = 1000 / GameService.FRAME_RATE;
   static CANVAS_WIDTH = 800;
   static CANVAS_HEIGHT = 400;
-  static BALL_DIAMETER = 10;
+  static BALL_DIAMETER = 20;
   static PLAYER_LENGTH = 100;
   static PLAYER_THICKNESS = 10;
   static MAX_SCORE = 3;
@@ -99,15 +99,15 @@ export class GameService {
     });
   }
 
-  @OnEvent('match.updateScore', { async: true })
-  async updateGameScore(game: Game) {
-    // Get the game state
-    const gameState = this.gameMap.get(game.id);
-
+  async updateMatchScore(
+    gameId: string,
+    playerOneScore: number,
+    playerTwoScore: number,
+  ) {
     // Update the match in the database
-    await this.matchService.updateMatch(game.id, {
-      playerOneScore: game.playerOneScore,
-      playerTwoScore: game.playerTwoScore,
+    await this.matchService.updateMatch(gameId, {
+      playerOneScore,
+      playerTwoScore,
     });
   }
 
@@ -284,32 +284,20 @@ export class GameService {
   }
 
   private getRandomBallVelocity() {
-    const dx = Math.random() * 2 + 2;
-    const dy = Math.random() * 2 + 2;
+    // Give the ball a random velocity between 8 and 12
+    const dx = Math.random() * 4 + 8;
+    const dy = Math.random() * 4 + 8;
 
     return {
-      dx: Math.random() < 0.5 ? dx : -dx,
-      dy: Math.random() < 0.5 ? dy : -dy,
+      dx: Math.random() > 0.5 ? dx : -dx,
+      dy: Math.random() > 0.5 ? dy : -dy,
     };
   }
 
   async startGame(gameId: string) {
-    this.updateGameState(gameId, { status: 'ready' });
-
-    // Check if timeout already exists
-    // try {
-    //   this.schedulerRegistry.getTimeout(`game-${gameId}`);
-    // } catch (e) {
-    //   // Timeout doesn't exist
-    //   this.schedulerRegistry.addTimeout(
-    //     `game-${gameId}`,
-    //     setTimeout(() => {
-    //       this.updateGameState(gameId, { status: 'playing' });
-    //       this.updateBall(gameId, { velocity: this.getRandomBallVelocity() });
-    //       this.schedulerRegistry.deleteTimeout(`game-${gameId}`);
-    //     }, 5000),
-    //   );
-    // }
+    this.matchService.updateMatch(gameId, {
+      status: GameStatus.PLAYING,
+    });
 
     this.updateGameState(gameId, { status: 'playing' });
     this.updateBall(gameId, { velocity: this.getRandomBallVelocity() });
@@ -373,25 +361,11 @@ export class GameService {
         dy: 0,
       };
 
-      // Update the game state
-      this.updateGameState(game.id, { status: 'idle' });
-
-      // this.schedulerRegistry.addTimeout(
-      //   game.id,
-      //   setTimeout(() => {
-      //     this.updateGameState(game.id, { status: 'playing' });
-      //     this.updateBall(game.id, {
-      //       velocity: this.getRandomBallVelocity(),
-      //     });
-      //     this.schedulerRegistry.deleteTimeout(game.id);
-      //   }, 3000),
-      // );
-
-      this.updateGameState(game.id, { status: 'playing' });
+      // this.updateGameState(game.id, { status: 'playing' });
       ball.velocity = this.getRandomBallVelocity();
 
       // Update the game in the database
-      this.eventEmitter.emit('match.updateScore', game);
+      this.updateMatchScore(game.id, playerOne.score, playerTwo.score);
     }
 
     // Check if match is over
