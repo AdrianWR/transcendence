@@ -12,8 +12,8 @@ type GameSketchProps = {
 
 const GameSketch: FC<GameSketchProps> = ({ game, socket }) => {
   const defaultCanvas = {
-    height: 500,
-    width: 500,
+    height: 400,
+    width: 800,
   };
 
   const { user } = useAuthContext();

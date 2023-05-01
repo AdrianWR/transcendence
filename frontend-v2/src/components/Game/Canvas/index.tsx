@@ -1,5 +1,6 @@
 import { Avatar, Container, Flex, Overlay, Stack, Text } from '@mantine/core';
 import { FC, useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Socket, io } from 'socket.io-client';
 import { IUser } from '../../../context/AuthContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
@@ -33,15 +34,14 @@ const GameCanvas: FC = () => {
   const [playerOneUser, setPlayerOneUser] = useState<IUser>();
   const [playerTwoUser, setPlayerTwoUser] = useState<IUser>();
   const gameSocket = useRef<Socket | null>(null);
+  const { gameId } = useParams(); // id of the game
 
   useEffect(() => {
+    console.log;
     gameSocket.current = io(`${process.env.REACT_APP_BACKEND_URL}/game`, {
       transports: ['websocket'],
       withCredentials: true,
-      auth: {
-        id: location.pathname.split('/').slice(-1)[0],
-        user: user,
-      },
+      auth: { id: gameId, user },
     });
 
     gameSocket.current.on('updateGame', (game) => {

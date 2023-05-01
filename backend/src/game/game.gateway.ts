@@ -78,7 +78,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const games = this.gameService.getCurrentGames();
 
     // Send the game updates to all the clients
-    games.forEach(async (game) => {
+    games.forEach((game) => {
+      this.gameService.updateFromServer(game);
       this.server.to(`game:${game.id}`).emit('updateGame', game);
     });
   }

@@ -33,24 +33,28 @@ export class MatchService {
   }
 
   async joinMatch(gameId: string, userId: number) {
-    const game = await this.matchRepository.findOne({
+    const currentGame = await this.matchRepository.findOne({
       where: { id: gameId },
       relations: ['playerOne', 'playerTwo'],
     });
 
-    if (!game) {
+    if (!currentGame) {
       throw new Error('Game not found');
     }
 
-    if (game.playerTwo) {
+    if (currentGame.playerTwo) {
       throw new Error('Game already has two players');
     }
 
     const playerTwo = await this.usersService.findOne(userId);
 
-    game.playerTwo = playerTwo;
+    currentGame.playerTwo = playerTwo;
 
-    return this.matchRepository.save(game);
+    const game = await this.matchRepository.save(currentGame);
+
+    this.eventEmitter.emit('match.joined', game);
+
+    return game;
   }
 
   async updateMatch(gameId: string, gameDto: Partial<Game>) {

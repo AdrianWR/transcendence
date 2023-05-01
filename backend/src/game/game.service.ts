@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { Interval, SchedulerRegistry } from '@nestjs/schedule';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { Game } from './entities/game.entity';
@@ -36,7 +36,7 @@ export interface IGameState {
   id: string;
   status: IStatus;
   playerOne: IPlayer;
-  playerTwo: IPlayer;
+  playerTwo?: IPlayer;
   ball: IBall;
   canvas: {
     width: number;
@@ -83,8 +83,24 @@ export class GameService {
     return gameState;
   }
 
-  @OnEvent('match.updated', { async: true })
-  async updateGame(game: Game) {
+  @OnEvent('match.joined', { async: true })
+  async updateGamePlayer(game: Game) {
+    // Get the game state
+    const gameState = this.gameMap.get(game.id);
+
+    // Update the game state
+    this.gameMap.set(game.id, {
+      ...gameState,
+      playerTwo: {
+        ...gameState.playerTwo,
+        id: game.playerTwo.id,
+        isConnected: true,
+      },
+    });
+  }
+
+  @OnEvent('match.updateScore', { async: true })
+  async updateGameScore(game: Game) {
     // Get the game state
     const gameState = this.gameMap.get(game.id);
 
@@ -117,7 +133,7 @@ export class GameService {
     const gameState = this.gameMap.get(gameId);
 
     // Check if the game is active
-    if (gameState.status !== 'playing') return;
+    if (gameState?.status !== 'playing') return;
 
     // If player One, update player One position
     if (gameState.playerOne?.id === userId) {
@@ -154,7 +170,7 @@ export class GameService {
           isConnected: false,
         },
         playerTwo: {
-          id: game.playerTwo.id,
+          id: game.playerTwo?.id,
           position: {
             x: GameService.CANVAS_WIDTH - GameService.PLAYER_THICKNESS,
             y: GameService.CANVAS_HEIGHT / 2 - GameService.PLAYER_LENGTH / 2,
@@ -301,99 +317,96 @@ export class GameService {
     return this.gameMap.get(gameId);
   }
 
-  @Interval(GameService.FRAME_INTERVAL)
-  async updateGames() {
-    for (const game of this.gameMap.values()) {
-      if (game.status !== 'playing') continue;
+  updateFromServer(game: IGameState) {
+    if (game.status !== 'playing') return;
 
-      const ball = game.ball;
-      const playerOne = game.playerOne;
-      const playerTwo = game.playerTwo;
+    const ball = game.ball;
+    const playerOne = game.playerOne;
+    const playerTwo = game.playerTwo;
 
-      // Update ball position
-      ball.position.x += ball.velocity.dx;
-      ball.position.y += ball.velocity.dy;
+    // Update ball position
+    ball.position.x += ball.velocity.dx;
+    ball.position.y += ball.velocity.dy;
 
-      // Check if ball is colliding with walls
-      if (
-        ball.position.y - ball.diameter / 2 < 0 ||
-        ball.position.y + ball.diameter / 2 > game.canvas.height
-      ) {
-        ball.velocity.dy *= -1;
+    // Check if ball is colliding with walls
+    if (
+      ball.position.y - ball.diameter / 2 < 0 ||
+      ball.position.y + ball.diameter / 2 > game.canvas.height
+    ) {
+      ball.velocity.dy *= -1;
+    }
+
+    // Check if ball is colliding with player one
+    if (
+      ball.position.x - ball.diameter / 2 < playerOne.thickness &&
+      ball.position.y > playerOne.position.y &&
+      ball.position.y < playerOne.position.y + playerOne.length
+    ) {
+      ball.velocity.dx *= -1;
+    }
+
+    // Check if ball is colliding with player two
+    if (
+      ball.position.x + ball.diameter / 2 >
+        game.canvas.width - playerTwo.thickness &&
+      ball.position.y > playerTwo.position.y &&
+      ball.position.y < playerTwo.position.y + playerTwo.length
+    ) {
+      ball.velocity.dx *= -1;
+    }
+
+    // Check if ball is out of bounds
+    if (ball.position.x < 0 || ball.position.x > game.canvas.width) {
+      if (ball.position.x < 0) {
+        playerTwo.score++;
+      } else {
+        playerOne.score++;
       }
 
-      // Check if ball is colliding with player one
-      if (
-        ball.position.x - ball.diameter / 2 < playerOne.thickness &&
-        ball.position.y > playerOne.position.y &&
-        ball.position.y < playerOne.position.y + playerOne.length
-      ) {
-        ball.velocity.dx *= -1;
-      }
-
-      // Check if ball is colliding with player two
-      if (
-        ball.position.x + ball.diameter / 2 >
-          game.canvas.width - playerTwo.thickness &&
-        ball.position.y > playerTwo.position.y &&
-        ball.position.y < playerTwo.position.y + playerTwo.length
-      ) {
-        ball.velocity.dx *= -1;
-      }
-
-      // Check if ball is out of bounds
-      if (ball.position.x < 0 || ball.position.x > game.canvas.width) {
-        if (ball.position.x < 0) {
-          playerTwo.score++;
-        } else {
-          playerOne.score++;
-        }
-
-        // Reset ball position and velocity
-        ball.position = {
-          x: game.canvas.width / 2,
-          y: game.canvas.height / 2,
-        };
-        ball.velocity = {
-          dx: 0,
-          dy: 0,
-        };
-
-        // Update the game state
-        this.updateGameState(game.id, { status: 'idle' });
-
-        // this.schedulerRegistry.addTimeout(
-        //   game.id,
-        //   setTimeout(() => {
-        //     this.updateGameState(game.id, { status: 'playing' });
-        //     this.updateBall(game.id, {
-        //       velocity: this.getRandomBallVelocity(),
-        //     });
-        //     this.schedulerRegistry.deleteTimeout(game.id);
-        //   }, 3000),
-        // );
-
-        this.updateGameState(game.id, { status: 'playing' });
-        ball.velocity = this.getRandomBallVelocity();
-
-        // Update the game in the database
-        this.eventEmitter.emit('match.updated', game);
-      }
-
-      // Check if match is over
-      if (
-        playerOne.score >= GameService.MAX_SCORE ||
-        playerTwo.score >= GameService.MAX_SCORE
-      ) {
-        this.eventEmitter.emit('match.ended', { ...game, status: 'finished' });
-      }
+      // Reset ball position and velocity
+      ball.position = {
+        x: game.canvas.width / 2,
+        y: game.canvas.height / 2,
+      };
+      ball.velocity = {
+        dx: 0,
+        dy: 0,
+      };
 
       // Update the game state
-      this.updateGameState(game.id, {
-        ball,
-        playerOne,
-        playerTwo,
-      });
+      this.updateGameState(game.id, { status: 'idle' });
+
+      // this.schedulerRegistry.addTimeout(
+      //   game.id,
+      //   setTimeout(() => {
+      //     this.updateGameState(game.id, { status: 'playing' });
+      //     this.updateBall(game.id, {
+      //       velocity: this.getRandomBallVelocity(),
+      //     });
+      //     this.schedulerRegistry.deleteTimeout(game.id);
+      //   }, 3000),
+      // );
+
+      this.updateGameState(game.id, { status: 'playing' });
+      ball.velocity = this.getRandomBallVelocity();
+
+      // Update the game in the database
+      this.eventEmitter.emit('match.updateScore', game);
     }
+
+    // Check if match is over
+    if (
+      playerOne.score >= GameService.MAX_SCORE ||
+      playerTwo.score >= GameService.MAX_SCORE
+    ) {
+      this.eventEmitter.emit('match.ended', { ...game, status: 'finished' });
+    }
+
+    // Update the game state
+    this.updateGameState(game.id, {
+      ball,
+      playerOne,
+      playerTwo,
+    });
   }
 }
