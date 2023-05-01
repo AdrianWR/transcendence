@@ -18,9 +18,9 @@ const Navbar: FC = () => {
   useEffect(() => {
     if (user) {
       api.get('/users/me').catch((err) => {
-        if (err instanceof AxiosError && err.response?.status === 403) {
+        if (err instanceof AxiosError && [403, 401].includes(err.response?.status as number)) {
           logout();
-          alert(err.response.data.message, 'User Token');
+          alert(err.response?.data.message, 'User Token');
         }
       }); // this seems to be done on the auth context when signin and the email will be updated when page reloads or when profile is updated
     }
