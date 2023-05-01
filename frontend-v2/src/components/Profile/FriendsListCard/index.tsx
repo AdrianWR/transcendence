@@ -188,8 +188,6 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
       .then(({ data }) => {
         setFriendsList(data);
         setFilteredFriendsList(data);
-
-        success('Successfully fetched user data', notificationTitle);
       })
       .catch((err) => {
         if (err instanceof AxiosError) {
@@ -214,8 +212,6 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
       .get('/friends/requests')
       .then(({ data }) => {
         setFriendRequestsList(data);
-
-        success('Successfully fetched user friend requests', notificationTitle);
       })
       .catch((err) => {
         if (err instanceof AxiosError) {

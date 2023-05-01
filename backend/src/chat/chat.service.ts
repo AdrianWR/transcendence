@@ -376,7 +376,7 @@ export class ChatService {
     return true;
   }
 
-  async blockUser(userId: number, friendId: number) {
+  private async getFriendDM(userId: number, friendId: number) {
     const chatUsers = await this.chatUsersRepository.find({
       relations: ['user', 'chat'],
       where: { user: { id: In([userId, friendId]) }, chat: { type: CHAT_TYPE.DIRECT } },
@@ -397,8 +397,18 @@ export class ChatService {
       return finalChatUser;
     }, undefined);
 
-    if (!friendDM)
-      throw new BadRequestException("User does not have a DM to block friend");
+    return friendDM;
+  }
+
+  async blockUser(userId: number, friendId: number) {
+    const friendDM = await this.getFriendDM(userId, friendId);
+
+    if (!friendDM) { // if friend does not have a DM yet, create a new one and block it
+      await this.createDirectMessageRoom(userId, friendId);
+      const newFriendDM = await this.getFriendDM(userId, friendId);
+      newFriendDM.status = Status.BLOCKED;
+      return await this.chatUsersRepository.save(newFriendDM);
+    }
 
     if (friendDM.status === Status.BLOCKED)
       throw new BadRequestException("User already blocked this friend");
@@ -408,25 +418,7 @@ export class ChatService {
   }
 
   async unblockUser(userId: number, friendId: number) {
-    const chatUsers = await this.chatUsersRepository.find({
-      relations: ['user', 'chat'],
-      where: { user: { id: In([userId, friendId]) }, chat: { type: CHAT_TYPE.DIRECT } },
-    });
-
-    const chatUsersByChatId: { [chatId: number]: ChatUsers[] } = {};
-
-    const friendDM = chatUsers.reduce((finalChatUser, chatUser) => {
-      const { user, chat } = chatUser;
-      const chatUsers = chatUsersByChatId[chat.id] || [];
-
-      if (chatUsers.length) {
-        if (user.id === friendId) return chatUser;
-        return chatUsers[0];
-      }
-      else chatUsersByChatId[chat.id] = [chatUser];
-
-      return finalChatUser;
-    }, undefined);
+    const friendDM = await this.getFriendDM(userId, friendId);
 
     if (!friendDM)
       throw new BadRequestException("User does not have a DM to unblock friend");

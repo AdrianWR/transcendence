@@ -34,7 +34,8 @@ export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const updateUser = useCallback(
     (updatedUser: IUser | null) => {
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      if (!updatedUser) localStorage.removeItem('user');
+      else localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
     },
     [user],

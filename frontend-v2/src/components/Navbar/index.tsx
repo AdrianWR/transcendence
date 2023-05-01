@@ -6,16 +6,25 @@ import routes, { IRoutesConfig } from '../../routes/routes.config';
 import api from '../../services/api';
 import NavbarAvatar from '../NavbarAvatar';
 import styles from './Navbar.module.css';
+import { AxiosError } from 'axios';
+import { useLogout } from '../../hooks/useLogout';
+import { alert } from '../Notifications';
 
 const Navbar: FC = () => {
   const router = useLocation();
-  const { user } = useAuthContext();
+  const { user, updateUser } = useAuthContext();
+  const { logout } = useLogout();
 
   useEffect(() => {
     if (user) {
-      api.get('/users/me'); // this seems to be done on the auth context when signin and the email will be updated when page reloads or when profile is updated
+      api.get('/users/me').catch((err) => {
+        if (err instanceof AxiosError && err.response?.status === 403) {
+          logout();
+          alert(err.response.data.message, 'User Token');
+        }
+      }); // this seems to be done on the auth context when signin and the email will be updated when page reloads or when profile is updated
     }
-  }, [user]);
+  }, [user, updateUser]);
 
   const isActive = (route: IRoutesConfig): boolean =>
     String(router.pathname) === route.path ||
