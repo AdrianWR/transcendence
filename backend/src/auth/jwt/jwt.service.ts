@@ -1,6 +1,7 @@
-import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import * as argon2 from 'argon2';
 import { Response as ResponseType } from 'express';
 import ms from 'ms';
 import authConfig from '../../config/auth.config';
@@ -11,8 +12,6 @@ import { JwtPayload } from '../types/auth.interface';
 
 @Injectable()
 export class JwtAuthService {
-  private readonly logger = new Logger(JwtAuthService.name);
-
   constructor(
     @Inject(authConfig.KEY) private authConf: ConfigType<typeof authConfig>,
     private jwtService: JwtService,
@@ -20,8 +19,7 @@ export class JwtAuthService {
   ) {}
 
   private async updateRefreshToken(user: User, refreshToken: string) {
-    // const hashedRefreshToken = await argon2.hash(refreshToken);
-    const hashedRefreshToken = refreshToken;
+    const hashedRefreshToken = await argon2.hash(refreshToken);
     await this.usersService.update(user.id, {
       refreshToken: hashedRefreshToken,
     });
@@ -66,24 +64,10 @@ export class JwtAuthService {
     };
   }
 
-  async refreshJwt(userId: number, refreshToken: string) {
+  async refreshJwt(userId: number) {
     const user = await this.usersService.findOne(userId);
     if (!user || !user.refreshToken) {
       throw new ForbiddenException('Access Denied: User not found');
-    }
-
-    // const refreshTokenMatches = await argon2.verify(
-    //   user.refreshToken,
-    //   refreshToken,
-    // );
-    const refreshTokenMatches = user.refreshToken === refreshToken;
-
-    if (!refreshTokenMatches) {
-      this.logger.debug('refresh token from client: ' + refreshToken);
-      this.logger.debug('refresh token from db: ' + user.refreshToken);
-      throw new ForbiddenException(
-        'Access Denied: Refresh token does not match',
-      );
     }
 
     // This allow us refresh token rotation
