@@ -10,6 +10,9 @@ import {
   Button,
   Tooltip,
   Indicator,
+  Modal,
+  ActionIcon,
+  Box,
 } from '@mantine/core';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useAuthContext } from '../../../hooks/useAuthContext';
@@ -19,10 +22,18 @@ import { alert, success } from '../../Notifications';
 import { Link } from 'react-router-dom';
 import styles from './FriendsListCard.module.css';
 import { IUser } from '../../../context/AuthContext';
-import { IconMoodPlus, IconSearch, IconUsers } from '@tabler/icons-react';
+import {
+  IconBan,
+  IconHeartHandshake,
+  IconMoodPlus,
+  IconSearch,
+  IconUsers,
+  IconX,
+} from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import FriendRequestsModal from '../FriendRequestsModal';
 import { useSocket } from '../../../hooks/socket';
+import { useChatContext } from '../../../hooks/useChatContext';
 
 export interface IFriendRequest {
   id: number;
@@ -38,9 +49,123 @@ interface FriendsListCardProps {
   userId: number | undefined;
 }
 
-interface SocketUser extends IUser {
-  status: 'online' | 'offline' | 'game' | 'chat';
+interface BlockButtonProps {
+  isLoggedUser: boolean;
+  friend: IUser;
 }
+
+const BlockButton: FC<BlockButtonProps> = ({ isLoggedUser, friend }) => {
+  const [opened, { toggle, close }] = useDisclosure(false);
+  const notificationTitle = 'Friends';
+  const [isLoading, setIsLoading] = useState(false);
+  const { updateFriendListChats } = useChatContext();
+
+  const handleBlockFriend = useCallback(async (friend: IUser) => {
+    try {
+      setIsLoading(true);
+      const { data } = await api.post(`/chats/${friend.id}/block`);
+      success('Successfully blocked friend');
+      updateFriendListChats(data.user.id, data.chat.id);
+    } catch (err) {
+      if (err instanceof AxiosError) alert(err.response?.data.message, notificationTitle);
+      else alert('Something went wrong while trying to block friend', notificationTitle);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleUnblockFriend = useCallback(async (friend: IUser) => {
+    try {
+      setIsLoading(true);
+      const { data } = await api.post(`/chats/${friend.id}/unblock`);
+      success('Successfully unblocked friend');
+      updateFriendListChats(data.user.id, data.chat.id);
+    } catch (err) {
+      if (err instanceof AxiosError) alert(err.response?.data.message, notificationTitle);
+      else alert('Something went wrong while trying to unblock friend', notificationTitle);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return (
+    <Box hidden={!isLoggedUser} style={{ position: 'relative' }}>
+      <LoadingOverlay
+        loaderProps={{ color: 'secondary', size: 'sm' }}
+        overlayOpacity={0.2}
+        visible={isLoading}
+        overlayBlur={2}
+      />
+      <Modal
+        opened={opened}
+        onClose={close}
+        withCloseButton
+        centered
+        size={340}
+        title='Block friend'
+      >
+        <LoadingOverlay
+          loaderProps={{ color: 'secondary' }}
+          overlayOpacity={0.2}
+          visible={isLoading}
+          overlayBlur={1}
+        />
+        <Text>
+          Are you sure you want to block{' '}
+          <Text span color='red' weight='bolder'>
+            {friend.username}
+          </Text>
+          ?
+        </Text>
+        <Text mt={6} size='xs' italic>
+          You will not be able to send or receive DMs from each other. Later you can unblock if you
+          make peace :)
+        </Text>
+        <Flex justify='space-between' mt='md' gap='md'>
+          <Button
+            leftIcon={<IconBan />}
+            variant='outline'
+            color='red'
+            size='sm'
+            fullWidth
+            onClick={() => {
+              handleBlockFriend(friend);
+              close();
+            }}
+          >
+            BLock
+          </Button>
+          <Button
+            leftIcon={<IconX />}
+            variant='outline'
+            color='gray'
+            size='sm'
+            fullWidth
+            onClick={close}
+          >
+            Cancel
+          </Button>
+        </Flex>
+      </Modal>
+      <Tooltip label='Block'>
+        <ActionIcon variant='subtle' color='red' radius='xl' size='lg' onClick={toggle}>
+          <IconBan />
+        </ActionIcon>
+      </Tooltip>
+      <Tooltip label='Unblock'>
+        <ActionIcon
+          variant='subtle'
+          color='lightBlue'
+          radius='xl'
+          size='lg'
+          onClick={() => handleUnblockFriend(friend)}
+        >
+          <IconHeartHandshake />
+        </ActionIcon>
+      </Tooltip>
+    </Box>
+  );
+};
 
 const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
   const { user } = useAuthContext();
@@ -63,8 +188,6 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
       .then(({ data }) => {
         setFriendsList(data);
         setFilteredFriendsList(data);
-
-        success('Successfully fetched user data', notificationTitle);
       })
       .catch((err) => {
         if (err instanceof AxiosError) {
@@ -89,8 +212,6 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
       .get('/friends/requests')
       .then(({ data }) => {
         setFriendRequestsList(data);
-
-        success('Successfully fetched user friend requests', notificationTitle);
       })
       .catch((err) => {
         if (err instanceof AxiosError) {
@@ -224,7 +345,8 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
             px={10}
             radius={8}
             w='100%'
-            mih={69}
+            mih={90}
+            mah={90}
             className={styles['friend-card']}
           >
             <Link className={styles['link']} to={`/profile/${friend.id}`}>
@@ -246,10 +368,15 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
                   </Text>
                 </Flex>
               </Flex>
-              <Badge variant='dot' color={getStatusColor(socketUsersList[friend.id]?.status)}>
+              <Badge
+                mr={6}
+                variant='dot'
+                color={getStatusColor(socketUsersList[friend.id]?.status)}
+              >
                 {socketUsersList[friend.id]?.status || 'offline'}
               </Badge>
             </Link>
+            <BlockButton friend={friend} isLoggedUser={isLoggedUser} />
           </Card>
         ))}
         {!filteredFriendsList.length && (

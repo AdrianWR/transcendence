@@ -5,11 +5,13 @@ import { useSocket } from '../../../hooks/socket';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useChatContext } from '../../../hooks/useChatContext';
 import styles from './Messages.module.css';
+import { DM_BLOCKED } from './Messages';
 
 const MessageInput = () => {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [dmBlocked, setDmBlocked] = useState(DM_BLOCKED.NOT_BLOCKED);
 
   const { activeChat, isBlocked } = useChatContext();
   const { socket } = useSocket();
@@ -19,6 +21,13 @@ const MessageInput = () => {
     if (activeChat) {
       // Check if user status in active chat is muted
       setIsMuted(activeChat.users.find((u) => u.id === user?.id)?.status === 'muted');
+      if (activeChat?.type === 'direct') {
+        const loggedUser = activeChat?.users.find((u) => u.id === user?.id);
+        const friend = activeChat?.users.find((u) => u.id !== user?.id);
+        if (loggedUser?.status == 'blocked') setDmBlocked(DM_BLOCKED.BY_FRIEND);
+        else if (friend?.status == 'blocked') setDmBlocked(DM_BLOCKED.BY_USER);
+        else setDmBlocked(DM_BLOCKED.NOT_BLOCKED);
+      } else setDmBlocked(DM_BLOCKED.NOT_BLOCKED);
     }
   }, [activeChat]);
 
@@ -50,12 +59,12 @@ const MessageInput = () => {
             placeholder='Type your message...'
             value={message}
             onChange={handleChange}
-            disabled={isSending || isMuted || isBlocked}
+            disabled={isSending || isMuted || isBlocked || dmBlocked !== DM_BLOCKED.NOT_BLOCKED}
             required
           />
           <Button
             type='submit'
-            disabled={isSending || isMuted || isBlocked}
+            disabled={isSending || isMuted || isBlocked || dmBlocked !== DM_BLOCKED.NOT_BLOCKED}
             className={styles['chat-input-button']}
           >
             <IconSend size='1.2rem' />

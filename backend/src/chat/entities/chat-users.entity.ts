@@ -14,6 +14,7 @@ export enum Status {
   ACTIVE = 'active',
   MUTED = 'muted',
   BANNED = 'banned',
+  BLOCKED = 'blocked',
 }
 
 export enum Role {

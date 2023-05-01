@@ -48,11 +48,18 @@ const MessageItem: FC<IMessage> = ({ content, sender, updatedAt }) => {
   );
 };
 
+export enum DM_BLOCKED {
+  BY_USER = 'user',
+  BY_FRIEND = 'friend',
+  NOT_BLOCKED = 'notBLocked',
+}
+
 // Defines a message component that fetches the message from the server
 // and renders it.
 const Messages: FC = () => {
   const viewport = useRef<HTMLDivElement>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [dmBlocked, setDmBlocked] = useState(DM_BLOCKED.NOT_BLOCKED);
 
   const { user } = useAuthContext();
   const { activeChat, messages, isBlocked } = useChatContext();
@@ -69,6 +76,13 @@ const Messages: FC = () => {
 
     // Check if user status in active chat is muted
     setIsMuted(activeChat?.users.find((u) => u.id === user?.id)?.status === 'muted');
+    if (activeChat?.type === 'direct') {
+      const loggedUser = activeChat?.users.find((u) => u.id === user?.id);
+      const friend = activeChat?.users.find((u) => u.id !== user?.id);
+      if (loggedUser?.status == 'blocked') setDmBlocked(DM_BLOCKED.BY_FRIEND);
+      else if (friend?.status == 'blocked') setDmBlocked(DM_BLOCKED.BY_USER);
+      else setDmBlocked(DM_BLOCKED.NOT_BLOCKED);
+    } else setDmBlocked(DM_BLOCKED.NOT_BLOCKED);
   }, [messages, activeChat]);
 
   return (
@@ -120,6 +134,20 @@ const Messages: FC = () => {
               <Flex align='center' direction='column' justify='center' style={{ height: '100%' }}>
                 <Title my='lg' align='center' color='white'>
                   You are blocked in this chat. Input the password to see the messages.
+                </Title>
+              </Flex>
+            </Overlay>
+          )}
+          {dmBlocked !== DM_BLOCKED.NOT_BLOCKED && (
+            <Overlay
+              opacity={0.5}
+              blur={10}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            >
+              <Flex align='center' direction='column' justify='center' style={{ height: '100%' }}>
+                <Title my='lg' align='center' color='white'>
+                  {dmBlocked === DM_BLOCKED.BY_USER && 'You have blocked this friend >:('}
+                  {dmBlocked === DM_BLOCKED.BY_FRIEND && 'Friend has blocked you >:('}
                 </Title>
               </Flex>
             </Overlay>

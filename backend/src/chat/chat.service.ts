@@ -6,7 +6,7 @@ import { UsersService } from '../users/users.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { ChatUsers, Role, Status } from './entities/chat-users.entity';
-import { Chat, CHAT_TYPE as ChatType } from './entities/chat.entity';
+import { CHAT_TYPE, Chat, CHAT_TYPE as ChatType } from './entities/chat.entity';
 import { Message } from './entities/message.entity';
 
 @Injectable()
@@ -229,9 +229,9 @@ export class ChatService {
           'email', users.email,
           'role', chat_users.role,
           'status', chat_users.status,
-          'avatar', 
-            (CASE 
-                WHEN users.avatar IS NOT NULL 
+          'avatar',
+            (CASE
+                WHEN users.avatar IS NOT NULL
                 THEN CONCAT('${process.env.BACKEND_URL}/${process.env.USER_PICTURE_PATH}/', users.avatar)
                 ELSE users.avatar
              END)
@@ -374,5 +374,59 @@ export class ChatService {
     if (!isPasswordCorrect) throw new BadRequestException('Wrong password');
 
     return true;
+  }
+
+  private async getFriendDM(userId: number, friendId: number) {
+    const chatUsers = await this.chatUsersRepository.find({
+      relations: ['user', 'chat'],
+      where: { user: { id: In([userId, friendId]) }, chat: { type: CHAT_TYPE.DIRECT } },
+    });
+
+    const chatUsersByChatId: { [chatId: number]: ChatUsers[] } = {};
+
+    const friendDM = chatUsers.reduce((finalChatUser, chatUser) => {
+      const { user, chat } = chatUser;
+      const chatUsers = chatUsersByChatId[chat.id] || [];
+
+      if (chatUsers.length) {
+        if (user.id === friendId) return chatUser;
+        return chatUsers[0];
+      }
+      else chatUsersByChatId[chat.id] = [chatUser];
+
+      return finalChatUser;
+    }, undefined);
+
+    return friendDM;
+  }
+
+  async blockUser(userId: number, friendId: number) {
+    const friendDM = await this.getFriendDM(userId, friendId);
+
+    if (!friendDM) { // if friend does not have a DM yet, create a new one and block it
+      await this.createDirectMessageRoom(userId, friendId);
+      const newFriendDM = await this.getFriendDM(userId, friendId);
+      newFriendDM.status = Status.BLOCKED;
+      return await this.chatUsersRepository.save(newFriendDM);
+    }
+
+    if (friendDM.status === Status.BLOCKED)
+      throw new BadRequestException("User already blocked this friend");
+
+    friendDM.status = Status.BLOCKED;
+    return await this.chatUsersRepository.save(friendDM);
+  }
+
+  async unblockUser(userId: number, friendId: number) {
+    const friendDM = await this.getFriendDM(userId, friendId);
+
+    if (!friendDM)
+      throw new BadRequestException("User does not have a DM to unblock friend");
+
+    if (friendDM.status === Status.ACTIVE)
+      throw new BadRequestException("User already unblocked this friend");
+
+    friendDM.status = Status.ACTIVE;
+    return await this.chatUsersRepository.save(friendDM);
   }
 }
