@@ -1,78 +1,105 @@
-import { Avatar, Badge, Button, Card, Flex, Paper, Stack, Text, Title } from '@mantine/core';
-import { FC } from 'react';
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Flex,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
+import { FC, useCallback, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { IMatch } from '../../../context/GameContext';
+import { useSocket } from '../../../hooks/socket';
 import styles from './Matchmaker.module.css';
 
 type MatchCardProps = {
-  match: {
-    id: number;
-    status: string;
-    players: {
-      id: number;
-      name: string;
-      avatar: string;
-      score: number;
-    }[];
-  };
+  match: IMatch;
 };
 
 const MatchCard: FC<MatchCardProps> = ({ match }) => {
+  const { socket } = useSocket();
+  const navigate = useNavigate();
+
+  const getStatusBadge = useCallback(
+    (match: IMatch) => {
+      switch (match.status) {
+        case 'waiting':
+          return <Badge color='blue'>Waiting for opponent</Badge>;
+        case 'playing':
+          return <Badge color='yellow'>In progress</Badge>;
+        case 'finished':
+          return <Badge color='green'>Finished</Badge>;
+      }
+    },
+    [match.status],
+  );
+
   return (
     <Card className={styles['match-card']}>
       <Flex direction='row' align='center' justify='space-between' gap='lg'>
-        <Badge color='red' variant='dot'>
-          {match.status}
-        </Badge>
-        <Avatar src={match.players[0].avatar} size='lg' radius='xl' />
+        {getStatusBadge(match)}
+        <Avatar src={match.playerOne.avatarUrl} size='lg' radius='xl' />
         <Stack spacing={1} align='center'>
-          <Text className={styles['match-card-player-name']}>{match.players[0].name}</Text>
-          <Text className={styles['match-card-player-score']}>{match.players[0].score}</Text>
+          <Text className={styles['match-card-player-name']}>{match.playerOne.username}</Text>
+          <Text className={styles['match-card-player-score']}>{match.playerOneScore}</Text>
         </Stack>
         <Text>VS</Text>
-        <Avatar src={match.players[1].avatar} size='lg' radius='xl' />
+        <Avatar src={match.playerTwo?.avatarUrl} size='lg' radius='xl' />
         <Stack spacing={1} align='center'>
-          <Text className={styles['match-card-player-name']}>{match.players[1].name}</Text>
-          <Text className={styles['match-card-player-score']}>{match.players[1].score}</Text>
+          <Text className={styles['match-card-player-name']}>
+            {match.playerTwo?.username ?? 'Player 2'}
+          </Text>
+          <Text className={styles['match-card-player-score']}>{match.playerTwoScore}</Text>
         </Stack>
-        <Button color='secondary'>Join</Button>
-        <Button color='lightBlue'>Watch</Button>
+        <Button
+          color='secondary'
+          disabled={!!match.playerTwo}
+          onClick={() => {
+            socket?.emit('joinGame', match.id, (match: IMatch) => navigate(`/game/${match.id}`));
+          }}
+        >
+          Join
+        </Button>
+        <Link to={`/game/${match.id}`}>
+          <Button color='lightBlue'>Watch</Button>
+        </Link>
       </Flex>
     </Card>
   );
 };
 
 const Matchmaker = () => {
-  const matchList = [
-    {
-      id: 1,
-      status: 'in-progress',
-      players: [
-        {
-          id: 1,
-          name: 'Player 1',
-          avatar: 'https://i.pravatar.cc/300?img=1',
-          score: 0,
-        },
-        {
-          id: 2,
-          name: 'Player 2',
-          avatar: 'https://i.pravatar.cc/300?img=2',
-          score: 0,
-        },
-      ],
-    },
-  ];
+  const { socket } = useSocket();
+  const [currentMatches, setCurrentMatches] = useState<IMatch[]>([]);
+
+  useEffect(() => {
+    socket?.emit('listCurrentMatches', (matches: IMatch[]) => {
+      setCurrentMatches(matches);
+    });
+
+    socket?.on('listCurrentMatches', (matches: IMatch[]) => setCurrentMatches(matches));
+
+    return () => {
+      socket?.off('listCurrentMatches');
+    };
+  }, [socket]);
 
   return (
     <Paper className={styles['matchmaker-paper']}>
       <Title color='white' mb='xl'>
         Live Games
       </Title>
-
-      <Stack spacing='md'>
-        {matchList.map((match) => (
-          <MatchCard key={match.id} match={match} />
-        ))}
-      </Stack>
+      <ScrollArea type='auto' offsetScrollbars h={450}>
+        <Stack spacing='md'>
+          {currentMatches.map((match) => (
+            <MatchCard key={match.id} match={match} />
+          ))}
+        </Stack>
+      </ScrollArea>
     </Paper>
   );
 };

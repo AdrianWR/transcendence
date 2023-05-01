@@ -64,17 +64,11 @@ export class JwtAuthService {
     };
   }
 
-  async refreshJwt(userId: number, refreshToken: string) {
+  async refreshJwt(userId: number) {
     const user = await this.usersService.findOne(userId);
-    if (!user || !user.refreshToken)
-      throw new ForbiddenException('Access Denied');
-
-    const refreshTokenMatches = await argon2.verify(
-      user.refreshToken,
-      refreshToken,
-    );
-
-    if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
+    if (!user || !user.refreshToken) {
+      throw new ForbiddenException('Access Denied: User not found');
+    }
 
     // This allow us refresh token rotation
     return await this.generateJwt(user);

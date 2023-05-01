@@ -26,7 +26,9 @@ export const AuthContext = createContext<IAuthContext | null>(null);
 export const AuthContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const [user, setUser] = useState<IUser | null>(() => {
     const storageUser = localStorage.getItem('user');
-    if (storageUser) return JSON.parse(storageUser) as IUser;
+    if (storageUser) {
+      return JSON.parse(storageUser) as IUser;
+    }
     return null;
   });
 

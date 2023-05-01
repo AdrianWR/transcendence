@@ -2,32 +2,35 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
-  Req,
+  Logger,
   Res,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { User } from '../../users/entities/user.entity';
 import { ReqUser } from '../../users/users.decorator';
-import { RequestType, ResponseType } from '../types/auth.interface';
+import { ResponseType } from '../types/auth.interface';
 import { RefreshTokenGuard } from './jwt.guard';
 import { JwtAuthService } from './jwt.service';
 
 @Controller('auth/jwt')
 export class JwtAuthController {
+  private readonly logger = new Logger(JwtAuthController.name);
   constructor(private jwtAuthService: JwtAuthService) {}
 
   @UseGuards(RefreshTokenGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Get('refresh')
   async refreshTokens(
-    @ReqUser() user,
-    @Req() req: RequestType,
+    @ReqUser() user: User,
     @Res({ passthrough: true }) res: ResponseType,
   ) {
-    //const user = req.user;
-    const refreshToken = req.cookies?.refreshToken;
-    const tokens = await this.jwtAuthService.refreshJwt(user.id, refreshToken);
-    await this.jwtAuthService.storeTokensInCookie(res, tokens);
+    try {
+      const tokens = await this.jwtAuthService.refreshJwt(user.id);
+      await this.jwtAuthService.storeTokensInCookie(res, tokens);
+    } catch (error) {
+      this.logger.error(error);
+    }
 
     return user;
   }

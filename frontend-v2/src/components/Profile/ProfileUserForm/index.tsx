@@ -1,21 +1,12 @@
-import { FC, FormEvent, useCallback, useState } from 'react';
-import {
-  Box,
-  Button,
-  Group,
-  PasswordInput,
-  TextInput,
-  Checkbox,
-  Loader,
-  Flex,
-} from '@mantine/core';
-import AvatarProfileUploader from '../AvatarProfileUploader';
+import { Box, Button, Flex, Group, Loader, PasswordInput, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import api from '../../../services/api';
-import { useAuthContext } from '../../../hooks/useAuthContext';
-import { alert, success } from '../../Notifications';
-import { IUser } from '../../../context/AuthContext';
 import { AxiosError } from 'axios';
+import { FC, FormEvent, useCallback, useState } from 'react';
+import { IUser } from '../../../context/AuthContext';
+import { useAuthContext } from '../../../hooks/useAuthContext';
+import api from '../../../services/api';
+import { alert, success } from '../../Notifications';
+import AvatarProfileUploader from '../AvatarProfileUploader';
 
 type UpdateUserFormType = Omit<IUser | undefined, 'id'> | { password?: string };
 
