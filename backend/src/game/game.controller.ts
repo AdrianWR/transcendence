@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Param,
   Post,
   UseGuards,
   UseInterceptors,
@@ -21,6 +22,11 @@ export class GameController {
   @Post()
   async createGame(@Body() gameDto: CreateGameDto) {
     return this.matchService.createMatch(gameDto);
+  }
+
+  @Get('/match:id')
+  async getMatch(@Param('id') id: string) {
+    return this.matchService.getMatch(id);
   }
 
   @Get('/matches')

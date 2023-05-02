@@ -5,7 +5,7 @@ import { IUser } from './AuthContext';
 
 export interface IMatch {
   id: string;
-  status: 'waiting' | 'playing' | 'finished';
+  status: 'waiting' | 'playing' | 'finished' | 'aborted';
   playerOne: IUser;
   playerTwo?: IUser;
   playerOneScore: number;

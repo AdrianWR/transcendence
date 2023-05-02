@@ -37,7 +37,6 @@ const GameCanvas: FC = () => {
   const { gameId } = useParams(); // id of the game
 
   useEffect(() => {
-    console.log;
     gameSocket.current = io(`${process.env.REACT_APP_BACKEND_URL}/game`, {
       transports: ['websocket'],
       withCredentials: true,
