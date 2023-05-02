@@ -25,6 +25,11 @@ const MessageItem: FC<MessageItemProps> = ({
   const isCurrentUser = user?.id === sender.id;
   const blockedFriend = friendsBlocked[sender.id];
 
+  const autoLink = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, (url) => `<a href="${url}" target="_blank">${url}</a>`);
+  };
+
   return (
     <Flex align={isCurrentUser ? 'flex-end' : 'flex-start'} className={styles['chat-message']}>
       <Text className={styles['chat-message-sender']} color='lightGrey'>
