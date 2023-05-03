@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Avatar,
   Badge,
   Box,
   Button,
@@ -24,7 +25,7 @@ import {
   IconUsers,
   IconX,
 } from '@tabler/icons-react';
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useChatContext } from '../../hooks/useChatContext';
 import ListAllUsersCard from '../Users/ListAllUsersCard';
@@ -108,8 +109,8 @@ const BlockButton: FC<BlockButtonProps> = ({ friend }) => {
           ?
         </Text>
         <Text mt={6} size='xs' italic>
-          You will not be able to send or receive DMs from each other. Later you can unblock if you
-          make peace :)
+          You will not be able to send or receive DMs from each other and will not see each other
+          messages on public/private chats. Later you can unblock if you make peace :)
         </Text>
         <Flex justify='space-between' mt='md' gap='md'>
           <Button
@@ -230,6 +231,13 @@ const Chat: FC = () => {
     }
   }, [activeChat, isBlocked, password, authenticateChat]);
 
+  const dmFriend = useMemo(() => {
+    if (activeChat?.type === 'direct') {
+      return activeChat.users.find(({ id }) => id !== user?.id);
+    }
+    return null;
+  }, [activeChat, user]);
+
   return (
     <>
       <Modal opened={addMemberOpened} onClose={addMemberClose} title='Add a Member'>
@@ -262,7 +270,11 @@ const Chat: FC = () => {
           }}
         >
           <Flex align='center' gap='sm'>
-            <IconMessages size={32} color='green' />
+            {dmFriend ? (
+              <Avatar src={dmFriend?.avatar} radius='xl' size={36} />
+            ) : (
+              <IconMessages size={32} color='green' />
+            )}
             <Text color='white' size='xl' w='fit-content' maw='20vw' truncate>
               {chatName}
             </Text>
