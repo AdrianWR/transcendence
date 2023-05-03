@@ -118,8 +118,8 @@ const BlockButton: FC<BlockButtonProps> = ({ isLoggedUser, friend }) => {
           ?
         </Text>
         <Text mt={6} size='xs' italic>
-          You will not be able to send or receive DMs from each other. Later you can unblock if you
-          make peace :)
+          You will not be able to send or receive DMs from each other and will not see each other
+          messages on public/private chats. Later you can unblock if you make peace :)
         </Text>
         <Flex justify='space-between' mt='md' gap='md'>
           <Button

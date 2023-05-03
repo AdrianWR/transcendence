@@ -1,9 +1,13 @@
 import {
   ActionIcon,
+  Avatar,
   Badge,
+  Box,
+  Button,
   Drawer,
   Flex,
   Group,
+  LoadingOverlay,
   Modal,
   PasswordInput,
   Text,
@@ -12,22 +16,149 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import {
   IconArrowBadgeRight,
+  IconBan,
+  IconHeartHandshake,
+  IconMessage2Off,
   IconMessages,
   IconMoodPlus,
   IconSettings,
   IconUsers,
+  IconX,
 } from '@tabler/icons-react';
-import { FC, useCallback, useEffect, useState } from 'react';
-import { useSocket } from '../../hooks/socket';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useChatContext } from '../../hooks/useChatContext';
 import ListAllUsersCard from '../Users/ListAllUsersCard';
 import ChatMembersDrawer from './ChatMembersDrawer';
 import ChatSettingsModal from './ChatSettingsModal';
 import Messages from './Messages/Messages';
+import api from '../../services/api';
+import { alert, success } from '../Notifications';
+import { AxiosError } from 'axios';
+import { IChatUser } from '../../context/ChatContext';
 
 const AddFriendModal: FC<{ close: () => void }> = ({ close }) => {
   return <ListAllUsersCard mode='chat' close={close} />;
+};
+
+interface BlockButtonProps {
+  friend: IChatUser;
+}
+
+const BlockButton: FC<BlockButtonProps> = ({ friend }) => {
+  const [opened, { toggle, close }] = useDisclosure(false);
+  const notificationTitle = 'Friends';
+  const [isLoading, setIsLoading] = useState(false);
+  const { updateFriendListChats } = useChatContext();
+
+  const handleBlockFriend = useCallback(async (friend: IChatUser) => {
+    try {
+      setIsLoading(true);
+      const { data } = await api.post(`/chats/${friend.id}/block`);
+      success('Successfully blocked friend');
+      updateFriendListChats(data.user.id);
+    } catch (err) {
+      if (err instanceof AxiosError) alert(err.response?.data.message, notificationTitle);
+      else alert('Something went wrong while trying to block friend', notificationTitle);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleUnblockFriend = useCallback(async (friend: IChatUser) => {
+    try {
+      setIsLoading(true);
+      const { data } = await api.post(`/chats/${friend.id}/unblock`);
+      success('Successfully unblocked friend');
+      updateFriendListChats(data.user.id);
+    } catch (err) {
+      if (err instanceof AxiosError) alert(err.response?.data.message, notificationTitle);
+      else alert('Something went wrong while trying to unblock friend', notificationTitle);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return (
+    <Box style={{ position: 'relative' }}>
+      <LoadingOverlay
+        loaderProps={{ color: 'secondary', size: 'sm' }}
+        overlayOpacity={0.2}
+        visible={isLoading}
+        overlayBlur={2}
+      />
+      <Modal
+        opened={opened}
+        onClose={close}
+        withCloseButton
+        centered
+        size={340}
+        title='Block friend'
+      >
+        <LoadingOverlay
+          loaderProps={{ color: 'secondary' }}
+          overlayOpacity={0.2}
+          visible={isLoading}
+          overlayBlur={1}
+        />
+        <Text>
+          Are you sure you want to block{' '}
+          <Text span color='red' weight='bolder'>
+            {friend.username}
+          </Text>
+          ?
+        </Text>
+        <Text mt={6} size='xs' italic>
+          You will not be able to send or receive DMs from each other and will not see each other
+          messages on public/private chats. Later you can unblock if you make peace :)
+        </Text>
+        <Flex justify='space-between' mt='md' gap='md'>
+          <Button
+            leftIcon={<IconBan />}
+            variant='outline'
+            color='red'
+            size='sm'
+            fullWidth
+            onClick={() => {
+              handleBlockFriend(friend);
+              close();
+            }}
+          >
+            BLock
+          </Button>
+          <Button
+            leftIcon={<IconX />}
+            variant='outline'
+            color='gray'
+            size='sm'
+            fullWidth
+            onClick={close}
+          >
+            Cancel
+          </Button>
+        </Flex>
+      </Modal>
+      {friend.status === 'active' ? (
+        <Tooltip label='Block'>
+          <ActionIcon variant='filled' color='red' radius='xl' size='lg' onClick={toggle}>
+            <IconMessage2Off />
+          </ActionIcon>
+        </Tooltip>
+      ) : (
+        <Tooltip label='Unblock'>
+          <ActionIcon
+            variant='filled'
+            color='lightBlue'
+            radius='xl'
+            size='lg'
+            onClick={() => handleUnblockFriend(friend)}
+          >
+            <IconHeartHandshake />
+          </ActionIcon>
+        </Tooltip>
+      )}
+    </Box>
+  );
 };
 
 const Chat: FC = () => {
@@ -39,7 +170,6 @@ const Chat: FC = () => {
   const [membersOpened, { open: membersOpen, close: membersClose }] = useDisclosure(false);
   const [addMemberOpened, { open: addMemberOpen, close: addMemberClose }] = useDisclosure(false);
   const [editOpened, { open: editOpen, close: editClose }] = useDisclosure(false);
-  const { socket } = useSocket();
 
   useEffect(() => {
     if (activeChat?.type === 'direct') {
@@ -101,6 +231,13 @@ const Chat: FC = () => {
     }
   }, [activeChat, isBlocked, password, authenticateChat]);
 
+  const dmFriend = useMemo(() => {
+    if (activeChat?.type === 'direct') {
+      return activeChat.users.find(({ id }) => id !== user?.id);
+    }
+    return null;
+  }, [activeChat, user]);
+
   return (
     <>
       <Modal opened={addMemberOpened} onClose={addMemberClose} title='Add a Member'>
@@ -133,7 +270,11 @@ const Chat: FC = () => {
           }}
         >
           <Flex align='center' gap='sm'>
-            <IconMessages size={32} color='green' />
+            {dmFriend ? (
+              <Avatar src={dmFriend?.avatar} radius='xl' size={36} />
+            ) : (
+              <IconMessages size={32} color='green' />
+            )}
             <Text color='white' size='xl' w='fit-content' maw='20vw' truncate>
               {chatName}
             </Text>
@@ -169,6 +310,17 @@ const Chat: FC = () => {
                 </ActionIcon>
               </Tooltip>
             </div>
+            {activeChat?.type === 'direct' && (
+              <div hidden={!activeChat}>
+                <Tooltip label='Add a member' position='top-start'>
+                  <BlockButton
+                    friend={
+                      activeChat?.users.find(({ id }) => id !== user?.id) || ({} as IChatUser)
+                    }
+                  />
+                </Tooltip>
+              </div>
+            )}
             {activeChat?.users.find(({ id }) => id === user?.id)?.role === 'owner' &&
               activeChat?.type === 'protected' && (
                 <Tooltip label='Edit' position='top-start'>

@@ -57,7 +57,7 @@ export type IChatContext = {
   messages: IMessage[];
   authenticateChat(password: string): void;
   protectedChats: IChat[];
-  updateFriendListChats: (friendId: number, chatId: number) => void;
+  updateFriendListChats: (friendId: number, chatId?: number) => void;
   listChats: () => void;
 };
 
@@ -113,7 +113,7 @@ export const ChatContextProvider: FC<PropsWithChildren> = ({ children }) => {
   );
 
   const updateFriendListChats = useCallback(
-    (friendId: number, chatId: number) => {
+    (friendId: number, chatId?: number) => {
       socket?.emit('updateUserChatList', { friendId, chatId });
     },
     [socket],

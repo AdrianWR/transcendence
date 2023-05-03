@@ -90,7 +90,7 @@ export class ChatService {
     const hasDM = await this.alreadyHaveDirectMessage(userId, friendId);
 
     if (hasDM)
-      throw new BadRequestException('User already has DM with this friend');
+      throw new BadRequestException('You already have a DM with this user');
 
     const users = await Promise.all(
       [userId, friendId].map(async (id) => {

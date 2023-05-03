@@ -7,7 +7,6 @@
 .chat-message-sender {
   font-size: 14px;
   font-weight: bold;
-  color: grey;
   margin-bottom: 2px;
 }
 
@@ -16,6 +15,14 @@
   border-radius: 8px;
   max-width: 25vw;
   word-wrap: break-word;
+  line-height: 1.5;
+  font-size: 16px;
+  color: #333;
+}
+
+.chat-message-blocked {
+  padding: 8px;
+  border-radius: 8px;
   line-height: 1.5;
   font-size: 16px;
   color: #333;

@@ -25,6 +25,13 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
     }
   }, [chat, user]);
 
+  const dmFriend = useMemo(() => {
+    if (chat.type === 'direct') {
+      return chat.users.find(({ id }) => id !== user?.id);
+    }
+    return null;
+  }, [chat, user]);
+
   const isActiveChat = useMemo(() => activeChat?.id === chat.id, [activeChat, chat]);
 
   return (
@@ -53,7 +60,7 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
         }}
       >
         <Avatar
-          src={chat.avatar}
+          src={dmFriend?.avatar}
           radius='xl'
           size='sm'
           mr={12}
@@ -63,7 +70,7 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
           <Text size='md' weight='bold' color='white'>
             {chatName}
           </Text>
-          <Text size='sm' color='white'>
+          <Text size='sm' color='grey' truncate maw={250}>
             {chat.lastMessage ?? ''}
           </Text>
         </Stack>
