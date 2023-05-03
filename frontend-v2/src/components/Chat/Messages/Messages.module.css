@@ -21,6 +21,14 @@
   color: #333;
 }
 
+.chat-message-blocked {
+  padding: 8px;
+  border-radius: 8px;
+  line-height: 1.5;
+  font-size: 16px;
+  color: #333;
+}
+
 .chat-message-timestamp {
   font-size: 12px;
   color: #999;

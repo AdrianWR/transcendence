@@ -40,33 +40,44 @@ interface IDMModalProps {
 }
 
 const DirectMessageCreateModal: FC<IDMModalProps> = ({ close }) => {
-  const { user } = useAuthContext();
   const { socketUsersList } = useSocket();
-  const { createDirectMessage } = useChatContext();
+  const { user } = useAuthContext();
+  const { chats, createDirectMessage } = useChatContext();
   const notificationTitle = 'Direct Message';
-  const [friendsList, setFriendsList] = useState([] as IUser[]);
-  const [filteredFriendsList, setFilteredFriendsList] = useState([] as IUser[]);
+  const [usersList, setUsersList] = useState([] as IUser[]);
+  const [filteredUsersList, setFilteredUsersList] = useState([] as IUser[]);
   const [isLoading, setIsLoading] = useState(false);
   const [friendSearched, setFriendSearched] = useState('');
 
   useEffect(() => {
-    if (!user?.id) return;
     setIsLoading(true);
     api
-      .get(`/friends/${user?.id}`)
+      .get('/users')
       .then(({ data }) => {
-        setFriendsList(data);
-        setFilteredFriendsList(data);
+        const indexedDMUsers = chats.reduce((acc, chat) => {
+          const { users, type } = chat;
+          if (type === 'direct') {
+            const [user1, user2] = users;
+
+            return { ...acc, [user1.id]: true, [user2.id]: true };
+          }
+          return acc;
+        }, {} as { [userId: number]: boolean });
+
+        const users = (data || []).filter((u: IUser) => u.id !== user?.id && !indexedDMUsers[u.id]);
+
+        setUsersList(users);
+        setFilteredUsersList(users);
       })
       .catch((err) => {
         if (err instanceof AxiosError) {
           alert(err.response?.data.message, notificationTitle);
         } else {
-          alert('Error occured while fetching friends list', notificationTitle);
+          alert('Error occured while fetching users list', notificationTitle);
         }
       })
       .finally(() => setIsLoading(false));
-  }, [user?.id]);
+  }, [chats, user]);
 
   const handleSearch = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,17 +85,17 @@ const DirectMessageCreateModal: FC<IDMModalProps> = ({ close }) => {
         ? String(event.currentTarget.value).toLowerCase()
         : event.currentTarget.value;
       setFriendSearched(event.currentTarget.value);
-      setFilteredFriendsList(
+      setFilteredUsersList(
         !seachInputValue
-          ? friendsList
-          : friendsList.filter(({ firstName, lastName, username }) => {
+          ? usersList
+          : usersList.filter(({ firstName, lastName, username }) => {
               const name = `${firstName} ${lastName}`.toLowerCase();
 
               return name.includes(seachInputValue) || username.includes(seachInputValue);
             }),
       );
     },
-    [friendsList],
+    [usersList],
   );
 
   const emitCreateDM = useCallback(
@@ -124,7 +135,7 @@ const DirectMessageCreateModal: FC<IDMModalProps> = ({ close }) => {
         mb={12}
         className={styles['search-input']}
         icon={<IconSearch size='0.8rem' />}
-        placeholder='search friends'
+        placeholder='search users'
         value={friendSearched}
         onChange={handleSearch}
       />
@@ -137,7 +148,7 @@ const DirectMessageCreateModal: FC<IDMModalProps> = ({ close }) => {
         h='85%'
         style={{ overflow: 'auto' }}
       >
-        {filteredFriendsList.map((friend) => (
+        {filteredUsersList.map((friend) => (
           <Card
             key={friend.id}
             my={6}
@@ -179,7 +190,7 @@ const DirectMessageCreateModal: FC<IDMModalProps> = ({ close }) => {
           </Card>
         ))}
 
-        {!filteredFriendsList.length && (
+        {!filteredUsersList.length && (
           <Text m={24} color='white'>
             No friends :(
           </Text>

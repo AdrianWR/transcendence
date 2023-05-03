@@ -68,13 +68,29 @@ export class ChatGateway implements OnGatewayConnection {
     return chats;
   }
 
+  private async sendChatsUpdate(userId: number) {
+    const socket = this.connectedUsers.get(userId);
+    if (socket) {
+      const chats = await this.chatService.findChatRoomsByUserId(
+        userId,
+      );
+      socket.emit('listChats', chats);
+    }
+  }
+
   @SubscribeMessage('updateUserChatList')
   async updateUserChatList(
-    @MessageBody(new ValidationPipe()) data: { friendId: number; chatId: number },
+    @SocketUser('id') userId: number,
+    @MessageBody(new ValidationPipe()) data: { friendId: number; chatId: number | undefined },
   ) {
     const { friendId, chatId } = data;
-    const chats = await this.chatService.findChatRoomsByUserId(friendId);
-    this.server.to(`chat:${chatId}`).emit('listChats', chats);
+    if (chatId) {
+      const chats = await this.chatService.findChatRoomsByUserId(friendId);
+      this.server.to(`chat:${chatId}`).emit('listChats', chats);
+    } else {
+      await this.sendChatsUpdate(userId);
+      await this.sendChatsUpdate(friendId);
+    }
   }
 
   @SubscribeMessage('listPublicChats')
