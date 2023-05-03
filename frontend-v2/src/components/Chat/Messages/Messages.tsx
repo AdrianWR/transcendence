@@ -27,7 +27,7 @@ const MessageItem: FC<MessageItemProps> = ({
 
   return (
     <Flex align={isCurrentUser ? 'flex-end' : 'flex-start'} className={styles['chat-message']}>
-      <Text className={styles['chat-message-sender']}>
+      <Text className={styles['chat-message-sender']} color='lightGrey'>
         {isCurrentUser ? 'You' : sender.username}
       </Text>
       {blockedFriend ? (

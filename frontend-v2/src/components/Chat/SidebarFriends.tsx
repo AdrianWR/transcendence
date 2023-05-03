@@ -70,7 +70,7 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
           <Text size='md' weight='bold' color='white'>
             {chatName}
           </Text>
-          <Text size='sm' color='white'>
+          <Text size='sm' color='grey' truncate maw={250}>
             {chat.lastMessage ?? ''}
           </Text>
         </Stack>
