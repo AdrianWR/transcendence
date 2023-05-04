@@ -72,6 +72,26 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.gameService.updateFromClient(id, user.id, playerY);
   }
 
+  @SubscribeMessage('pauseGame')
+  async pauseGame(client: Socket) {
+    const { id, user } = this.getConnectionId(client);
+
+    // Update the game state
+    return this.gameService.updateGameState(id, {
+      status: 'paused',
+    });
+  }
+
+  @SubscribeMessage('resumeGame')
+  async resumeGame(client: Socket) {
+    const { id, user } = this.getConnectionId(client);
+
+    // Update the game state
+    return this.gameService.updateGameState(id, {
+      status: 'playing',
+    });
+  }
+
   @Interval(GameService.FRAME_INTERVAL)
   async handleGameUpdates() {
     // Get all the games

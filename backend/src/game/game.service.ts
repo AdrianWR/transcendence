@@ -211,7 +211,7 @@ export class GameService {
     return this.gameMap.get(gameId);
   }
 
-  private updateGameState(gameId: string, state: DeepPartial<IGameState>) {
+  updateGameState(gameId: string, state: DeepPartial<IGameState>) {
     this.gameMap.set(gameId, <IGameState>{
       ...this.gameMap.get(gameId),
       ...state,
