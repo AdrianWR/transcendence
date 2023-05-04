@@ -3,6 +3,7 @@ import { FC, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Socket, io } from 'socket.io-client';
 import { IUser } from '../../../context/AuthContext';
+import { IMatch } from '../../../context/GameContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
 import styles from './Canvas.module.css';
@@ -29,12 +30,12 @@ const GameCanvasOverlay: FC<IGameCanvasOverlayProps> = ({ status }) => {
 };
 
 const GameCanvas: FC = () => {
+  const { gameId } = useParams(); // id of the game
   const { user } = useAuthContext();
   const [game, setGame] = useState<IGameState | null>(null);
   const [playerOneUser, setPlayerOneUser] = useState<IUser>();
   const [playerTwoUser, setPlayerTwoUser] = useState<IUser>();
   const gameSocket = useRef<Socket | null>(null);
-  const { gameId } = useParams(); // id of the game
 
   useEffect(() => {
     gameSocket.current = io(`${process.env.REACT_APP_BACKEND_URL}/game`, {
@@ -47,23 +48,32 @@ const GameCanvas: FC = () => {
       setGame(game);
     });
 
+    gameSocket.current.on('userJoin', (game) => {
+      api
+        .get<IUser>(`/users/${game?.playerTwo?.id}`)
+        .then((response) => setPlayerTwoUser(response.data));
+    });
+
+    api.get<IMatch>(`matches/${gameId}`).then((response) => {
+      console.log('Match: ', response.data);
+      api.get<IUser>(`/users/${response.data.playerOne.id}`).then((response) => {
+        console.log('Player One User: ', response.data);
+        setPlayerOneUser(response.data);
+      });
+      if (response.data.playerTwo) {
+        api.get<IUser>(`/users/${response.data.playerTwo.id}`).then((response) => {
+          console.log('Player Two User: ', response.data);
+          setPlayerTwoUser(response.data);
+        });
+      }
+    });
+
     return () => {
       gameSocket.current?.off('updateGame');
-
+      gameSocket.current?.off('userJoin');
       gameSocket.current?.disconnect();
     };
   }, []);
-
-  useEffect(() => {
-    if (!game?.playerOne || !game?.playerTwo) return;
-
-    api
-      .get<IUser>(`/users/${game?.playerOne?.id}`)
-      .then((response) => setPlayerOneUser(response.data));
-    api
-      .get<IUser>(`/users/${game?.playerTwo?.id}`)
-      .then((response) => setPlayerTwoUser(response.data));
-  }, [game]);
 
   return (
     <>

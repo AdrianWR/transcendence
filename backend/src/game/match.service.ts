@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -72,6 +72,21 @@ export class MatchService {
     return this.matchRepository.save(updatedGame);
   }
 
+  async abortMatch(gameId: string) {
+    const game = await this.matchRepository.findOne({
+      where: { id: gameId },
+      relations: ['playerOne', 'playerTwo'],
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    game.status = GameStatus.ABORTED;
+
+    return this.matchRepository.save(game);
+  }
+
   async finishMatch(gameId: string) {
     const game = await this.matchRepository.findOne({
       where: { id: gameId },
@@ -96,9 +111,15 @@ export class MatchService {
   }
 
   async getMatch(gameId: string) {
-    return this.matchRepository.findOne({
+    const match = await this.matchRepository.findOne({
       where: { id: gameId },
       relations: ['playerOne', 'playerTwo'],
     });
+
+    if (!match) {
+      throw new NotFoundException('Game not found');
+    }
+
+    return match;
   }
 }

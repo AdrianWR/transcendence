@@ -84,6 +84,18 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
+  @OnEvent('match.joined', { async: true })
+  async updateGamePlayer(game: Game) {
+    // Update the game state
+    const gameState = this.gameService.updatePlayerTwo(game.id, {
+      id: game.playerTwo.id,
+      isConnected: true,
+    });
+
+    // Send the game updates to all the clients
+    this.server.to(`game:${game.id}`).emit('userJoin', gameState);
+  }
+
   @OnEvent('match.ended', { async: true })
   async handleMatchEnded(game: Game) {
     // Delete the game from memory

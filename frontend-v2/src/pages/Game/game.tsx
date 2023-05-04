@@ -13,14 +13,17 @@ const GamePage: FCWithLayout = () => {
 
   useEffect(() => {
     api
-      .get<IMatch>(`/game/${gameId}`)
+      .get<IMatch>(`/matches/${gameId}`)
       .then((response) => {
         if (response.data.status === 'finished' || response.data.status === 'aborted') {
           navigate('/game/finished');
         }
       })
       .catch((error) => {
-        if (error instanceof AxiosError && error.response?.status === 404) {
+        if (
+          (error instanceof AxiosError && error.response?.status === 404) ||
+          error.response?.status === 400
+        ) {
           navigate('/not-found');
         }
       });

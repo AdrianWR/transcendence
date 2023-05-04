@@ -49,7 +49,7 @@ const GameSketch: FC<GameSketchProps> = ({ game, socket }) => {
 
   const draw = (p5: p5Types) => {
     p5.clear();
-    p5.frameRate(24);
+    p5.frameRate(60);
 
     const { playerOne, playerTwo, ball } = game;
 

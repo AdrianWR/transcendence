@@ -46,7 +46,7 @@ export interface IGameState {
 
 @Injectable()
 export class GameService {
-  static FRAME_RATE = 24;
+  static FRAME_RATE = 60;
   static FRAME_INTERVAL = 1000 / GameService.FRAME_RATE;
   static CANVAS_WIDTH = 800;
   static CANVAS_HEIGHT = 400;
@@ -83,20 +83,13 @@ export class GameService {
     return gameState;
   }
 
-  @OnEvent('match.joined', { async: true })
-  async updateGamePlayer(game: Game) {
-    // Get the game state
-    const gameState = this.gameMap.get(game.id);
+  @OnEvent('match.ended', { async: true })
+  async finishGame(game: IGameState) {
+    // Remove the game state
+    this.gameMap.delete(game.id);
 
-    // Update the game state
-    this.gameMap.set(game.id, {
-      ...gameState,
-      playerTwo: {
-        ...gameState.playerTwo,
-        id: game.playerTwo.id,
-        isConnected: true,
-      },
-    });
+    // Finish the game in the database
+    await this.matchService.finishMatch(game.id);
   }
 
   async updateMatchScore(
@@ -109,15 +102,6 @@ export class GameService {
       playerOneScore,
       playerTwoScore,
     });
-  }
-
-  @OnEvent('match.ended', { async: true })
-  async removeGame(game: Game) {
-    // Remove the game state
-    this.gameMap.delete(game.id);
-
-    // Finish the game in the database
-    await this.matchService.finishMatch(game.id);
   }
 
   getGameState(gameId: string) {
@@ -201,6 +185,32 @@ export class GameService {
     return this.gameMap.get(game.id);
   }
 
+  updatePlayerTwo(gameId: string, playerTwoState: Partial<IPlayer>) {
+    const game = this.gameMap.get(gameId);
+
+    if (game.playerTwo) {
+      this.updateGameState(gameId, {
+        playerTwo: { ...game.playerTwo, ...playerTwoState },
+      });
+    } else {
+      this.updateGameState(gameId, {
+        playerTwo: {
+          id: playerTwoState.id,
+          position: {
+            x: GameService.CANVAS_WIDTH - GameService.PLAYER_THICKNESS,
+            y: GameService.CANVAS_HEIGHT / 2 - GameService.PLAYER_LENGTH / 2,
+          },
+          thickness: GameService.PLAYER_THICKNESS,
+          length: GameService.PLAYER_LENGTH,
+          score: 0,
+          isConnected: false,
+        },
+      });
+    }
+
+    return this.gameMap.get(gameId);
+  }
+
   private updateGameState(gameId: string, state: DeepPartial<IGameState>) {
     this.gameMap.set(gameId, <IGameState>{
       ...this.gameMap.get(gameId),
@@ -260,7 +270,7 @@ export class GameService {
     return this.gameMap.get(gameId);
   }
 
-  handleGameDisconnection(gameId: string, userId: number) {
+  async handleGameDisconnection(gameId: string, userId: number) {
     if (this.isSpectator(userId, gameId)) {
       return this.getGameState(gameId);
     }
@@ -268,8 +278,15 @@ export class GameService {
     // Set active player as disconnected
     this.updateActivePlayer(gameId, userId, { isConnected: false });
 
-    // Pause the game
-    this.updateGameState(gameId, { status: 'paused' });
+    // If just one player is connected, pause the game
+    // If both players are disconnected, delete the game and abort the match
+    const game = this.getGameState(gameId);
+    if (game.playerOne.isConnected != game.playerTwo.isConnected) {
+      this.pauseGame(gameId);
+    } else if (!game.playerOne.isConnected && !game.playerTwo.isConnected) {
+      this.deleteGame(gameId);
+      await this.matchService.abortMatch(gameId);
+    }
 
     return this.gameMap.get(gameId);
   }
@@ -279,14 +296,18 @@ export class GameService {
     return game.playerOne.isConnected && game.playerTwo.isConnected;
   }
 
-  async deleteGame(gameId: string) {
+  pauseGame(gameId: string) {
+    this.updateGameState(gameId, { status: 'paused' });
+  }
+
+  deleteGame(gameId: string) {
     this.gameMap.delete(gameId);
   }
 
   private getRandomBallVelocity() {
-    // Give the ball a random velocity between 8 and 12
-    const dx = Math.random() * 4 + 8;
-    const dy = Math.random() * 4 + 8;
+    // Give the ball a random velocity between 4 and 6
+    const dx = Math.random() * 2 + 4;
+    const dy = Math.random() * 2 + 4;
 
     return {
       dx: Math.random() > 0.5 ? dx : -dx,

@@ -1,19 +1,18 @@
 import { Button, Container, Image, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
 import styles from './404.module.css';
 
 interface ErrorPageProps {}
 
 const NotFoundPage: FCWithLayout<ErrorPageProps> = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  useEffect(() => {
-    setTimeout(() => {
-      navigate('/');
-    }, 10000);
-  }, [navigate]);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     navigate('/');
+  //   }, 10000);
+  // }, [navigate]);
 
   return (
     <Container className={styles['not-found-container']}>
