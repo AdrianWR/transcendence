@@ -35,6 +35,8 @@ const GameCanvas: FC = () => {
   const [game, setGame] = useState<IGameState | null>(null);
   const [playerOneUser, setPlayerOneUser] = useState<IUser>();
   const [playerTwoUser, setPlayerTwoUser] = useState<IUser>();
+  const [playerOneScore, setPlayerOneScore] = useState<number>(0);
+  const [playerTwoScore, setPlayerTwoScore] = useState<number>(0);
   const gameSocket = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -55,14 +57,13 @@ const GameCanvas: FC = () => {
     });
 
     api.get<IMatch>(`matches/${gameId}`).then((response) => {
-      console.log('Match: ', response.data);
+      setPlayerOneScore(response.data.playerOneScore);
+      setPlayerTwoScore(response.data.playerTwoScore);
       api.get<IUser>(`/users/${response.data.playerOne.id}`).then((response) => {
-        console.log('Player One User: ', response.data);
         setPlayerOneUser(response.data);
       });
       if (response.data.playerTwo) {
         api.get<IUser>(`/users/${response.data.playerTwo.id}`).then((response) => {
-          console.log('Player Two User: ', response.data);
           setPlayerTwoUser(response.data);
         });
       }
@@ -75,6 +76,15 @@ const GameCanvas: FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!game) return;
+
+    if (game.status === 'playing' || game.status === 'paused') {
+      setPlayerOneScore(game?.playerOne?.score ?? 0);
+      setPlayerTwoScore(game?.playerTwo?.score ?? 0);
+    }
+  }, [game?.status, game?.playerOne?.score, game?.playerTwo?.score]);
+
   return (
     <>
       <Container className={styles['canvas-container']}>
@@ -84,7 +94,7 @@ const GameCanvas: FC = () => {
             <Stack spacing={1} align='center'>
               <Text className={styles['match-card-player-name']}>{playerOneUser?.username}</Text>
               <Text color='secondary' className={styles['match-card-player-score']}>
-                {game?.playerOne?.score ?? 0}
+                {playerOneScore}
               </Text>
             </Stack>
             <Text size='xl' color='secondary'>
@@ -93,7 +103,7 @@ const GameCanvas: FC = () => {
             <Stack spacing={1} align='center'>
               <Text className={styles['match-card-player-name']}>{playerTwoUser?.username}</Text>
               <Text color='secondary' className={styles['match-card-player-score']}>
-                {game?.playerTwo?.score ?? 0}
+                {playerTwoScore}
               </Text>
             </Stack>
             <Avatar src={playerTwoUser?.avatarUrl} size='lg' radius='xl' />

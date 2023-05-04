@@ -15,8 +15,8 @@ const GamePage: FCWithLayout = () => {
     api
       .get<IMatch>(`/matches/${gameId}`)
       .then((response) => {
-        if (response.data.status === 'finished' || response.data.status === 'aborted') {
-          navigate('/game/finished');
+        if (response.data.status === 'aborted') {
+          navigate('/not-found');
         }
       })
       .catch((error) => {
