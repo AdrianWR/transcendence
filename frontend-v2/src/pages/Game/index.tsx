@@ -25,7 +25,7 @@ const MatchmakerPage: FCWithLayout = () => {
       <Stack>
         <Group position='center' spacing='lg' grow>
           <GameMenuCard onClick={createGame}>Create a new game room</GameMenuCard>
-          <GameMenuCard>Join a random game room</GameMenuCard>
+          {/* <GameMenuCard>Join a random game room</GameMenuCard> */}
         </Group>
         <Matchmaker />
       </Stack>

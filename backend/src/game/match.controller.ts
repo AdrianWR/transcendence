@@ -13,7 +13,7 @@ import { MatchService } from './match.service';
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(JwtTwoFactorGuard)
 @Controller('matches')
-export class GameController {
+export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
   @Get()

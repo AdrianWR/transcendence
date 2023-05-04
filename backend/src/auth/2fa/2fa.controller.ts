@@ -64,6 +64,6 @@ export class TwoFactorAuthController {
         request.user,
       );
 
-    return this.twoFactorAuthService.pipeQrCodeStream(response, otpauthUrl);
+    return otpauthUrl;
   }
 }
