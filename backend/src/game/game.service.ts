@@ -88,6 +88,13 @@ export class GameService {
     // Remove the game state
     this.gameMap.delete(game.id);
 
+    // Update the match score in the database
+    await this.updateMatchScore(
+      game.id,
+      game.playerOne.score,
+      game.playerTwo.score,
+    );
+
     // Finish the game in the database
     await this.matchService.finishMatch(game.id);
   }

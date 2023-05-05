@@ -1,19 +1,9 @@
-import {
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Flex,
-  Paper,
-  ScrollArea,
-  Stack,
-  Text,
-  Title,
-} from '@mantine/core';
+import { Badge, Button, Card, Flex, Paper, ScrollArea, Stack, Text, Title } from '@mantine/core';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMatch } from '../../../context/GameContext';
 import { useSocket } from '../../../hooks/socket';
+import UserAvatar from '../../UserAvatar';
 import styles from './Matchmaker.module.css';
 
 type MatchCardProps = {
@@ -42,17 +32,13 @@ const MatchCard: FC<MatchCardProps> = ({ match }) => {
     <Card className={styles['match-card']}>
       <Flex direction='row' align='center' justify='space-between' gap='lg'>
         {getStatusBadge(match)}
-        <Link to={`/profile/${match.playerOne?.id}`}>
-          <Avatar src={match.playerOne.avatarUrl} size='lg' radius='xl' />
-        </Link>
+        <UserAvatar user={match.playerOne} size='lg' />
         <Stack spacing={1} align='center'>
           <Text className={styles['match-card-player-name']}>{match.playerOne.username}</Text>
           <Text className={styles['match-card-player-score']}>{match.playerOneScore}</Text>
         </Stack>
         <Text>VS</Text>
-        <Link to={`/profile/${match.playerTwo?.id}`}>
-          <Avatar src={match.playerTwo?.avatarUrl} size='lg' radius='xl' />
-        </Link>
+        <UserAvatar user={match.playerTwo} size='lg' />
         <Stack spacing={1} align='center'>
           <Text className={styles['match-card-player-name']}>
             {match.playerTwo?.username ?? 'Player 2'}
@@ -85,7 +71,10 @@ const Matchmaker = () => {
       setCurrentMatches(matches);
     });
 
-    socket?.on('listCurrentMatches', (matches: IMatch[]) => setCurrentMatches(matches));
+    socket?.on('listCurrentMatches', (matches: IMatch[]) => {
+      console.log('listCurrentMatches', matches);
+      setCurrentMatches(matches);
+    });
 
     return () => {
       socket?.off('listCurrentMatches');

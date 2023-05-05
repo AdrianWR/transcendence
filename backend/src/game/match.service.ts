@@ -28,6 +28,7 @@ export class MatchService {
     const game = await this.matchRepository.save(newGame);
 
     this.eventEmitter.emit('match.created', game);
+    this.eventEmitter.emit('match.updated');
 
     return game;
   }
@@ -53,7 +54,7 @@ export class MatchService {
     const game = await this.matchRepository.save(currentGame);
 
     this.eventEmitter.emit('match.joined', game);
-
+    this.eventEmitter.emit('match.updated');
     return game;
   }
 
@@ -69,7 +70,9 @@ export class MatchService {
 
     const updatedGame = this.matchRepository.merge(game, gameDto);
 
-    return this.matchRepository.save(updatedGame);
+    const match = await this.matchRepository.save(updatedGame);
+    this.eventEmitter.emit('match.updated');
+    return match;
   }
 
   async abortMatch(gameId: string) {
@@ -84,7 +87,9 @@ export class MatchService {
 
     game.status = GameStatus.ABORTED;
 
-    return this.matchRepository.save(game);
+    const match = await this.matchRepository.save(game);
+    this.eventEmitter.emit('match.updated');
+    return match;
   }
 
   async finishMatch(gameId: string) {
@@ -99,7 +104,10 @@ export class MatchService {
 
     game.status = GameStatus.FINISHED;
 
-    return this.matchRepository.save(game);
+    const match = await this.matchRepository.save(game);
+    this.eventEmitter.emit('match.updated');
+
+    return match;
   }
 
   async getCurrentMatches() {

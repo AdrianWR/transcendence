@@ -164,28 +164,12 @@ export class UsersService {
   async getMatchHistory(userId: number) {
     const user = await this.findOne(userId);
 
-    const games = await this.matchRepository.find({
+    const matches = await this.matchRepository.find({
       where: [{ playerOne: { id: user.id } }, { playerTwo: { id: user.id } }],
+      order: { createdAt: 'DESC' },
+      relations: ['playerOne', 'playerTwo'],
     });
 
-    return games.map((game) => {
-      const opponent =
-        game.playerOne.id === user.id ? game.playerTwo : game.playerOne;
-
-      return {
-        id: game.id,
-        opponent: opponent.username,
-        opponentAvatar: opponent.avatar,
-        opponentScore:
-          game.playerOne.id === user.id
-            ? game.playerTwoScore
-            : game.playerOneScore,
-        userScore:
-          game.playerOne.id === user.id
-            ? game.playerOneScore
-            : game.playerTwoScore,
-        date: game.createdAt,
-      };
-    });
+    return matches;
   }
 }

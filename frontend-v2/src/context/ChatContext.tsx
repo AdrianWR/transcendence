@@ -17,7 +17,7 @@ export type IChatUser = {
   role: IRole;
   status: IStatus;
   username: string;
-  avatar: string;
+  avatarUrl: string;
 };
 
 export type ICreateChatDto = {

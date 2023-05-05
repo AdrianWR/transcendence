@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Avatar,
   Badge,
   Button,
   Card,
@@ -25,11 +24,11 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { IChatUser, IRole } from '../../../context/ChatContext';
 import { useSocket } from '../../../hooks/socket';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useChatContext } from '../../../hooks/useChatContext';
+import UserAvatar from '../../UserAvatar';
 import styles from './ChatMembersDrawer.module.css';
 
 type MemberButtonProps = {
@@ -205,6 +204,7 @@ const ChatMembersDrawer: FC<{ close: () => void }> = () => {
 
   const sortMembersList = useCallback(
     (membersList: IChatUser[]) => {
+      console.log(membersList);
       return membersList.sort((a, b) => {
         if (a.role === 'owner' && b.role !== 'owner') {
           return -1;
@@ -324,18 +324,8 @@ const ChatMembersDrawer: FC<{ close: () => void }> = () => {
             className={styles['friend-card']}
           >
             <Flex align='center'>
-              <Link className={styles['link']} to={`/profile/${member.id}`}>
-                <Avatar
-                  radius='50%'
-                  size={48}
-                  mr={20}
-                  className={styles['friend-avatar']}
-                  src={member.avatar || '/images/cat-pirate.jpg'}
-                  alt='friend avatar'
-                />
-              </Link>
-
-              <Flex direction='column'>
+              <UserAvatar size='lg' user={member} />
+              <Flex direction='column' ml='xs'>
                 <Title color='white' order={4}>
                   {member.firstName}
                 </Title>

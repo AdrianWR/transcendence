@@ -1,12 +1,13 @@
-import { Card, Flex, LoadingOverlay, Title, Text, Image } from '@mantine/core';
+import { Card, Flex, Group, LoadingOverlay, Title } from '@mantine/core';
+import { IconTrophy, IconX } from '@tabler/icons-react';
+import { AxiosError } from 'axios';
 import { FC, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { IMatch } from '../../../context/GameContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
-import { AxiosError } from 'axios';
 import { alert, success } from '../../Notifications';
-import { IconTrophy, IconX } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
-import styles from './MatchHistoryCard.module.css';
+import UserAvatar from '../../UserAvatar';
 
 interface IPlayerStats {
   id: number;
@@ -15,23 +16,13 @@ interface IPlayerStats {
   avatarUrl: string;
 }
 
-interface IMatchStats {
-  player: Omit<IPlayerStats, 'name' | 'avatarUrl'>;
-  opponent: IPlayerStats;
-}
-
 interface MatchHistoryCardProps {
   userId: number | undefined;
 }
 
 const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
   const { user } = useAuthContext();
-  const [matchHistory, setMatchHistory] = useState([
-    {
-      player: {},
-      opponent: {},
-    },
-  ] as IMatchStats[]);
+  const [matchHistory, setMatchHistory] = useState<IMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const notificationTitle = 'Match History';
 
@@ -41,8 +32,8 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
     api
       .get(`/users/${userId}/match-history`) // change to endpoint with match-history
       .then(({ data }) => {
-        // setUserStats(data);
-
+        console.log('Match History: ', data);
+        setMatchHistory(data);
         success('Successfully fetched user data', notificationTitle);
       })
       .catch((err) => {
@@ -52,41 +43,7 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
           alert('Error occured while fetching match history', notificationTitle);
         }
       })
-      .finally(() =>
-        setInterval(() => {
-          setMatchHistory(
-            [
-              {
-                player: {
-                  id: userId,
-                  points: 10,
-                },
-                opponent: {
-                  id: 3,
-                  name: 'Jorginho',
-                  points: 8,
-                  avatarUrl: '',
-                },
-              },
-              {
-                player: {
-                  id: userId,
-                  points: 2,
-                },
-                opponent: {
-                  id: 1,
-                  name: 'Maurão',
-                  points: 10,
-                  avatarUrl: '',
-                },
-              },
-            ].reduce((a, c) => {
-              return a.concat([c, c, c, c]);
-            }, [] as IMatchStats[]),
-          );
-          setIsLoading(false);
-        }, 2000),
-      );
+      .finally(() => setIsLoading(false));
   }, [userId]);
 
   return (
@@ -115,9 +72,9 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
         mah={290}
         style={{ overflow: 'auto' }}
       >
-        {matchHistory.map(({ player, opponent }, index) => (
+        {matchHistory.map((match, index) => (
           <Card
-            key={`${player.id}${opponent.id}${index}`}
+            key={`${index}`}
             my={6}
             p={24}
             radius={8}
@@ -131,37 +88,33 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
               justifyContent: 'space-between',
             }}
           >
-            <Title color='white' order={4}>
-              Game {index + 1}
-            </Title>
-            <Link className={styles['player-avatar']} to='/profile/me'>
-              <Image
-                radius='50%'
-                width={48}
-                height={48}
-                src={user?.avatarUrl || '/images/cat-pirate.jpg'}
-                alt='user avatar'
-              />
+            <Link to={`/game/${match?.id}`}>
+              <Title color='white' order={4} truncate maw={100}>
+                {match?.id}
+              </Title>
             </Link>
-            <Title order={4} color='white'>
-              {user?.firstName}
-            </Title>
-            <Title order={3} color='white'>
-              {player.points} x {opponent.points}
-            </Title>
-            <Title order={4} color='white'>
-              {opponent.name}
-            </Title>
-            <Link className={styles['opponent-avatar']} to={`/profile/${opponent.id}`}>
-              <Image
-                radius='50%'
-                width={48}
-                height={48}
-                src={opponent.avatarUrl || '/images/cat-pirate.jpg'}
-                alt='opponent avatar'
-              />
-            </Link>
-            {player.points > opponent.points ? (
+            <Group
+              styles={{
+                display: 'flex',
+                flex: 4,
+                align: 'center',
+                justifyContent: 'space-between',
+                border: '2px solid white',
+              }}
+            >
+              <UserAvatar user={match.playerOne} />
+              <Title order={4} color='white'>
+                {match?.playerOne.firstName}
+              </Title>
+              <Title order={3} color='white'>
+                {match.playerOneScore} x {match.playerTwoScore}
+              </Title>
+              <Title order={4} color='white'>
+                {match.playerTwo?.firstName}
+              </Title>
+              <UserAvatar user={match.playerTwo} size={'md'} />
+            </Group>
+            {match.playerOneScore > match.playerTwoScore ? (
               <IconTrophy color='yellow' />
             ) : (
               <IconX color='red' />

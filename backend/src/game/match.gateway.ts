@@ -1,4 +1,5 @@
 import { ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import {
   MessageBody,
   SubscribeMessage,
@@ -60,5 +61,14 @@ export class MatchGateway {
   @SubscribeMessage('listCurrentMatches')
   async listCurrentMatches(client: Socket, payload: any) {
     return await this.matchService.getCurrentMatches();
+  }
+
+  @OnEvent('match.updated', { async: true })
+  async handleMatchUpdated() {
+    // Send the match updates to all the clients
+    const currentMatches = instanceToPlain(
+      await this.matchService.getCurrentMatches(),
+    );
+    return this.server.emit('listCurrentMatches', currentMatches);
   }
 }

@@ -1,4 +1,4 @@
-import { Avatar, Box, Container, Flex, Overlay, Stack, Text } from '@mantine/core';
+import { Box, Container, Flex, Overlay, Stack, Text } from '@mantine/core';
 import { FC, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Socket, io } from 'socket.io-client';
@@ -6,6 +6,7 @@ import { IUser } from '../../../context/AuthContext';
 import { IMatch } from '../../../context/GameContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
+import UserAvatar from '../../UserAvatar';
 import styles from './Canvas.module.css';
 import GameSketch from './sketch';
 import { IGameState, IStatus } from './types';
@@ -90,8 +91,8 @@ const GameCanvas: FC = () => {
       <Container className={styles['canvas-container']}>
         <Stack align='center'>
           <Flex align='center' gap='xl' className={styles['match-card-score-board']}>
-            <Avatar src={playerOneUser?.avatarUrl} size='lg' radius='xl' />
-            <Stack spacing={1} align='center'>
+            <UserAvatar user={playerOneUser} size='lg' />
+            <Stack spacing={0} align='center'>
               <Text className={styles['match-card-player-name']}>{playerOneUser?.username}</Text>
               <Text color='secondary' className={styles['match-card-player-score']}>
                 {playerOneScore}
@@ -100,13 +101,13 @@ const GameCanvas: FC = () => {
             <Text size='xl' color='secondary'>
               VS
             </Text>
-            <Stack spacing={1} align='center'>
+            <Stack spacing={0} align='center'>
               <Text className={styles['match-card-player-name']}>{playerTwoUser?.username}</Text>
               <Text color='secondary' className={styles['match-card-player-score']}>
                 {playerTwoScore}
               </Text>
             </Stack>
-            <Avatar src={playerTwoUser?.avatarUrl} size='lg' radius='xl' />
+            <UserAvatar user={playerTwoUser} size='lg' radius='xl' />
           </Flex>
           {game && (
             <Box className={styles['game-box']}>

@@ -7,9 +7,9 @@ export type IUser = {
   email: string;
   firstName: string;
   lastName: string;
-  mfaEnabled: boolean;
   avatarUrl: string;
-  chats: IChat[];
+  mfaEnabled?: boolean;
+  chats?: IChat[];
 };
 
 export type IState = {
