@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
 import GameCanvas from '../../components/Game/Canvas';
+import GameInstructions from '../../components/Game/GameInstructions';
 import { IMatch } from '../../context/GameContext';
 import api from '../../services/api';
 
@@ -30,16 +31,19 @@ const GamePage: FCWithLayout = () => {
   }, []);
 
   return (
-    <Flex
-      style={{ flex: 1 }}
-      direction={{ base: 'column', sm: 'row' }}
-      justify='space-around'
-      align='center'
-      mx={32}
-      p={{ base: 32, sm: 0 }}
-    >
-      <GameCanvas />
-    </Flex>
+    <>
+      <Flex
+        style={{ flex: 1 }}
+        direction={{ base: 'column', sm: 'row' }}
+        justify='space-around'
+        align='center'
+        mx={32}
+        p={{ base: 32, sm: 0 }}
+      >
+        <GameCanvas />
+        <GameInstructions />
+      </Flex>
+    </>
   );
 };
 

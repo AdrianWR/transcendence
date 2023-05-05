@@ -1,4 +1,16 @@
-import { Badge, Button, Card, Flex, Paper, ScrollArea, Stack, Text, Title } from '@mantine/core';
+import {
+  Badge,
+  Button,
+  Card,
+  Flex,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
+} from '@mantine/core';
+import { IconMoodSad } from '@tabler/icons-react';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMatch } from '../../../context/GameContext';
@@ -88,6 +100,21 @@ const Matchmaker = () => {
       </Title>
       <ScrollArea type='auto' offsetScrollbars h={450}>
         <Stack spacing='md'>
+          {currentMatches.length === 0 && (
+            <Flex direction='column' align={'center'} justify='space-between' gap={'xl'}>
+              <Text color='white' align='center' size='lg'>
+                No live games at the moment
+              </Text>
+              <ThemeIcon
+                size={60}
+                variant='outline'
+                color='secondary'
+                style={{ borderColor: 'transparent' }}
+              >
+                <IconMoodSad size={60} stroke={1.5} />
+              </ThemeIcon>
+            </Flex>
+          )}
           {currentMatches.map((match) => (
             <MatchCard key={match.id} match={match} />
           ))}

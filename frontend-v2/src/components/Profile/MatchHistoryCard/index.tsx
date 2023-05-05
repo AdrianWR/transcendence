@@ -1,20 +1,13 @@
 import { Card, Flex, Group, LoadingOverlay, Title } from '@mantine/core';
 import { IconTrophy, IconX } from '@tabler/icons-react';
 import { AxiosError } from 'axios';
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IMatch } from '../../../context/GameContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
 import { alert, success } from '../../Notifications';
 import UserAvatar from '../../UserAvatar';
-
-interface IPlayerStats {
-  id: number;
-  name: string;
-  points: number;
-  avatarUrl: string;
-}
 
 interface MatchHistoryCardProps {
   userId: number | undefined;
@@ -30,7 +23,7 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
     if (!userId) return;
     setIsLoading(true);
     api
-      .get(`/users/${userId}/match-history`) // change to endpoint with match-history
+      .get(`/users/${userId}/match-history`)
       .then(({ data }) => {
         console.log('Match History: ', data);
         setMatchHistory(data);
@@ -45,6 +38,17 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
       })
       .finally(() => setIsLoading(false));
   }, [userId]);
+
+  const isUserWinner = useCallback(
+    (match: IMatch) => {
+      if (!match.playerTwo) return false;
+
+      const winnerId =
+        match.playerOneScore > match.playerTwoScore ? match.playerOne.id : match.playerTwo.id;
+      return winnerId === userId;
+    },
+    [userId],
+  );
 
   return (
     <Card
@@ -114,11 +118,7 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
               </Title>
               <UserAvatar user={match.playerTwo} size={'md'} />
             </Group>
-            {match.playerOneScore > match.playerTwoScore ? (
-              <IconTrophy color='yellow' />
-            ) : (
-              <IconX color='red' />
-            )}
+            {isUserWinner(match) ? <IconTrophy color='yellow' /> : <IconX color='red' />}
           </Card>
         ))}
       </Flex>

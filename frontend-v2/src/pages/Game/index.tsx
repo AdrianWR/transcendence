@@ -2,6 +2,7 @@ import { Container, Group, Stack } from '@mantine/core';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
+import GameInstructions from '../../components/Game/GameInstructions';
 import GameMenuCard from '../../components/Game/GameMenuCard';
 import Matchmaker from '../../components/Game/Matchmaker';
 import { IMatch } from '../../context/GameContext';
@@ -21,15 +22,18 @@ const MatchmakerPage: FCWithLayout = () => {
   }, [socket, user]);
 
   return (
-    <Container className={styles['container']}>
-      <Stack>
-        <Group position='center' spacing='lg' grow>
-          <GameMenuCard onClick={createGame}>Create a new game room</GameMenuCard>
-          {/* <GameMenuCard>Join a random game room</GameMenuCard> */}
-        </Group>
-        <Matchmaker />
-      </Stack>
-    </Container>
+    <>
+      <Container className={styles['container']}>
+        <Stack>
+          <Group position='center' spacing='lg' grow>
+            <GameMenuCard onClick={createGame}>Create a new game room</GameMenuCard>
+            {/* <GameMenuCard>Join a random game room</GameMenuCard> */}
+          </Group>
+          <Matchmaker />
+        </Stack>
+      </Container>
+      <GameInstructions />
+    </>
   );
 };
 
