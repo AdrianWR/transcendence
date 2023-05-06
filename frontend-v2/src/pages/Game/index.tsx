@@ -1,8 +1,7 @@
-import { Container, Group, Stack } from '@mantine/core';
-import { useCallback } from 'react';
+import { Container, Flex, Space, Stack } from '@mantine/core';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
-import GameInstructions from '../../components/Game/GameInstructions';
 import GameMenuCard from '../../components/Game/GameMenuCard';
 import Matchmaker from '../../components/Game/Matchmaker';
 import { IMatch } from '../../context/GameContext';
@@ -12,28 +11,36 @@ import styles from './Game.module.css';
 
 const MatchmakerPage: FCWithLayout = () => {
   const { user } = useAuthContext();
-  const { socket } = useSocket();
-  const navigate = useNavigate();
+  const { socket, updateSocketUserStatus } = useSocket();
+  const navigatse = useNavigate();
 
-  const createGame = useCallback(() => {
-    socket?.emit('createGame', { playerOne: user?.id }, (match: IMatch) => {
-      navigate(`/game/${match.id}`);
-    });
-  }, [socket, user]);
+  useEffect(() => {
+    if (socket) updateSocketUserStatus('online');
+  }, [socket]);
 
   return (
-    <>
-      <Container className={styles['container']}>
-        <Stack>
-          <Group position='center' spacing='lg' grow>
-            <GameMenuCard onClick={createGame}>Create a new game room</GameMenuCard>
-            {/* <GameMenuCard>Join a random game room</GameMenuCard> */}
-          </Group>
-          <Matchmaker />
-        </Stack>
-      </Container>
-      <GameInstructions />
-    </>
+    <Container className={styles['container']}>
+      <Stack
+        styles={{
+          marginTop: '10%',
+        }}
+      >
+        <Flex align='center' justify='space-around'>
+          <GameMenuCard
+            onClick={() => {
+              socket?.emit('createGame', { playerOne: user?.id }, (match: IMatch) => {
+                navigate(`/game/${match.id}`);
+              });
+            }}
+          >
+            Create a new game room
+          </GameMenuCard>
+          <Space w={12} />
+          <GameMenuCard>Join a random game room</GameMenuCard>
+        </Flex>
+        <Matchmaker />
+      </Stack>
+    </Container>
   );
 };
 

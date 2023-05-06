@@ -101,8 +101,10 @@ const GameCanvas: FC = () => {
             <Text size='xl' color='secondary'>
               VS
             </Text>
-            <Stack spacing={0} align='center'>
-              <Text className={styles['match-card-player-name']}>{playerTwoUser?.username}</Text>
+            <Stack spacing={1} align='center'>
+              <Text className={styles['match-card-player-name']} truncate maw={250}>
+                {playerTwoUser?.username || 'Player 2'}
+              </Text>
               <Text color='secondary' className={styles['match-card-player-score']}>
                 {playerTwoScore}
               </Text>

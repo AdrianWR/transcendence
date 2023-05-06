@@ -312,15 +312,9 @@ const Chat: FC = () => {
               </Tooltip>
             </div>
             {activeChat?.type === 'direct' && (
-              <div hidden={!activeChat}>
-                <Tooltip label='Add a member' position='top-start'>
-                  <BlockButton
-                    friend={
-                      activeChat?.users.find(({ id }) => id !== user?.id) || ({} as IChatUser)
-                    }
-                  />
-                </Tooltip>
-              </div>
+              <BlockButton
+                friend={activeChat?.users.find(({ id }) => id !== user?.id) || ({} as IChatUser)}
+              />
             )}
             {activeChat?.users.find(({ id }) => id === user?.id)?.role === 'owner' &&
               activeChat?.type === 'protected' && (

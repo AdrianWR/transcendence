@@ -1,22 +1,28 @@
 import { Card, Flex, Title, Text, Space, ActionIcon, Tooltip } from '@mantine/core';
 import { IconBrandGithub } from '@tabler/icons-react';
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, useEffect, useMemo } from 'react';
 import Layout from '../../components/Layout';
 import styles from './About.module.css';
 import { FCWithLayout } from '../../App';
+import { useSocket } from '../../hooks/socket';
 
 const Home: FCWithLayout = () => {
   const devs = useMemo(
     () => [
-      // need to add the other devs here hehe :) not my clones
       { name: 'lniehues | Lucas Farias', githubUrl: 'https://github.com/lucasnfarias' },
-      { name: 'lniehues | Lucas Farias', githubUrl: 'https://github.com/lucasnfarias' },
-      { name: 'lniehues | Lucas Farias', githubUrl: 'https://github.com/lucasnfarias' },
-      { name: 'lniehues | Lucas Farias', githubUrl: 'https://github.com/lucasnfarias' },
-      { name: 'lniehues | Lucas Farias', githubUrl: 'https://github.com/lucasnfarias' },
+      { name: 'aroque | Adrian Roque', githubUrl: 'https://github.com/AdrianWR' },
+      { name: 'pcunha | Paulo Cunha', githubUrl: 'https://github.com/PCC19' },
+      { name: 'rdutenke | Raphael Dutenkefer', githubUrl: 'https://github.com/dutenrapha' },
+      { name: 'aprotoce | Alexei Koslovsky', githubUrl: 'https://github.com/alexeipk' },
     ],
     [],
   );
+
+  const { socket, updateSocketUserStatus } = useSocket();
+
+  useEffect(() => {
+    if (socket) updateSocketUserStatus('online');
+  }, [socket]);
 
   return (
     <Flex style={{ flex: 1 }} align='center' justify='center' p={{ base: 32, sm: 0 }}>

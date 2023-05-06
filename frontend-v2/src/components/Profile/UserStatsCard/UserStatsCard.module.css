@@ -1,0 +1,26 @@
+.achievement-modal-button {
+  border: 1px solid grey;
+  transition: 0.5s;
+}
+
+.achievement-modal-button:hover {
+  border: 1px solid #FFF07C;
+  transition: 0.5s;
+}
+
+.achievement-item {
+  transition: 0.5s;
+  border: 1px solid #434343;
+  border-radius: 6px;
+}
+
+.achievement-item:hover {
+  transition: 0.5s;
+  border: 1px solid #F46036;
+  box-shadow: 0 0 6px 2px #FFF07C;
+}
+
+.achievement-item:hover .xp-text {
+  transition: 0.5s;
+  color: #FFF07C;
+}

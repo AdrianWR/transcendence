@@ -1,6 +1,5 @@
 import { Flex } from '@mantine/core';
 import { AxiosError } from 'axios';
-import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
 import GameCanvas from '../../components/Game/Canvas';
@@ -30,6 +29,14 @@ const GamePage: FCWithLayout = () => {
       });
   }, []);
 
+import { useEffect } from 'react';
+import { useSocket } from '../../hooks/socket';
+
+const GamePage: FCWithLayout = () => {
+  const { socket, updateSocketUserStatus } = useSocket();
+  useEffect(() => {
+    if (socket) updateSocketUserStatus('game');
+  }, [socket]);
   return (
     <>
       <Flex
