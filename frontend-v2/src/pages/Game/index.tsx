@@ -2,6 +2,7 @@ import { Container, Flex, Space, Stack } from '@mantine/core';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
+import GameInstructions from '../../components/Game/GameInstructions';
 import GameMenuCard from '../../components/Game/GameMenuCard';
 import Matchmaker from '../../components/Game/Matchmaker';
 import { IMatch } from '../../context/GameContext';
@@ -12,7 +13,7 @@ import styles from './Game.module.css';
 const MatchmakerPage: FCWithLayout = () => {
   const { user } = useAuthContext();
   const { socket, updateSocketUserStatus } = useSocket();
-  const navigatse = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (socket) updateSocketUserStatus('online');
@@ -40,6 +41,7 @@ const MatchmakerPage: FCWithLayout = () => {
         </Flex>
         <Matchmaker />
       </Stack>
+      <GameInstructions />
     </Container>
   );
 };

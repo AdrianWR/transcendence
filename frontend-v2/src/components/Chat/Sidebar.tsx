@@ -12,7 +12,7 @@ const Navbar: FC<DefaultProps> = () => {
 
   return (
     <>
-      <Modal size='xl' title='Create a New Chat' opened={opened} onClose={close}>
+      <Modal size='lg' title='Create a New Chat' opened={opened} onClose={close}>
         <Tabs color='secondary' defaultValue='create-group-chat'>
           <Tabs.List grow>
             <Tabs.Tab value='create-group-chat' icon={<IconMessage2Share size='0.8rem' />}>

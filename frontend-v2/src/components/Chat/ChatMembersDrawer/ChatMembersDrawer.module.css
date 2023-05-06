@@ -12,6 +12,7 @@
   align-items: center;
   justify-content: space-between;
   background-color: rgba(45, 45, 45, 0.5);
+  overflow: visible;
 }
 
 .friend-card:hover {
@@ -32,5 +33,5 @@
 }
 
 .badge {
-  margin: 0 2px;
+  margin: 0 5px;
 }

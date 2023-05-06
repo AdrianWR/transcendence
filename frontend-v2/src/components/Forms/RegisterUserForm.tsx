@@ -58,49 +58,51 @@ export const RegisterForm = forwardRef<HTMLButtonElement>((_props, ref) => {
   };
 
   return (
-    <form onSubmit={form.onSubmit(async (values, event) => handleSubmit(values, event))}>
-      <Stack>
-        <Group position='center' spacing='xs' grow={true}>
-          <TextInput
-            withAsterisk
-            label='First Name'
-            placeholder=''
-            {...form.getInputProps('firstName')}
-          />
+    <>
+      <form onSubmit={form.onSubmit(async (values, event) => handleSubmit(values, event))}>
+        <Stack>
+          <Group position='center' spacing='xs' grow={true}>
+            <TextInput
+              withAsterisk
+              label='First Name'
+              placeholder=''
+              {...form.getInputProps('firstName')}
+            />
+
+            <TextInput
+              withAsterisk
+              label='Last Name'
+              placeholder=''
+              {...form.getInputProps('lastName')}
+            />
+          </Group>
 
           <TextInput
             withAsterisk
-            label='Last Name'
-            placeholder=''
-            {...form.getInputProps('lastName')}
+            label='Email'
+            placeholder='your@email.com'
+            {...form.getInputProps('email')}
           />
-        </Group>
 
-        <TextInput
-          withAsterisk
-          label='Email'
-          placeholder='your@email.com'
-          {...form.getInputProps('email')}
-        />
+          <PasswordInput
+            withAsterisk
+            label='Password'
+            placeholder='Your password'
+            required
+            {...form.getInputProps('password')}
+          />
 
-        <PasswordInput
-          withAsterisk
-          label='Password'
-          placeholder='Your password'
-          required
-          {...form.getInputProps('password')}
-        />
-
-        <PasswordInput
-          withAsterisk
-          label='Confirm Password'
-          placeholder='Your password'
-          required
-          {...form.getInputProps('confirmPassword')}
-        />
-      </Stack>
-      <button type='submit' ref={ref} style={{ display: 'none' }} />
-    </form>
+          <PasswordInput
+            withAsterisk
+            label='Confirm Password'
+            placeholder='Your password'
+            required
+            {...form.getInputProps('confirmPassword')}
+          />
+        </Stack>
+        <button type='submit' ref={ref} style={{ display: 'none' }} />
+      </form>
+    </>
   );
 });
 
