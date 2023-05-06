@@ -74,7 +74,9 @@ const GameCanvas: FC = () => {
           <Flex align='center' gap='xl' className={styles['match-card-score-board']}>
             <Avatar src={playerOneUser?.avatarUrl} size='lg' radius='xl' />
             <Stack spacing={1} align='center'>
-              <Text className={styles['match-card-player-name']}>{playerOneUser?.username}</Text>
+              <Text className={styles['match-card-player-name']} truncate maw={250}>
+                {playerOneUser?.username}
+              </Text>
               <Text color='secondary' className={styles['match-card-player-score']}>
                 {game?.playerOne?.score ?? 0}
               </Text>
@@ -83,7 +85,9 @@ const GameCanvas: FC = () => {
               VS
             </Text>
             <Stack spacing={1} align='center'>
-              <Text className={styles['match-card-player-name']}>{playerTwoUser?.username}</Text>
+              <Text className={styles['match-card-player-name']} truncate maw={250}>
+                {playerTwoUser?.username || 'Player 2'}
+              </Text>
               <Text color='secondary' className={styles['match-card-player-score']}>
                 {game?.playerTwo?.score ?? 0}
               </Text>

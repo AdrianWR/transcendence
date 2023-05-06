@@ -1,4 +1,4 @@
-import { Container, Group, Stack } from '@mantine/core';
+import { Container, Flex, Space, Stack } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { FCWithLayout } from '../../App';
 import GameMenuCard from '../../components/Game/GameMenuCard';
@@ -7,11 +7,16 @@ import { IMatch } from '../../context/GameContext';
 import { useSocket } from '../../hooks/socket';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import styles from './Game.module.css';
+import { useEffect } from 'react';
 
 const MatchmakerPage: FCWithLayout = () => {
   const { user } = useAuthContext();
-  const { socket } = useSocket();
+  const { socket, updateSocketUserStatus } = useSocket();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (socket) updateSocketUserStatus('online');
+  }, [socket]);
 
   return (
     <Container className={styles['container']}>
@@ -20,7 +25,7 @@ const MatchmakerPage: FCWithLayout = () => {
           marginTop: '10%',
         }}
       >
-        <Group>
+        <Flex align='center' justify='space-around'>
           <GameMenuCard
             onClick={() => {
               socket?.emit('createGame', { playerOne: user?.id }, (match: IMatch) => {
@@ -30,8 +35,9 @@ const MatchmakerPage: FCWithLayout = () => {
           >
             Create a new game room
           </GameMenuCard>
+          <Space w={12} />
           <GameMenuCard>Join a random game room</GameMenuCard>
-        </Group>
+        </Flex>
         <Matchmaker />
       </Stack>
     </Container>
