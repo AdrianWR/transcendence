@@ -32,9 +32,9 @@ import { useChatContext } from '../../hooks/useChatContext';
 import api from '../../services/api';
 import { alert, success } from '../Notifications';
 import UserAvatar from '../UserAvatar';
-import ListAllUsersCard from '../Users/ListAllUsersCard';
 import ChatMembersDrawer from './ChatMembersDrawer';
 import ChatSettingsModal from './ChatSettingsModal';
+import ListAllUsersCard from './ListUsersModal';
 import Messages from './Messages/Messages';
 
 const AddFriendModal: FC<{ close: () => void }> = ({ close }) => {

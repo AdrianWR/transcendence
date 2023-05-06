@@ -90,6 +90,7 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              overflow: 'visible',
             }}
           >
             <Link to={`/game/${match?.id}`}>
