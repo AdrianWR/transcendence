@@ -44,13 +44,15 @@ const MatchCard: FC<MatchCardProps> = ({ match }) => {
         {getStatusBadge(match)}
         <Avatar src={match.playerOne.avatarUrl} size='lg' radius='xl' />
         <Stack spacing={1} align='center'>
-          <Text className={styles['match-card-player-name']}>{match.playerOne.username}</Text>
+          <Text className={styles['match-card-player-name']} maw={200} truncate>
+            {match.playerOne.username}
+          </Text>
           <Text className={styles['match-card-player-score']}>{match.playerOneScore}</Text>
         </Stack>
         <Text>VS</Text>
         <Avatar src={match.playerTwo?.avatarUrl} size='lg' radius='xl' />
         <Stack spacing={1} align='center'>
-          <Text className={styles['match-card-player-name']}>
+          <Text className={styles['match-card-player-name']} maw={200} truncate>
             {match.playerTwo?.username ?? 'Player 2'}
           </Text>
           <Text className={styles['match-card-player-score']}>{match.playerTwoScore}</Text>
