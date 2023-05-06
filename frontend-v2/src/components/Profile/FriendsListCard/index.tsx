@@ -369,7 +369,8 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
                 </Flex>
               </Flex>
               <Badge
-                mr={6}
+                m={8}
+                miw={70}
                 variant='dot'
                 color={getStatusColor(socketUsersList[friend.id]?.status)}
               >
