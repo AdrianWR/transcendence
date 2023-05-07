@@ -86,7 +86,6 @@ const Matchmaker = () => {
     });
 
     socket?.on('listCurrentMatches', (matches: IMatch[]) => {
-      console.log('listCurrentMatches', matches);
       setCurrentMatches(matches);
     });
 

@@ -31,6 +31,7 @@ const ListAllUsersCard: FC<ListAllUsersCardProps> = ({ mode, close }) => {
   const { activeChat } = useChatContext();
 
   useEffect(() => {
+    setIsLoading(true);
     api.get('/users').then((response) => {
       let users;
 
@@ -45,6 +46,7 @@ const ListAllUsersCard: FC<ListAllUsersCardProps> = ({ mode, close }) => {
       }
       setUsersList(users);
       setFilteredUsersList(users);
+      setIsLoading(false);
     });
   }, []);
 

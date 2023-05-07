@@ -13,7 +13,6 @@ import { IconMoodPlus, IconSearch } from '@tabler/icons-react';
 import { AxiosError } from 'axios';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { IUser } from '../../../context/AuthContext';
-import { useChatContext } from '../../../hooks/useChatContext';
 import api from '../../../services/api';
 import { alert, success } from '../../Notifications';
 import UserAvatar from '../../UserAvatar';
@@ -29,7 +28,6 @@ const FriendAddDrawer: FC<FriendAddDrawerProps> = ({ opened, close }) => {
   const [filteredUsersList, setFilteredUsersList] = useState([] as IUser[]);
   const [isLoading, setIsLoading] = useState(false);
   const [friendSearched, setFriendSearched] = useState('');
-  const { activeChat } = useChatContext();
 
   useEffect(() => {
     setIsLoading(true);

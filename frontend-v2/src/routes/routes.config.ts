@@ -58,7 +58,7 @@ const routesConfig: IRoutesConfig[] = [
     showOnNavbar: true,
   },
   {
-    name: 'Matchmaker',
+    name: 'Play!',
     path: '/game',
     component: MatchmakerPage,
     isPrivate: true,

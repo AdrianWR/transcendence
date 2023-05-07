@@ -55,21 +55,7 @@ const UserStatsCard: FC<UserStatsCardProps> = ({ userId }) => {
           alert('Error occured while fetching user data', notificationTitle);
         }
       })
-      .finally(() =>
-        setInterval(() => {
-          // setUserStats({
-          //   gamesPlayed: 21,
-          //   wins: 10,
-          //   losses: 11,
-          //   rank: {
-          //     level: 3,
-          //     xp: 220,
-          //     nextLevelXp: 500,
-          //   },
-          // });
-          setIsLoading(false);
-        }, 2000),
-      );
+      .finally(() => setIsLoading(false));
   }, [user, userId]);
 
   const winRate = useMemo(() => {

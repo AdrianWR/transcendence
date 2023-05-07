@@ -204,7 +204,6 @@ const ChatMembersDrawer: FC<{ close: () => void }> = () => {
 
   const sortMembersList = useCallback(
     (membersList: IChatUser[]) => {
-      console.log(membersList);
       return membersList.sort((a, b) => {
         if (a.role === 'owner' && b.role !== 'owner') {
           return -1;

@@ -4,7 +4,6 @@ import { AxiosError } from 'axios';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IMatch } from '../../../context/GameContext';
-import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
 import { alert, success } from '../../Notifications';
 import UserAvatar from '../../UserAvatar';
@@ -14,7 +13,6 @@ interface MatchHistoryCardProps {
 }
 
 const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
-  const { user } = useAuthContext();
   const [matchHistory, setMatchHistory] = useState<IMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const notificationTitle = 'Match History';
@@ -25,7 +23,6 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
     api
       .get(`/users/${userId}/match-history`)
       .then(({ data }) => {
-        console.log('Match History: ', data);
         setMatchHistory(data);
         success('Successfully fetched user data', notificationTitle);
       })

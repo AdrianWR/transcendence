@@ -1,4 +1,4 @@
-FROM node:19-alpine AS build
+FROM node:lts AS build
 
 WORKDIR /usr/src/app
 
@@ -10,16 +10,16 @@ COPY . .
 
 RUN npm run build
 
-FROM node:19-alpine
+FROM node:lts
 
 ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
+ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install --only=production
+RUN npm install --omit=dev
 
 COPY . .
 

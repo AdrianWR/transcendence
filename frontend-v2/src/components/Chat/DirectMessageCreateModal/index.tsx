@@ -31,10 +31,6 @@ export interface IFriendRequest {
   recipient: IUser;
 }
 
-interface SocketUser extends IUser {
-  status: 'online' | 'offline' | 'game' | 'chat';
-}
-
 interface IDMModalProps {
   close(): void;
 }

@@ -78,7 +78,7 @@ export const UserForm = (props: PaperProps) => {
               ? 'Already have an account? Login'
               : 'Do not have an account? Register'}
           </Anchor>
-          <Button disabled={isLoading || mfaEnabled} onClick={() => submitRef.current!.click()}>
+          <Button disabled={isLoading || mfaEnabled} onClick={() => submitRef.current?.click()}>
             {upperFirst(type)}
           </Button>
         </Group>

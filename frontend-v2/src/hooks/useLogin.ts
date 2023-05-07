@@ -25,7 +25,7 @@ export const useLogin = () => {
     const newWindow = window.open(authUrl, '_blank', 'width=500,height=600');
 
     if (newWindow) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         timer = setInterval(() => {
           if (newWindow.closed) {
             if (timer) clearInterval(timer);
