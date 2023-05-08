@@ -1,48 +1,68 @@
-import { Button, Radio, Stack, Text, TextInput } from '@mantine/core';
-import { FC, useCallback, useState } from 'react';
-import { IChatType, ICreateChatDto } from '../../../../context/ChatContext';
+import { Button, PasswordInput, Radio, TextInput } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { FC, FormEvent } from 'react';
+import { ICreateChatDto } from '../../../../context/ChatContext';
 import { useChatContext } from '../../../../hooks/useChatContext';
-import RegisterPasswordForm from '../../../RegisterPasswordForm';
 import styles from './CreateGroupChat.module.css';
 
 interface IGroupChatModalProps {
   close(): void;
 }
 
+interface ICreateChatForm {
+  name: string;
+  type: string;
+  password: string;
+  confirmPassword: string;
+}
+
 const GroupChatCreateModal: FC<IGroupChatModalProps> = ({ close }) => {
   const { createGroupChat } = useChatContext();
-  const [chat, setChat] = useState<ICreateChatDto>({
-    name: '',
-    type: 'public',
+
+  const handleSubmit = async (values: ICreateChatForm, event: FormEvent) => {
+    event.preventDefault();
+    createGroupChat(values as ICreateChatDto);
+    close();
+  };
+
+  const form = useForm({
+    initialValues: {
+      name: '',
+      type: 'public',
+      password: '',
+      confirmPassword: '',
+    },
+
+    validate: {
+      name: (value) => (value.length < 3 ? 'Chat name must be at least 3 characters' : null),
+      password: (value) => (value.length < 3 ? 'Password must be at least 3 characters' : null),
+      confirmPassword: (value, values) =>
+        value !== values.password ? 'Passwords do not match' : null,
+    },
+
+    validateInputOnChange: true,
   });
 
-  const emitCreateGrouChat = useCallback(
-    async (createChatDto: ICreateChatDto) => {
-      createGroupChat(createChatDto);
-      close();
-    },
-    [createGroupChat],
-  );
-
   return (
-    <Stack className={styles['create-group-chat']}>
-      <Text className={styles['create-group-chat-label']}>Chat Name</Text>
+    <form
+      className={styles['create-group-chat-form']}
+      // onSubmit={(event) => handleSubmit(form.values, event)}
+      onSubmit={form.onSubmit((values, event) => handleSubmit(values, event))}
+    >
       <TextInput
         withAsterisk
+        name='chat-name'
+        label='Chat Name'
         className={styles['create-group-chat-input']}
-        onChange={(event) => {
-          setChat((chat) => ({ ...chat, name: event.target.value }));
-        }}
+        {...form.getInputProps('name')}
       />
 
-      <Text className={styles['create-group-chat-label']}>Chat Type</Text>
       <Radio.Group
         name='chat-type'
+        label='Chat Type'
         defaultValue='public'
-        onChange={(value) => {
-          setChat((chat) => ({ ...chat, type: value as IChatType }));
-        }}
         className={styles['create-group-chat-radio-group']}
+        {...form.getInputProps('type')}
       >
         <Radio value='public' label='Public' className={styles['create-group-chat-radio-button']} />
         <Radio
@@ -57,23 +77,38 @@ const GroupChatCreateModal: FC<IGroupChatModalProps> = ({ close }) => {
         />
       </Radio.Group>
 
-      <div hidden={chat.type !== 'protected'} style={{ justifyContent: 'center' }}>
-        <RegisterPasswordForm
-          handleSubmit={(password) => {
-            setChat((chat) => ({ ...chat, password }));
-          }}
-        />
-      </div>
+      <PasswordInput
+        withAsterisk
+        name='password'
+        label='Password'
+        className={styles['create-group-chat-input']}
+        style={{
+          display: form.values.type === 'protected' ? 'block' : 'none',
+        }}
+        {...form.getInputProps('password')}
+      />
+
+      <PasswordInput
+        withAsterisk
+        name='confirm-password'
+        label='Confirm Password'
+        className={styles['create-group-chat-input']}
+        style={{
+          display: form.values.type === 'protected' ? 'block' : 'none',
+        }}
+        {...form.getInputProps('confirmPassword')}
+      />
 
       <Button
+        name='create-chat-button'
         variant='filled'
-        onClick={() => emitCreateGrouChat(chat)}
-        disabled={!chat.name || (chat.type === 'protected' && !chat.password)}
+        type='submit'
+        disabled={!form.values.name || (form.values.type === 'protected' && !form.values.password)}
         className={styles['create-group-chat-button']}
       >
         Create Chat
       </Button>
-    </Stack>
+    </form>
   );
 };
 

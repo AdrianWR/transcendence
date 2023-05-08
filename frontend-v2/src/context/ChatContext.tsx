@@ -17,13 +17,14 @@ export type IChatUser = {
   role: IRole;
   status: IStatus;
   username: string;
-  avatar: string;
+  avatarUrl: string;
 };
 
 export type ICreateChatDto = {
   name: string;
   type: IChatType;
   password?: string;
+  confirmPassword?: string;
 };
 
 export type IMessage = {

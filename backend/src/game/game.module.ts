@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../users/users.module';
 import { Game } from './entities/game.entity';
-import { GameController } from './game.controller';
 import { GameGateway } from './game.gateway';
 import { GameService } from './game.service';
+import { MatchController } from './match.controller';
 import { MatchGateway } from './match.gateway';
 import { MatchService } from './match.service';
 
@@ -18,6 +18,6 @@ import { MatchService } from './match.service';
     GameService,
     MatchService,
   ],
-  controllers: [GameController],
+  controllers: [MatchController],
 })
 export class GameModule {}

@@ -56,9 +56,16 @@
   margin-left: 8px;
   border-radius: 20px;
   border: none;
-  background-color: #007bff;
+  background-color: #08B2E3;
 }
 
 .chat-input-button:hover {
-  background-color: #0062cc;
+  background-color: #fff;
+}
+
+.chat-game-button {
+  margin-left: 8px;
+  border-radius: 20px;
+  border: none;
+  background-color: #F46036;
 }

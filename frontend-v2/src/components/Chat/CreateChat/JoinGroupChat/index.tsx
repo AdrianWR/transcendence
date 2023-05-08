@@ -1,51 +1,9 @@
-import { Avatar, Button, Card, Flex, Group, Stack, Tooltip } from '@mantine/core';
+import { Button, Card, Flex, Group, Stack } from '@mantine/core';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { IChat, IChatUser } from '../../../../context/ChatContext';
+import { IChat } from '../../../../context/ChatContext';
 import { useSocket } from '../../../../hooks/socket';
 import { useAuthContext } from '../../../../hooks/useAuthContext';
-
-type UsersAvatarGroupProps = {
-  users: IChatUser[];
-  max?: number;
-};
-
-const UsersAvatarGroup: FC<UsersAvatarGroupProps> = ({ users, max = 3 }) => {
-  const [avatars, setAvatars] = useState<JSX.Element[]>([]);
-  const [more, setMore] = useState<number>(0);
-
-  useEffect(() => {
-    const avatars = users.slice(0, max).map((user) => (
-      <Tooltip key={user.id} label={`${user.firstName} ${user.lastName}`} position='top'>
-        <Link to={`/profile/${user.id}`}>
-          <Avatar key={user.id} src={user.avatar} alt={user.firstName} radius='xl' />
-        </Link>
-      </Tooltip>
-    ));
-
-    setAvatars(avatars);
-    setMore(users.length - max);
-  }, [users]);
-
-  return (
-    <Avatar.Group spacing='sm'>
-      {avatars}
-      {more > 0 && (
-        <Tooltip label={`${more} more`} position='top'>
-          <Avatar
-            radius='xl'
-            style={{
-              background: 'var(--mantine-colors-blue-5)',
-              color: 'var(--mantine-colors-blue-9)',
-            }}
-          >
-            +{more}
-          </Avatar>
-        </Tooltip>
-      )}
-    </Avatar.Group>
-  );
-};
+import { UserAvatarGroup } from '../../../UserAvatar';
 
 type JoinGroupChatModalProps = {
   close: () => void;
@@ -99,7 +57,7 @@ const JoinGroupChatModal: FC<JoinGroupChatModalProps> = ({ close }) => {
             <Group style={{ width: '100%' }} spacing='md' position='apart'>
               <Stack>
                 <h3>{chat.name}</h3>
-                <UsersAvatarGroup users={chat.users} />
+                <UserAvatarGroup users={chat.users} />
               </Stack>
               <Button onClick={() => joinChat(chat)}>Join</Button>
             </Group>

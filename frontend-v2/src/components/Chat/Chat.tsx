@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Avatar,
   Badge,
   Box,
   Button,
@@ -25,17 +24,18 @@ import {
   IconUsers,
   IconX,
 } from '@tabler/icons-react';
+import { AxiosError } from 'axios';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { IChatUser } from '../../context/ChatContext';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useChatContext } from '../../hooks/useChatContext';
-import ListAllUsersCard from '../Users/ListAllUsersCard';
-import ChatMembersDrawer from './ChatMembersDrawer';
-import ChatSettingsModal from './ChatSettingsModal';
-import Messages from './Messages/Messages';
 import api from '../../services/api';
 import { alert, success } from '../Notifications';
-import { AxiosError } from 'axios';
-import { IChatUser } from '../../context/ChatContext';
+import UserAvatar from '../UserAvatar';
+import ChatMembersDrawer from './ChatMembersDrawer';
+import ChatSettingsModal from './ChatSettingsModal';
+import ListAllUsersCard from './ListUsersModal';
+import Messages from './Messages/Messages';
 
 const AddFriendModal: FC<{ close: () => void }> = ({ close }) => {
   return <ListAllUsersCard mode='chat' close={close} />;
@@ -271,8 +271,9 @@ const Chat: FC = () => {
         >
           <Flex align='center' gap='sm'>
             {dmFriend ? (
-              <Avatar src={dmFriend?.avatar} radius='xl' size={36} />
+              <UserAvatar user={dmFriend} size='md' />
             ) : (
+              // <Avatar src={dmFriend?.avatarUrl} radius='xl' size={36} />
               <IconMessages size={32} color='green' />
             )}
             <Text color='white' size='xl' w='fit-content' maw='20vw' truncate>

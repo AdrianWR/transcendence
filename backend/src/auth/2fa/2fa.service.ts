@@ -1,11 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { authenticator } from 'otplib';
-import { toFileStream } from 'qrcode';
 import authConfig from '../../config/auth.config';
 import { User } from '../../users/entities/user.entity';
 import { UsersService } from '../../users/users.service';
-import { ResponseType } from '../types/auth.interface';
 
 @Injectable()
 export class TwoFactorAuthService {
@@ -31,9 +29,9 @@ export class TwoFactorAuthService {
     };
   }
 
-  public async pipeQrCodeStream(stream: ResponseType, otpauthUrl: string) {
-    return toFileStream(stream, otpauthUrl);
-  }
+  // public async pipeQrCodeStream(stream: ResponseType, otpauthUrl: string) {
+  //   return toFileStream(stream, otpauthUrl);
+  // }
 
   public isCodeValid(twoFactorAuthenticationCode: string, user: User) {
     return authenticator.verify({

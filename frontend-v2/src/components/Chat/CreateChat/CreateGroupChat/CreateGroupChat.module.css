@@ -1,12 +1,10 @@
-.create-group-chat {
+.create-group-chat-form {
   display: flex;
   flex-direction: column;
+  gap: 16px;
   align-items: flex-start;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-  padding:  16px;
-  background-color: #333;
+  border-radius: 8px;
+  padding: 16px;
 }
 
 .create-group-chat-label {
@@ -39,8 +37,8 @@
 }
 
 .create-group-chat-button {
-  width: 50%;
-  height: 40px;
+  /* width: 50%; */
+  /* height: 40px; */
   border-radius: 8px;
   color: #fff;
   font-size: 16px;

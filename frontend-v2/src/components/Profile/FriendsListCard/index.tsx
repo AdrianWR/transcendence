@@ -1,27 +1,20 @@
 import {
+  ActionIcon,
+  Avatar,
+  Badge,
+  Box,
+  Button,
   Card,
   Flex,
-  LoadingOverlay,
-  Title,
-  Text,
-  Badge,
-  Avatar,
-  TextInput,
-  Button,
-  Tooltip,
   Indicator,
+  LoadingOverlay,
   Modal,
-  ActionIcon,
-  Box,
+  Text,
+  TextInput,
+  Title,
+  Tooltip,
 } from '@mantine/core';
-import { FC, useCallback, useEffect, useState } from 'react';
-import { useAuthContext } from '../../../hooks/useAuthContext';
-import api from '../../../services/api';
-import { AxiosError } from 'axios';
-import { alert, success } from '../../Notifications';
-import { Link } from 'react-router-dom';
-import styles from './FriendsListCard.module.css';
-import { IUser } from '../../../context/AuthContext';
+import { useDisclosure } from '@mantine/hooks';
 import {
   IconBan,
   IconHeartHandshake,
@@ -30,10 +23,18 @@ import {
   IconUsers,
   IconX,
 } from '@tabler/icons-react';
-import { useDisclosure } from '@mantine/hooks';
-import FriendRequestsModal from '../FriendRequestsModal';
+import { AxiosError } from 'axios';
+import { FC, useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { IUser } from '../../../context/AuthContext';
 import { useSocket } from '../../../hooks/socket';
+import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useChatContext } from '../../../hooks/useChatContext';
+import api from '../../../services/api';
+import { alert, success } from '../../Notifications';
+import FriendAddDrawer from '../FriendAddDrawer';
+import FriendRequestsModal from '../FriendRequestsModal';
+import styles from './FriendsListCard.module.css';
 
 export interface IFriendRequest {
   id: number;
@@ -281,6 +282,8 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
     }
   }, []);
 
+  const [addFriendsOpened, { open: openAddFriends, close: closeAddFriends }] = useDisclosure();
+
   return (
     <Card shadow='xl' px={20} p={16} h={380} style={{ position: 'relative' }}>
       <LoadingOverlay
@@ -299,18 +302,27 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
         updateFriendsList={setFriendsList}
       />
 
+      <FriendAddDrawer opened={addFriendsOpened} close={closeAddFriends} />
+
       <Flex justify='space-between'>
         <Title color='white' order={2} mb={12}>
           Friends List
         </Title>
         {isLoggedUser && (
-          <Tooltip label='Check pending requests'>
-            <Indicator color='red' offset={4} disabled={!friendRequestsList.length}>
-              <Button onClick={open} radius='xl' color='lightBlue'>
-                <IconUsers size='1.2rem' />
+          <Flex direction='row' gap='xs'>
+            <Tooltip label='Add a New Friend'>
+              <Button onClick={openAddFriends} radius='xl' color='green'>
+                <IconMoodPlus size='1.2rem' />
               </Button>
-            </Indicator>
-          </Tooltip>
+            </Tooltip>
+            <Tooltip label='Check pending requests'>
+              <Indicator color='red' offset={4} disabled={!friendRequestsList.length}>
+                <Button onClick={open} radius='xl' color='lightBlue'>
+                  <IconUsers size='1.2rem' />
+                </Button>
+              </Indicator>
+            </Tooltip>
+          </Flex>
         )}
         {!isAlreadyFriend && (
           <Tooltip label='Send friend request'>
@@ -356,7 +368,7 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
                   size={48}
                   mr={20}
                   className={styles['friend-avatar']}
-                  src={friend.avatarUrl || '/images/cat-pirate.jpg'}
+                  src={friend.avatarUrl}
                   alt='friend avatar'
                 />
                 <Flex direction='column'>

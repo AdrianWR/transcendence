@@ -10,12 +10,7 @@ interface GameMenuCardProps extends PropsWithChildren {
 const GameMenuCard: FC<GameMenuCardProps> = ({ children, onClick }) => {
   return (
     <UnstyledButton onClick={onClick}>
-      <Paper
-        styles={{
-          backgroundColor: 'red',
-        }}
-        className={styles['game-card']}
-      >
+      <Paper className={styles['game-card']}>
         <Title size={24} color='white' m='md'>
           {children}
         </Title>

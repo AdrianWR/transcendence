@@ -3,7 +3,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
-import { Game } from './entities/game.entity';
+import { Game, GameStatus } from './entities/game.entity';
 import { MatchService } from './match.service';
 
 type IStatus = 'waiting' | 'ready' | 'playing' | 'paused' | 'finished' | 'idle';
@@ -50,7 +50,7 @@ export class GameService {
   static FRAME_INTERVAL = 1000 / GameService.FRAME_RATE;
   static CANVAS_WIDTH = 800;
   static CANVAS_HEIGHT = 400;
-  static BALL_DIAMETER = 10;
+  static BALL_DIAMETER = 20;
   static PLAYER_LENGTH = 100;
   static PLAYER_THICKNESS = 10;
   static MAX_SCORE = 3;
@@ -83,41 +83,32 @@ export class GameService {
     return gameState;
   }
 
-  @OnEvent('match.joined', { async: true })
-  async updateGamePlayer(game: Game) {
-    // Get the game state
-    const gameState = this.gameMap.get(game.id);
-
-    // Update the game state
-    this.gameMap.set(game.id, {
-      ...gameState,
-      playerTwo: {
-        ...gameState.playerTwo,
-        id: game.playerTwo.id,
-        isConnected: true,
-      },
-    });
-  }
-
-  @OnEvent('match.updateScore', { async: true })
-  async updateGameScore(game: Game) {
-    // Get the game state
-    const gameState = this.gameMap.get(game.id);
-
-    // Update the match in the database
-    await this.matchService.updateMatch(game.id, {
-      playerOneScore: game.playerOneScore,
-      playerTwoScore: game.playerTwoScore,
-    });
-  }
-
   @OnEvent('match.ended', { async: true })
-  async removeGame(game: Game) {
+  async finishGame(game: IGameState) {
     // Remove the game state
     this.gameMap.delete(game.id);
 
+    // Update the match score in the database
+    await this.updateMatchScore(
+      game.id,
+      game.playerOne.score,
+      game.playerTwo.score,
+    );
+
     // Finish the game in the database
     await this.matchService.finishMatch(game.id);
+  }
+
+  async updateMatchScore(
+    gameId: string,
+    playerOneScore: number,
+    playerTwoScore: number,
+  ) {
+    // Update the match in the database
+    await this.matchService.updateMatch(gameId, {
+      playerOneScore,
+      playerTwoScore,
+    });
   }
 
   getGameState(gameId: string) {
@@ -201,7 +192,33 @@ export class GameService {
     return this.gameMap.get(game.id);
   }
 
-  private updateGameState(gameId: string, state: DeepPartial<IGameState>) {
+  updatePlayerTwo(gameId: string, playerTwoState: Partial<IPlayer>) {
+    const game = this.gameMap.get(gameId);
+
+    if (game.playerTwo) {
+      this.updateGameState(gameId, {
+        playerTwo: { ...game.playerTwo, ...playerTwoState },
+      });
+    } else {
+      this.updateGameState(gameId, {
+        playerTwo: {
+          id: playerTwoState.id,
+          position: {
+            x: GameService.CANVAS_WIDTH - GameService.PLAYER_THICKNESS,
+            y: GameService.CANVAS_HEIGHT / 2 - GameService.PLAYER_LENGTH / 2,
+          },
+          thickness: GameService.PLAYER_THICKNESS,
+          length: GameService.PLAYER_LENGTH,
+          score: 0,
+          isConnected: false,
+        },
+      });
+    }
+
+    return this.gameMap.get(gameId);
+  }
+
+  updateGameState(gameId: string, state: DeepPartial<IGameState>) {
     this.gameMap.set(gameId, <IGameState>{
       ...this.gameMap.get(gameId),
       ...state,
@@ -260,7 +277,7 @@ export class GameService {
     return this.gameMap.get(gameId);
   }
 
-  handleGameDisconnection(gameId: string, userId: number) {
+  async handleGameDisconnection(gameId: string, userId: number) {
     if (this.isSpectator(userId, gameId)) {
       return this.getGameState(gameId);
     }
@@ -268,8 +285,15 @@ export class GameService {
     // Set active player as disconnected
     this.updateActivePlayer(gameId, userId, { isConnected: false });
 
-    // Pause the game
-    this.updateGameState(gameId, { status: 'paused' });
+    // If just one player is connected, pause the game
+    // If both players are disconnected, delete the game and abort the match
+    const game = this.getGameState(gameId);
+    if (game.playerOne.isConnected != game.playerTwo.isConnected) {
+      this.pauseGame(gameId);
+    } else if (!game.playerOne.isConnected && !game.playerTwo.isConnected) {
+      this.deleteGame(gameId);
+      await this.matchService.abortMatch(gameId);
+    }
 
     return this.gameMap.get(gameId);
   }
@@ -279,37 +303,29 @@ export class GameService {
     return game.playerOne.isConnected && game.playerTwo.isConnected;
   }
 
-  async deleteGame(gameId: string) {
+  pauseGame(gameId: string) {
+    this.updateGameState(gameId, { status: 'paused' });
+  }
+
+  deleteGame(gameId: string) {
     this.gameMap.delete(gameId);
   }
 
   private getRandomBallVelocity() {
-    const dx = Math.random() * 2 + 2;
-    const dy = Math.random() * 2 + 2;
+    // Give the ball a random velocity between 4 and 6
+    const dx = Math.random() * 2 + 4;
+    const dy = Math.random() * 2 + 4;
 
     return {
-      dx: Math.random() < 0.5 ? dx : -dx,
-      dy: Math.random() < 0.5 ? dy : -dy,
+      dx: Math.random() > 0.5 ? dx : -dx,
+      dy: Math.random() > 0.5 ? dy : -dy,
     };
   }
 
   async startGame(gameId: string) {
-    this.updateGameState(gameId, { status: 'ready' });
-
-    // Check if timeout already exists
-    // try {
-    //   this.schedulerRegistry.getTimeout(`game-${gameId}`);
-    // } catch (e) {
-    //   // Timeout doesn't exist
-    //   this.schedulerRegistry.addTimeout(
-    //     `game-${gameId}`,
-    //     setTimeout(() => {
-    //       this.updateGameState(gameId, { status: 'playing' });
-    //       this.updateBall(gameId, { velocity: this.getRandomBallVelocity() });
-    //       this.schedulerRegistry.deleteTimeout(`game-${gameId}`);
-    //     }, 5000),
-    //   );
-    // }
+    this.matchService.updateMatch(gameId, {
+      status: GameStatus.PLAYING,
+    });
 
     this.updateGameState(gameId, { status: 'playing' });
     this.updateBall(gameId, { velocity: this.getRandomBallVelocity() });
@@ -373,25 +389,11 @@ export class GameService {
         dy: 0,
       };
 
-      // Update the game state
-      this.updateGameState(game.id, { status: 'idle' });
-
-      // this.schedulerRegistry.addTimeout(
-      //   game.id,
-      //   setTimeout(() => {
-      //     this.updateGameState(game.id, { status: 'playing' });
-      //     this.updateBall(game.id, {
-      //       velocity: this.getRandomBallVelocity(),
-      //     });
-      //     this.schedulerRegistry.deleteTimeout(game.id);
-      //   }, 3000),
-      // );
-
-      this.updateGameState(game.id, { status: 'playing' });
+      // this.updateGameState(game.id, { status: 'playing' });
       ball.velocity = this.getRandomBallVelocity();
 
       // Update the game in the database
-      this.eventEmitter.emit('match.updateScore', game);
+      this.updateMatchScore(game.id, playerOne.score, playerTwo.score);
     }
 
     // Check if match is over

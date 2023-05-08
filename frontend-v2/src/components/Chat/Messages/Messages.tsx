@@ -1,4 +1,4 @@
-import { Container, Flex, Overlay, ScrollArea, Text, Title, Tooltip } from '@mantine/core';
+import { Anchor, Container, Flex, Overlay, ScrollArea, Text, Title, Tooltip } from '@mantine/core';
 import { IconMessage2Off, IconMicrophoneOff } from '@tabler/icons-react';
 import { FC, useEffect, useRef, useState } from 'react';
 import { IChatUser, IMessage } from '../../../context/ChatContext';
@@ -24,6 +24,36 @@ const MessageItem: FC<MessageItemProps> = ({
   const { user } = useAuthContext();
   const isCurrentUser = user?.id === sender.id;
   const blockedFriend = friendsBlocked[sender.id];
+
+  const autoLink = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    // Split text by URLs
+    const parts = text.split(urlRegex);
+
+    // Map through array and return JSX
+    return (
+      <Text>
+        {parts.map((part, i) =>
+          part.match(urlRegex) ? (
+            <Anchor key={i} href={part} target='_blank' weight={'bold'}>
+              {part}
+            </Anchor>
+          ) : (
+            part
+          ),
+        )}
+      </Text>
+    );
+
+    // return parts.reduce((acc, part) => {
+    //   if (part.match(urlRegex)) {
+    //     <Anchor>part</Anchor>
+    //   } else {
+    //     <Text>part</Text>
+    //   }
+    //   acc.push(part);
+    // }, [] as React.ReactNode[]);
+  };
 
   return (
     <Flex align={isCurrentUser ? 'flex-end' : 'flex-start'} className={styles['chat-message']}>
@@ -51,7 +81,7 @@ const MessageItem: FC<MessageItemProps> = ({
             color: isCurrentUser ? 'white' : 'black',
           }}
         >
-          {content}
+          {autoLink(content)}
         </Text>
       )}
       <Tooltip

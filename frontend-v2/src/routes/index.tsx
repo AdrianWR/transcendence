@@ -3,6 +3,7 @@ import { Route, RouteProps, Routes } from 'react-router-dom';
 import { FCWithLayout } from '../App';
 import Layout from '../components/Layout';
 import RequireAuth from '../components/RequireAuth';
+import NotFoundPage from '../pages/404';
 import routesConfig from './routes.config';
 
 const MyRoutes: FC<RouteProps> = () => {
@@ -31,6 +32,7 @@ const MyRoutes: FC<RouteProps> = () => {
         }
         return <Route key={name} path={path} element={getLayout(component, noLayout)} />;
       })}
+      <Route path='*' element={getLayout(NotFoundPage, false)} />
     </Routes>
   );
 };

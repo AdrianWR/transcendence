@@ -1,5 +1,4 @@
 .canvas-container {
-    position: relative;
     width: 100%;
     height: 100%;
     overflow: auto;
@@ -20,6 +19,14 @@
     justify-content: center;
     display: flex;
     flex-direction: column;
+}
+
+.game-box {
+    display: flex;
+    position: relative;
+    align-items: center;
+    border-top: 1px solid #434343;
+    border-bottom: 1px solid #434343;
 }
 
 .match-card-player-name {

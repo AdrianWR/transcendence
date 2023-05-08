@@ -1,37 +1,18 @@
-import { Card, Flex, LoadingOverlay, Title, Text, Image } from '@mantine/core';
-import { FC, useEffect, useState } from 'react';
-import { useAuthContext } from '../../../hooks/useAuthContext';
-import api from '../../../services/api';
-import { AxiosError } from 'axios';
-import { alert, success } from '../../Notifications';
+import { Card, Flex, Group, LoadingOverlay, Title } from '@mantine/core';
 import { IconTrophy, IconX } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
-import styles from './MatchHistoryCard.module.css';
-
-interface IPlayerStats {
-  id: number;
-  name: string;
-  points: number;
-  avatarUrl: string;
-}
-
-interface IMatchStats {
-  player: Omit<IPlayerStats, 'name' | 'avatarUrl'>;
-  opponent: IPlayerStats;
-}
+import { AxiosError } from 'axios';
+import { FC, useCallback, useEffect, useState } from 'react';
+import { IMatch } from '../../../context/GameContext';
+import api from '../../../services/api';
+import { alert, success } from '../../Notifications';
+import UserAvatar from '../../UserAvatar';
 
 interface MatchHistoryCardProps {
   userId: number | undefined;
 }
 
 const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
-  const { user } = useAuthContext();
-  const [matchHistory, setMatchHistory] = useState([
-    {
-      player: {},
-      opponent: {},
-    },
-  ] as IMatchStats[]);
+  const [matchHistory, setMatchHistory] = useState<IMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const notificationTitle = 'Match History';
 
@@ -39,10 +20,9 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
     if (!userId) return;
     setIsLoading(true);
     api
-      .get(`/users/${userId}/match-history`) // change to endpoint with match-history
+      .get(`/users/${userId}/match-history`)
       .then(({ data }) => {
-        // setUserStats(data);
-
+        setMatchHistory(data);
         success('Successfully fetched user data', notificationTitle);
       })
       .catch((err) => {
@@ -52,42 +32,19 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
           alert('Error occured while fetching match history', notificationTitle);
         }
       })
-      .finally(() =>
-        setInterval(() => {
-          setMatchHistory(
-            [
-              {
-                player: {
-                  id: userId,
-                  points: 10,
-                },
-                opponent: {
-                  id: 3,
-                  name: 'Jorginho',
-                  points: 8,
-                  avatarUrl: '',
-                },
-              },
-              {
-                player: {
-                  id: userId,
-                  points: 2,
-                },
-                opponent: {
-                  id: 1,
-                  name: 'Maurão',
-                  points: 10,
-                  avatarUrl: '',
-                },
-              },
-            ].reduce((a, c) => {
-              return a.concat([c, c, c, c]);
-            }, [] as IMatchStats[]),
-          );
-          setIsLoading(false);
-        }, 2000),
-      );
+      .finally(() => setIsLoading(false));
   }, [userId]);
+
+  const isUserWinner = useCallback(
+    (match: IMatch) => {
+      if (!match.playerTwo) return false;
+
+      const winnerId =
+        match.playerOneScore > match.playerTwoScore ? match.playerOne.id : match.playerTwo.id;
+      return winnerId === userId;
+    },
+    [userId],
+  );
 
   return (
     <Card
@@ -115,9 +72,9 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
         mah={290}
         style={{ overflow: 'auto' }}
       >
-        {matchHistory.map(({ player, opponent }, index) => (
+        {matchHistory.map((match, index) => (
           <Card
-            key={`${player.id}${opponent.id}${index}`}
+            key={`${index}`}
             my={6}
             p={24}
             radius={8}
@@ -129,43 +86,40 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              overflow: 'visible',
             }}
           >
-            <Title color='white' order={4}>
-              Game {index + 1}
+            <Title color='white' order={6}>
+              {new Date(match.createdAt).toLocaleTimeString([], {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </Title>
-            <Link className={styles['player-avatar']} to='/profile/me'>
-              <Image
-                radius='50%'
-                width={48}
-                height={48}
-                src={user?.avatarUrl || '/images/cat-pirate.jpg'}
-                alt='user avatar'
-              />
-            </Link>
-            <Title order={4} color='white'>
-              {user?.firstName}
-            </Title>
-            <Title order={3} color='white'>
-              {player.points} x {opponent.points}
-            </Title>
-            <Title order={4} color='white'>
-              {opponent.name}
-            </Title>
-            <Link className={styles['opponent-avatar']} to={`/profile/${opponent.id}`}>
-              <Image
-                radius='50%'
-                width={48}
-                height={48}
-                src={opponent.avatarUrl || '/images/cat-pirate.jpg'}
-                alt='opponent avatar'
-              />
-            </Link>
-            {player.points > opponent.points ? (
-              <IconTrophy color='yellow' />
-            ) : (
-              <IconX color='red' />
-            )}
+            <Group
+              styles={{
+                display: 'flex',
+                flex: 4,
+                align: 'center',
+                justifyContent: 'space-between',
+                border: '2px solid white',
+              }}
+            >
+              <UserAvatar user={match.playerOne} />
+              <Title order={4} color='white'>
+                {match?.playerOne.firstName}
+              </Title>
+              <Title order={3} color='white'>
+                {match.playerOneScore} x {match.playerTwoScore}
+              </Title>
+              <Title order={4} color='white'>
+                {match.playerTwo?.firstName}
+              </Title>
+              <UserAvatar user={match.playerTwo} size={'md'} />
+            </Group>
+            {isUserWinner(match) ? <IconTrophy color='yellow' /> : <IconX color='red' />}
           </Card>
         ))}
       </Flex>

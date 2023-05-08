@@ -1,9 +1,10 @@
-import { Avatar, DefaultProps, Flex, Stack, Text, UnstyledButton } from '@mantine/core';
+import { DefaultProps, Flex, Stack, Text, UnstyledButton } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
 import { FC, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { IChat } from '../../context/ChatContext';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useChatContext } from '../../hooks/useChatContext';
+import UserAvatar, { UserAvatarGroup } from '../UserAvatar';
 
 interface ChatItemProps extends DefaultProps {
   chat: IChat;
@@ -59,14 +60,12 @@ const ChatItem: FC<ChatItemProps> = ({ chat }) => {
             hovered || isActiveChat ? '1px solid rgba(244, 96, 54, 1)' : '1px solid transparent',
         }}
       >
-        <Avatar
-          src={dmFriend?.avatar}
-          radius='xl'
-          size='sm'
-          mr={12}
-          color={isActiveChat ? 'secondary' : 'white'}
-        />
-        <Stack spacing={1}>
+        {dmFriend ? (
+          <UserAvatar user={dmFriend} size='md' />
+        ) : (
+          <UserAvatarGroup users={chat.users} size='md' />
+        )}
+        <Stack spacing={1} ml={'xs'} justify='start'>
           <Text size='md' weight='bold' color='white'>
             {chatName}
           </Text>

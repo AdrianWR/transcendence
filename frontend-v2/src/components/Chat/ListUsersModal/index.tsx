@@ -1,24 +1,24 @@
 import {
   ActionIcon,
-  Avatar,
   Card,
   Flex,
   LoadingOverlay,
   Text,
   TextInput,
   Title,
+  Tooltip,
 } from '@mantine/core';
 import { IconMessagePlus, IconSearch } from '@tabler/icons-react';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { IUser } from '../../../context/AuthContext';
 import { useSocket } from '../../../hooks/socket';
 import { useChatContext } from '../../../hooks/useChatContext';
 import api from '../../../services/api';
-import styles from './ListAllUsers.module.css';
+import UserAvatar from '../../UserAvatar';
+import styles from './ListUsersModal.module.css';
 
 interface ListAllUsersCardProps {
-  mode: 'chat' | 'profile';
+  mode: 'chat' | 'friends';
   close: () => void;
 }
 
@@ -31,6 +31,7 @@ const ListAllUsersCard: FC<ListAllUsersCardProps> = ({ mode, close }) => {
   const { activeChat } = useChatContext();
 
   useEffect(() => {
+    setIsLoading(true);
     api.get('/users').then((response) => {
       let users;
 
@@ -45,6 +46,7 @@ const ListAllUsersCard: FC<ListAllUsersCardProps> = ({ mode, close }) => {
       }
       setUsersList(users);
       setFilteredUsersList(users);
+      setIsLoading(false);
     });
   }, []);
 
@@ -67,27 +69,16 @@ const ListAllUsersCard: FC<ListAllUsersCardProps> = ({ mode, close }) => {
     [usersList],
   );
 
-  const showChatButton = (user: IUser) => {
-    const addMember = (user: IUser) => {
+  const addMember = useCallback(
+    (user: IUser) => {
       socket?.emit('joinChat', { chatId: activeChat?.id, userIds: [user.id] });
       close();
-    };
-
-    return (
-      <ActionIcon
-        key={user.id}
-        color='yellow'
-        variant='transparent'
-        radius={8}
-        onClick={() => addMember(user)}
-      >
-        <IconMessagePlus size={48} color='yellow' />
-      </ActionIcon>
-    );
-  };
+    },
+    [socket],
+  );
 
   return (
-    <Card shadow='xl' px={20} p={16} h={400} style={{ position: 'relative' }}>
+    <Card shadow='xl' px={20} p={16} style={{ position: 'relative' }}>
       <LoadingOverlay
         loaderProps={{ color: 'secondary', variant: 'bars' }}
         overlayOpacity={0.2}
@@ -124,18 +115,8 @@ const ListAllUsersCard: FC<ListAllUsersCardProps> = ({ mode, close }) => {
             className={styles['friend-card']}
           >
             <Flex align='center'>
-              <Link className={styles['link']} to={`/profile/${user.id}`}>
-                <Avatar
-                  radius='50%'
-                  size={48}
-                  mr={20}
-                  className={styles['friend-avatar']}
-                  src={user.avatarUrl || '/images/cat-pirate.jpg'}
-                  alt='friend avatar'
-                />
-              </Link>
-
-              <Flex direction='column'>
+              <UserAvatar user={user} size={48} />
+              <Flex direction='column' ml='md'>
                 <Title color='white' order={4}>
                   {user.firstName}
                 </Title>
@@ -144,7 +125,20 @@ const ListAllUsersCard: FC<ListAllUsersCardProps> = ({ mode, close }) => {
                 </Text>
               </Flex>
             </Flex>
-            <Flex align='center'>{mode === 'chat' && showChatButton(user)}</Flex>
+            <Flex align='center'>
+              <Tooltip label='Add to chat' position='left' withArrow>
+                <ActionIcon
+                  key={user.id}
+                  color='yellow'
+                  variant='subtle'
+                  size='lg'
+                  radius='xl'
+                  onClick={() => addMember(user)}
+                >
+                  <IconMessagePlus color='yellow' />
+                </ActionIcon>
+              </Tooltip>
+            </Flex>
           </Card>
         ))}
 

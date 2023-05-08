@@ -14,6 +14,7 @@ export enum GameStatus {
   WAITING = 'waiting',
   PLAYING = 'playing',
   FINISHED = 'finished',
+  ABORTED = 'aborted',
 }
 
 @Entity({ name: 'game' })

@@ -28,28 +28,29 @@ const RegisterPasswordForm: FC<RegisterPasswordFormProps> = ({ handleSubmit }) =
   });
 
   return (
-    <form onSubmit={form.onSubmit(async (values, event) => handleSubmit(values.password, event))}>
-      <Stack align='center' w='100%'>
+    <form
+      style={{ width: '100%' }}
+      onSubmit={form.onSubmit(async (values, event) => handleSubmit(values.password, event))}
+    >
+      <Stack align='center' spacing='md'>
         <PasswordInput
-          w='100%'
           withAsterisk
           label='Password'
           placeholder='Your password'
           required
+          w='100%'
           {...form.getInputProps('password')}
         />
 
         <PasswordInput
-          w='100%'
           withAsterisk
           label='Confirm Password'
           placeholder='Your password'
           required
+          w='100%'
           {...form.getInputProps('confirmPassword')}
         />
-        <Button w='50%' type='submit'>
-          Change Password
-        </Button>
+        <Button type='submit'>Change Password</Button>
       </Stack>
     </form>
   );

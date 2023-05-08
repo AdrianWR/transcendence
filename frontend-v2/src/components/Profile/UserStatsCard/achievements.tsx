@@ -2,6 +2,7 @@
 import {
   IconAbacus,
   IconAlien,
+  IconBallFootball,
   IconBoxMultiple3,
   IconBrandWindows,
   IconCircleNumber3,
@@ -10,7 +11,6 @@ import {
   IconFall,
   IconHandStop,
   IconMicrophone2,
-  IconPlayFootball,
   IconUfo,
 } from '@tabler/icons-react';
 import { IUserStats } from '.';
@@ -36,7 +36,7 @@ export const achievementsDict = {
     xp: 65,
   },
   game10: {
-    icon: <IconPlayFootball color='yellow' size={42} />,
+    icon: <IconBallFootball color='yellow' size={42} />,
     name: 'Pelé',
     description: 'Play 10 games',
     xp: 100,

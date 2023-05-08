@@ -1,3 +1,4 @@
+import { Expose } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -52,6 +53,11 @@ export class ChatUsers {
     default: Role.MEMBER,
   })
   role: Role;
+
+  @Expose({ name: 'avatarUrl', groups: ['chatUsers'] })
+  getAvatarUrl(): string | null {
+    return this.user.getAvatarUrl();
+  }
 
   @CreateDateColumn({
     type: 'timestamp',

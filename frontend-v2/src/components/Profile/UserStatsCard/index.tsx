@@ -5,18 +5,18 @@ import {
   LoadingOverlay,
   Modal,
   Progress,
-  Title,
   Text,
+  Title,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { IconTrophy } from '@tabler/icons-react';
+import { AxiosError } from 'axios';
 import { FC, useEffect, useMemo, useState } from 'react';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
-import { AxiosError } from 'axios';
-import { alert, success } from '../../Notifications';
-import { IconTrophy } from '@tabler/icons-react';
-import { useDisclosure } from '@mantine/hooks';
-import { createAchievementsList, levelsDict } from './achievements';
+import { alert } from '../../Notifications';
 import styles from './UserStatsCard.module.css';
+import { createAchievementsList, levelsDict } from './achievements';
 
 export interface IUserStats {
   gamesPlayed: number;
@@ -44,10 +44,9 @@ const UserStatsCard: FC<UserStatsCardProps> = ({ userId }) => {
     setIsLoading(true);
     api
       .get(`/users/${userId}/stats`) // change to endpoint with user stats
-      .then(() => {
-        // setUserStats(data);
-
-        success('Successfully fetched user data', notificationTitle);
+      .then(({ data }) => {
+        setUserStats(data);
+        // success('Successfully fetched user data', notificationTitle);
       })
       .catch((err) => {
         if (err instanceof AxiosError) {
@@ -56,17 +55,7 @@ const UserStatsCard: FC<UserStatsCardProps> = ({ userId }) => {
           alert('Error occured while fetching user data', notificationTitle);
         }
       })
-      .finally(() =>
-        setInterval(() => {
-          setUserStats({
-            // remove this once we have the endpoint
-            gamesPlayed: 22,
-            wins: 10,
-            losses: 10,
-          });
-          setIsLoading(false);
-        }, 2000),
-      );
+      .finally(() => setIsLoading(false));
   }, [user, userId]);
 
   const winRate = useMemo(() => {

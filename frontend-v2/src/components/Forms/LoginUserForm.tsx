@@ -1,7 +1,6 @@
 import { PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { FormEvent, ForwardRefRenderFunction, forwardRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { LoginUserDto, useLogin } from '../../hooks/useLogin';
 
 type ForwardedUserFormProps = {
@@ -13,9 +12,6 @@ export const ForwardedUserForm: ForwardRefRenderFunction<
   ForwardedUserFormProps
 > = (props: ForwardedUserFormProps, ref) => {
   const { login, saveUser } = useLogin();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (values: LoginUserDto, e: FormEvent) => {
     e.preventDefault();

@@ -53,10 +53,17 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  // @Get(':id/avatar')
-  // findAvatar(@Param('id') id: number) {
-  //   return this.usersService.findAvatar(id);
-  // }
+  @Get(':id/stats')
+  @UseGuards(JwtTwoFactorGuard)
+  getGameStats(@Param('id') id: number) {
+    return this.usersService.getGameStats(id);
+  }
+
+  @Get(':id/match-history')
+  @UseGuards(JwtTwoFactorGuard)
+  getMatchHistory(@Param('id') id: number) {
+    return this.usersService.getMatchHistory(id);
+  }
 
   /**
    * Create a new user

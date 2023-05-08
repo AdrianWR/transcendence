@@ -1,9 +1,9 @@
 import { Flex, Title } from '@mantine/core';
-import { FC, FormEvent, useState } from 'react';
+import { FC, FormEvent } from 'react';
 import { useSocket } from '../../../hooks/socket';
 import { useChatContext } from '../../../hooks/useChatContext';
 import { alert, success } from '../../Notifications';
-import RegisterPasswordForm from '../../RegisterPasswordForm';
+import RegisterPasswordForm from './RegisterPasswordForm';
 
 type ChatSettingsModalProps = {
   close: () => void;
@@ -12,7 +12,6 @@ type ChatSettingsModalProps = {
 const ChatSettingsModal: FC<ChatSettingsModalProps> = ({ close }) => {
   const { socket } = useSocket();
   const { activeChat } = useChatContext();
-  const [password, setPassword] = useState<string>('');
 
   const handleSubmit = async (password: string, e: FormEvent) => {
     e.preventDefault();

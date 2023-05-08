@@ -11,13 +11,13 @@ type GameSketchProps = {
 };
 
 const GameSketch: FC<GameSketchProps> = ({ game, socket }) => {
+  const speed = 10;
   const defaultCanvas = {
     height: 400,
     width: 800,
   };
 
   const { user } = useAuthContext();
-  const speed = 5;
 
   const moveUp = (player: IPlayer) => {
     if (player.position.y > 0) {
@@ -42,6 +42,22 @@ const GameSketch: FC<GameSketchProps> = ({ game, socket }) => {
     }
     return null;
   }, [game, user]);
+
+  const handleKeyPressed = (p5: p5Types) => {
+    if (!activePlayer) return;
+
+    switch (p5.keyCode) {
+      case p5.ENTER:
+        if (game.status === 'playing') {
+          socket.current?.emit('pauseGame');
+        } else if (game.status === 'paused') {
+          socket.current?.emit('resumeGame');
+        }
+        break;
+      default:
+        break;
+    }
+  };
 
   const setup = (p5: p5Types, canvasParentRef: Element) => {
     p5.createCanvas(defaultCanvas.width, defaultCanvas.height).parent(canvasParentRef);
@@ -91,7 +107,7 @@ const GameSketch: FC<GameSketchProps> = ({ game, socket }) => {
     }
   };
 
-  return <Sketch setup={setup} draw={draw} />;
+  return <Sketch setup={setup} draw={draw} keyPressed={handleKeyPressed} />;
 };
 
 export default GameSketch;

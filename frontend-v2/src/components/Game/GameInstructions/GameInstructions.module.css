@@ -1,0 +1,36 @@
+.game-instructions-theme-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    background-color: #08B2E3;
+    transition: all 0.3s ease-in-out;
+    border: 2px solid transparent;
+}
+
+/* // #08B2E3
+'#98EFFF',
+'#6EE9FF',
+'#48E3FF',
+'#26DEFF',
+'#07D9FF',
+'#00CFFF',
+'#08B2E3',
+'#00ABE0',
+'#009ED1',
+'#008EBC', */
+
+.game-instructions-theme-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.game-instructions-theme-icon:hover {
+    cursor: pointer;
+    background-color: #009ED1;
+    border: 2px solid #fff;
+    transform: scale(1.1);
+}

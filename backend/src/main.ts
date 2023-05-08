@@ -21,8 +21,6 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   // Setup CORS options
-  //app.enableCors();
-
   const allowList = [config.get('FRONTEND_URL')];
   app.enableCors({
     origin: allowList,
@@ -49,6 +47,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      disableErrorMessages: true,
     }),
   );
 

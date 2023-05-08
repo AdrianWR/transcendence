@@ -1,10 +1,12 @@
-import { Avatar, Container, Flex, Overlay, Stack, Text } from '@mantine/core';
+import { Box, Container, Flex, Overlay, Stack, Text } from '@mantine/core';
 import { FC, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Socket, io } from 'socket.io-client';
 import { IUser } from '../../../context/AuthContext';
+import { IMatch } from '../../../context/GameContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
+import UserAvatar from '../../UserAvatar';
 import styles from './Canvas.module.css';
 import GameSketch from './sketch';
 import { IGameState, IStatus } from './types';
@@ -29,15 +31,16 @@ const GameCanvasOverlay: FC<IGameCanvasOverlayProps> = ({ status }) => {
 };
 
 const GameCanvas: FC = () => {
+  const { gameId } = useParams(); // id of the game
   const { user } = useAuthContext();
   const [game, setGame] = useState<IGameState | null>(null);
   const [playerOneUser, setPlayerOneUser] = useState<IUser>();
   const [playerTwoUser, setPlayerTwoUser] = useState<IUser>();
+  const [playerOneScore, setPlayerOneScore] = useState<number>(0);
+  const [playerTwoScore, setPlayerTwoScore] = useState<number>(0);
   const gameSocket = useRef<Socket | null>(null);
-  const { gameId } = useParams(); // id of the game
 
   useEffect(() => {
-    console.log;
     gameSocket.current = io(`${process.env.REACT_APP_BACKEND_URL}/game`, {
       transports: ['websocket'],
       withCredentials: true,
@@ -48,37 +51,51 @@ const GameCanvas: FC = () => {
       setGame(game);
     });
 
+    gameSocket.current.on('userJoin', (game) => {
+      api
+        .get<IUser>(`/users/${game?.playerTwo?.id}`)
+        .then((response) => setPlayerTwoUser(response.data));
+    });
+
+    api.get<IMatch>(`matches/${gameId}`).then((response) => {
+      setPlayerOneScore(response.data.playerOneScore);
+      setPlayerTwoScore(response.data.playerTwoScore);
+      api.get<IUser>(`/users/${response.data.playerOne.id}`).then((response) => {
+        setPlayerOneUser(response.data);
+      });
+      if (response.data.playerTwo) {
+        api.get<IUser>(`/users/${response.data.playerTwo.id}`).then((response) => {
+          setPlayerTwoUser(response.data);
+        });
+      }
+    });
+
     return () => {
       gameSocket.current?.off('updateGame');
-
+      gameSocket.current?.off('userJoin');
       gameSocket.current?.disconnect();
     };
   }, []);
 
   useEffect(() => {
-    if (!game?.playerOne || !game?.playerTwo) return;
+    if (!game) return;
 
-    api
-      .get<IUser>(`/users/${game?.playerOne?.id}`)
-      .then((response) => setPlayerOneUser(response.data));
-    api
-      .get<IUser>(`/users/${game?.playerTwo?.id}`)
-      .then((response) => setPlayerTwoUser(response.data));
-  }, [game]);
+    if (game.status === 'playing' || game.status === 'paused') {
+      setPlayerOneScore(game?.playerOne?.score ?? 0);
+      setPlayerTwoScore(game?.playerTwo?.score ?? 0);
+    }
+  }, [game?.status, game?.playerOne?.score, game?.playerTwo?.score]);
 
   return (
     <>
       <Container className={styles['canvas-container']}>
-        <GameCanvasOverlay status={game?.status} />
         <Stack align='center'>
           <Flex align='center' gap='xl' className={styles['match-card-score-board']}>
-            <Avatar src={playerOneUser?.avatarUrl} size='lg' radius='xl' />
-            <Stack spacing={1} align='center'>
-              <Text className={styles['match-card-player-name']} truncate maw={250}>
-                {playerOneUser?.username}
-              </Text>
+            <UserAvatar user={playerOneUser} size='lg' />
+            <Stack spacing={0} align='center'>
+              <Text className={styles['match-card-player-name']}>{playerOneUser?.username}</Text>
               <Text color='secondary' className={styles['match-card-player-score']}>
-                {game?.playerOne?.score ?? 0}
+                {playerOneScore}
               </Text>
             </Stack>
             <Text size='xl' color='secondary'>
@@ -89,12 +106,17 @@ const GameCanvas: FC = () => {
                 {playerTwoUser?.username || 'Player 2'}
               </Text>
               <Text color='secondary' className={styles['match-card-player-score']}>
-                {game?.playerTwo?.score ?? 0}
+                {playerTwoScore}
               </Text>
             </Stack>
-            <Avatar src={playerTwoUser?.avatarUrl} size='lg' radius='xl' />
+            <UserAvatar user={playerTwoUser} size='lg' radius='xl' />
           </Flex>
-          {game && <GameSketch game={game} socket={gameSocket} />}
+          {game && (
+            <Box className={styles['game-box']}>
+              <GameCanvasOverlay status={game?.status} />
+              <GameSketch game={game} socket={gameSocket} />
+            </Box>
+          )}
         </Stack>
       </Container>
     </>

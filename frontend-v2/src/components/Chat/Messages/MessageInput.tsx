@@ -1,11 +1,41 @@
-import { Button, TextInput } from '@mantine/core';
-import { IconSend } from '@tabler/icons-react';
-import { SetStateAction, useEffect, useState } from 'react';
+import { Button, TextInput, Tooltip } from '@mantine/core';
+import { IconDeviceGamepad, IconSend } from '@tabler/icons-react';
+import { SetStateAction, useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { IMatch } from '../../../context/GameContext';
 import { useSocket } from '../../../hooks/socket';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useChatContext } from '../../../hooks/useChatContext';
-import styles from './Messages.module.css';
 import { DM_BLOCKED } from './Messages';
+import styles from './Messages.module.css';
+
+const GameButton = () => {
+  const navigate = useNavigate();
+  const { user } = useAuthContext();
+  const { activeChat } = useChatContext();
+  const { socket } = useSocket();
+
+  const playerOne = user?.id;
+  const playerTwo = activeChat?.users.find((u) => u.id !== user?.id)?.id;
+
+  const createGame = useCallback(() => {
+    socket?.emit('createGame', { playerOne, playerTwo }, (match: IMatch) => {
+      socket?.emit('sendMessage', {
+        chatId: activeChat?.id,
+        content: `Join me for a game of Pong! Find me at ${window.location.origin}/game/${match.id} :)`,
+      });
+      navigate(`/game/${match.id}`);
+    });
+  }, [socket, user]);
+
+  return (
+    <Tooltip label='Invite to game' position='top-start'>
+      <Button type='button' onClick={createGame} className={styles['chat-game-button']}>
+        <IconDeviceGamepad size='1.2rem' />
+      </Button>
+    </Tooltip>
+  );
+};
 
 const MessageInput = () => {
   const [message, setMessage] = useState('');
@@ -62,13 +92,16 @@ const MessageInput = () => {
             disabled={isSending || isMuted || isBlocked || dmBlocked !== DM_BLOCKED.NOT_BLOCKED}
             required
           />
-          <Button
-            type='submit'
-            disabled={isSending || isMuted || isBlocked || dmBlocked !== DM_BLOCKED.NOT_BLOCKED}
-            className={styles['chat-input-button']}
-          >
-            <IconSend size='1.2rem' />
-          </Button>
+          {activeChat.type === 'direct' && dmBlocked === DM_BLOCKED.NOT_BLOCKED && <GameButton />}
+          <Tooltip label='Send message' position='top-start'>
+            <Button
+              type='submit'
+              disabled={isSending || isMuted || isBlocked || dmBlocked !== DM_BLOCKED.NOT_BLOCKED}
+              className={styles['chat-input-button']}
+            >
+              <IconSend size='1.2rem' />
+            </Button>
+          </Tooltip>
         </>
       ) : null}
     </form>

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -28,6 +28,7 @@ export class MatchService {
     const game = await this.matchRepository.save(newGame);
 
     this.eventEmitter.emit('match.created', game);
+    this.eventEmitter.emit('match.updated');
 
     return game;
   }
@@ -53,7 +54,7 @@ export class MatchService {
     const game = await this.matchRepository.save(currentGame);
 
     this.eventEmitter.emit('match.joined', game);
-
+    this.eventEmitter.emit('match.updated');
     return game;
   }
 
@@ -69,7 +70,26 @@ export class MatchService {
 
     const updatedGame = this.matchRepository.merge(game, gameDto);
 
-    return this.matchRepository.save(updatedGame);
+    const match = await this.matchRepository.save(updatedGame);
+    this.eventEmitter.emit('match.updated');
+    return match;
+  }
+
+  async abortMatch(gameId: string) {
+    const game = await this.matchRepository.findOne({
+      where: { id: gameId },
+      relations: ['playerOne', 'playerTwo'],
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    game.status = GameStatus.ABORTED;
+
+    const match = await this.matchRepository.save(game);
+    this.eventEmitter.emit('match.updated');
+    return match;
   }
 
   async finishMatch(gameId: string) {
@@ -84,21 +104,30 @@ export class MatchService {
 
     game.status = GameStatus.FINISHED;
 
-    return this.matchRepository.save(game);
+    const match = await this.matchRepository.save(game);
+    this.eventEmitter.emit('match.updated');
+
+    return match;
   }
 
   async getCurrentMatches() {
     return this.matchRepository.find({
-      where: { status: GameStatus.WAITING || GameStatus.PLAYING },
+      where: [{ status: GameStatus.WAITING }, { status: GameStatus.PLAYING }],
       order: { createdAt: 'ASC' },
       relations: ['playerOne', 'playerTwo'],
     });
   }
 
   async getMatch(gameId: string) {
-    return this.matchRepository.findOne({
+    const match = await this.matchRepository.findOne({
       where: { id: gameId },
       relations: ['playerOne', 'playerTwo'],
     });
+
+    if (!match) {
+      throw new NotFoundException('Game not found');
+    }
+
+    return match;
   }
 }

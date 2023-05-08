@@ -10,6 +10,7 @@ import * as argon2 from 'argon2';
 import * as fsPromises from 'fs/promises';
 import { join } from 'path';
 import { Repository } from 'typeorm';
+import { Game, GameStatus } from '../game/entities/game.entity';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './types/create-user.dto';
 import { UpdateUserAvatarDto } from './types/update-user-avatar.dto';
@@ -21,7 +22,15 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(Game) private readonly matchRepository: Repository<Game>,
   ) {}
+
+  private generateUsername(user: CreateUserDto) {
+    return `${user?.email.substring(
+      0,
+      user?.email.indexOf('@'),
+    )}_${new Date().getTime()}`;
+  }
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find();
@@ -107,10 +116,6 @@ export class UsersService {
     return this.usersRepository.save(updatedUser);
   }
 
-  // async getChats(id: number): Promise<Chat[]> {
-  //   return (await this.findOne(id)).chats;
-  // }
-
   async remove(id: number) {
     const user = await this.usersRepository.findOne({ where: { id: +id } });
     if (!user) {
@@ -126,10 +131,43 @@ export class UsersService {
     });
   }
 
-  private generateUsername(user: CreateUserDto) {
-    return `${user?.email.substring(
-      0,
-      user?.email.indexOf('@'),
-    )}_${new Date().getTime()}`;
+  async getGameStats(userId: number) {
+    const user = await this.findOne(userId);
+
+    const games = await this.matchRepository.find({
+      where: [
+        { playerOne: { id: user.id }, status: GameStatus.FINISHED },
+        { playerTwo: { id: user.id }, status: GameStatus.FINISHED },
+      ],
+    });
+
+    const wins = games.filter(
+      (game) =>
+        (user.id === game.playerOne.id &&
+          game.playerOneScore > game.playerTwoScore) ||
+        (user.id === game.playerTwo.id &&
+          game.playerTwoScore > game.playerOneScore),
+    ).length;
+
+    return {
+      gamesPlayed: games.length,
+      wins: wins,
+      losses: games.length - wins,
+    };
+  }
+
+  async getMatchHistory(userId: number) {
+    const user = await this.findOne(userId);
+
+    const matches = await this.matchRepository.find({
+      where: [
+        { playerOne: { id: user.id }, status: GameStatus.FINISHED },
+        { playerTwo: { id: user.id }, status: GameStatus.FINISHED },
+      ],
+      order: { createdAt: 'DESC' },
+      relations: ['playerOne', 'playerTwo'],
+    });
+
+    return matches;
   }
 }
