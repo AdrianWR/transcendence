@@ -1,4 +1,4 @@
-import { Button, Flex, HoverCard, Image, NavLink } from '@mantine/core';
+import { Avatar, Button, Flex, HoverCard, NavLink } from '@mantine/core';
 import { IconUser } from '@tabler/icons-react';
 import { FC } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -19,11 +19,10 @@ const NavbarAvatar: FC = () => {
           <HoverCard width={260} shadow='md' openDelay={100} closeDelay={100}>
             <HoverCard.Target>
               <Link to='/profile/me'>
-                <Image
+                <Avatar
                   radius='50%'
-                  width={50}
-                  height={50}
-                  src={user?.avatarUrl || '/images/cat-pirate.jpg'}
+                  size='lg'
+                  src={user?.avatarUrl}
                   pos='relative'
                   alt='user avatar'
                 />

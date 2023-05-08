@@ -11,15 +11,15 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { IconChecks, IconTrashX } from '@tabler/icons-react';
+import { AxiosError } from 'axios';
 import { FC, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { IFriendRequest } from '../FriendsListCard';
-import styles from './FriendRequestsModal.module.css';
-import { alert, success } from '../../Notifications';
-import { AxiosError } from 'axios';
-import api from '../../../services/api';
 import { IUser } from '../../../context/AuthContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
+import api from '../../../services/api';
+import { alert, success } from '../../Notifications';
+import { IFriendRequest } from '../FriendsListCard';
+import styles from './FriendRequestsModal.module.css';
 
 interface FriendRequestsModalProps {
   opened: boolean;
@@ -135,7 +135,7 @@ const FriendRequestsModal: FC<FriendRequestsModalProps> = ({
                   size={48}
                   className={styles['friend-avatar']}
                   mr={20}
-                  src={requestUser.avatarUrl || '/images/cat-pirate.jpg'}
+                  src={requestUser.avatarUrl}
                   alt='request avatar'
                 />
               </Link>

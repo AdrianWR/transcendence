@@ -1,11 +1,11 @@
-import { Flex, Image, FileButton, LoadingOverlay } from '@mantine/core';
+import { Avatar, FileButton, Flex, LoadingOverlay } from '@mantine/core';
 import { IconCamera } from '@tabler/icons-react';
+import { AxiosError } from 'axios';
 import { FC, useCallback, useState } from 'react';
+import { IUser } from '../../../context/AuthContext';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
-import { IUser } from '../../../context/AuthContext';
 import { alert, success } from '../../Notifications';
-import { AxiosError } from 'axios';
 
 const AvatarProfileUploader: FC = () => {
   const [isLoading, setLoading] = useState(false);
@@ -39,13 +39,17 @@ const AvatarProfileUploader: FC = () => {
 
   return (
     <Flex pos='relative' justify='center' align='center' w='fit-content'>
-      <Image
+      <Avatar
         radius='50%'
-        width={100}
-        height={100}
-        src={user?.avatarUrl || '/images/cat-pirate.jpg'}
+        size='xl'
+        src={user?.avatarUrl}
         pos='relative'
         alt='user avatar'
+        styles={(theme) => ({
+          root: {
+            border: `2px solid ${theme.colors.secondary[6]}`,
+          },
+        })}
       />
       <FileButton onChange={uploadAvatar} accept='image/png,image/jpeg,image/svg+xml'>
         {(props) => (

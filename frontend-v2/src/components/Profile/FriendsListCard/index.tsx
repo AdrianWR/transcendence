@@ -368,7 +368,7 @@ const FriendsListCard: FC<FriendsListCardProps> = ({ userId }) => {
                   size={48}
                   mr={20}
                   className={styles['friend-avatar']}
-                  src={friend.avatarUrl || '/images/cat-pirate.jpg'}
+                  src={friend.avatarUrl}
                   alt='friend avatar'
                 />
                 <Flex direction='column'>

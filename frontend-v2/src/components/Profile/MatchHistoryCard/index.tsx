@@ -2,7 +2,6 @@ import { Card, Flex, Group, LoadingOverlay, Title } from '@mantine/core';
 import { IconTrophy, IconX } from '@tabler/icons-react';
 import { AxiosError } from 'axios';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { IMatch } from '../../../context/GameContext';
 import api from '../../../services/api';
 import { alert, success } from '../../Notifications';
@@ -90,11 +89,15 @@ const MatchHistoryCard: FC<MatchHistoryCardProps> = ({ userId }) => {
               overflow: 'visible',
             }}
           >
-            <Link to={`/game/${match?.id}`}>
-              <Title color='white' order={4} truncate maw={100}>
-                {match?.id}
-              </Title>
-            </Link>
+            <Title color='white' order={6}>
+              {new Date(match.createdAt).toLocaleTimeString([], {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Title>
             <Group
               styles={{
                 display: 'flex',

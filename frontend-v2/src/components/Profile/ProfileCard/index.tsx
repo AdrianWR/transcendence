@@ -9,15 +9,15 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
-import { IconAt, IconUser, IconUserEdit } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
-import { FC, useEffect, useState } from 'react';
-import ProfileUserForm from '../ProfileUserForm';
-import { useAuthContext } from '../../../hooks/useAuthContext';
-import { IUser } from '../../../context/AuthContext';
-import api from '../../../services/api';
+import { IconAt, IconUser, IconUserEdit } from '@tabler/icons-react';
 import { AxiosError } from 'axios';
+import { FC, useEffect, useState } from 'react';
+import { IUser } from '../../../context/AuthContext';
+import { useAuthContext } from '../../../hooks/useAuthContext';
+import api from '../../../services/api';
 import { alert, success } from '../../Notifications';
+import ProfileUserForm from '../ProfileUserForm';
 
 interface ProfileCardProps {
   userId: number | undefined;
@@ -88,7 +88,7 @@ const ProfileCard: FC<ProfileCardProps> = ({ userId }) => {
       <Flex justify='space-between' align='start'>
         <Avatar
           mt={30}
-          src={userData?.avatarUrl || '/images/cat-pirate.jpg'}
+          src={userData?.avatarUrl}
           size='xl'
           radius='50%'
           style={{ border: '2px solid #F46036' }}

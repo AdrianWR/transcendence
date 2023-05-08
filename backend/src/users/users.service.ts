@@ -153,11 +153,6 @@ export class UsersService {
       gamesPlayed: games.length,
       wins: wins,
       losses: games.length - wins,
-      rank: {
-        level: 3,
-        xp: 190,
-        nextLevelXp: 20,
-      },
     };
   }
 
@@ -165,7 +160,10 @@ export class UsersService {
     const user = await this.findOne(userId);
 
     const matches = await this.matchRepository.find({
-      where: [{ playerOne: { id: user.id } }, { playerTwo: { id: user.id } }],
+      where: [
+        { playerOne: { id: user.id }, status: GameStatus.FINISHED },
+        { playerTwo: { id: user.id }, status: GameStatus.FINISHED },
+      ],
       order: { createdAt: 'DESC' },
       relations: ['playerOne', 'playerTwo'],
     });

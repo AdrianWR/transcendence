@@ -5,6 +5,7 @@ import {
   Flex,
   Paper,
   ScrollArea,
+  Space,
   Stack,
   Text,
   ThemeIcon,
@@ -15,7 +16,9 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMatch } from '../../../context/GameContext';
 import { useSocket } from '../../../hooks/socket';
+import { useAuthContext } from '../../../hooks/useAuthContext';
 import UserAvatar from '../../UserAvatar';
+import GameMenuCard from '../GameMenuCard';
 import styles from './Matchmaker.module.css';
 
 type MatchCardProps = {
@@ -78,6 +81,8 @@ const MatchCard: FC<MatchCardProps> = ({ match }) => {
 
 const Matchmaker = () => {
   const { socket } = useSocket();
+  const { user } = useAuthContext();
+  const navigate = useNavigate();
   const [currentMatches, setCurrentMatches] = useState<IMatch[]>([]);
 
   useEffect(() => {
@@ -95,33 +100,64 @@ const Matchmaker = () => {
   }, [socket]);
 
   return (
-    <Paper className={styles['matchmaker-paper']}>
-      <Title color='white' mb='xl'>
-        Live Games
-      </Title>
-      <ScrollArea type='auto' offsetScrollbars h={450}>
-        <Stack spacing='md'>
-          {currentMatches.length === 0 && (
-            <Flex direction='column' align={'center'} justify='space-between' gap={'xl'}>
-              <Text color='white' align='center' size='lg'>
-                No live games at the moment
-              </Text>
-              <ThemeIcon
-                size={60}
-                variant='outline'
-                color='secondary'
-                style={{ borderColor: 'transparent' }}
-              >
-                <IconMoodSad size={60} stroke={1.5} />
-              </ThemeIcon>
-            </Flex>
-          )}
-          {currentMatches.map((match) => (
-            <MatchCard key={match.id} match={match} />
-          ))}
-        </Stack>
-      </ScrollArea>
-    </Paper>
+    <>
+      <Flex align='center' justify='space-around'>
+        <GameMenuCard
+          onClick={() => {
+            socket?.emit('createGame', { playerOne: user?.id }, (match: IMatch) => {
+              navigate(`/game/${match.id}`);
+            });
+          }}
+        >
+          Create a new game room
+        </GameMenuCard>
+        <Space w={12} />
+        <GameMenuCard
+          onClick={() => {
+            const availableMatches = currentMatches.filter((match) => !match.playerTwo);
+
+            if (availableMatches.length === 0) {
+              socket?.emit('createGame', { playerOne: user?.id }, (match: IMatch) => {
+                navigate(`/game/${match.id}`);
+              });
+            } else {
+              socket?.emit('joinGame', availableMatches[0].id, (match: IMatch) => {
+                navigate(`/game/${match.id}`);
+              });
+            }
+          }}
+        >
+          Join a random game room
+        </GameMenuCard>
+      </Flex>
+      <Paper className={styles['matchmaker-paper']}>
+        <Title color='white' mb='xl'>
+          Live Games
+        </Title>
+        <ScrollArea type='auto' offsetScrollbars h={450}>
+          <Stack spacing='md'>
+            {currentMatches.length === 0 && (
+              <Flex direction='column' align={'center'} justify='space-between' gap={'xl'}>
+                <Text color='white' align='center' size='lg'>
+                  No live games at the moment
+                </Text>
+                <ThemeIcon
+                  size={60}
+                  variant='outline'
+                  color='secondary'
+                  style={{ borderColor: 'transparent' }}
+                >
+                  <IconMoodSad size={60} stroke={1.5} />
+                </ThemeIcon>
+              </Flex>
+            )}
+            {currentMatches.map((match) => (
+              <MatchCard key={match.id} match={match} />
+            ))}
+          </Stack>
+        </ScrollArea>
+      </Paper>
+    </>
   );
 };
 

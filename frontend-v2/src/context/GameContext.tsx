@@ -10,6 +10,7 @@ export interface IMatch {
   playerTwo?: IUser;
   playerOneScore: number;
   playerTwoScore: number;
+  createdAt: string;
 }
 
 export type IGameContext = {

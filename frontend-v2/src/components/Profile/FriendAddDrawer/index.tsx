@@ -13,9 +13,11 @@ import { IconMoodPlus, IconSearch } from '@tabler/icons-react';
 import { AxiosError } from 'axios';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { IUser } from '../../../context/AuthContext';
+import { useAuthContext } from '../../../hooks/useAuthContext';
 import api from '../../../services/api';
 import { alert, success } from '../../Notifications';
 import UserAvatar from '../../UserAvatar';
+import { IFriendRequest } from '../FriendsListCard';
 import styles from './FriendAddDrawer.module.css';
 
 interface FriendAddDrawerProps {
@@ -24,6 +26,7 @@ interface FriendAddDrawerProps {
 }
 
 const FriendAddDrawer: FC<FriendAddDrawerProps> = ({ opened, close }) => {
+  const { user } = useAuthContext();
   const [usersList, setUsersList] = useState([] as IUser[]);
   const [filteredUsersList, setFilteredUsersList] = useState([] as IUser[]);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,18 +36,32 @@ const FriendAddDrawer: FC<FriendAddDrawerProps> = ({ opened, close }) => {
     setIsLoading(true);
 
     const toBeFriends = async () => {
-      const allUsers = api.get<IUser[]>('/users');
-      const friends = api.get<IUser[]>('/friends');
+      const { data: allUsers } = await api.get<IUser[]>('/users');
+      const { data: friends } = await api.get<IUser[]>('/friends');
+      const { data: friendRequests } = await api.get<IFriendRequest[]>('/friends/requests');
 
-      return await Promise.all([allUsers, friends]).then((responses) => {
-        const [allUsers, friends] = responses;
+      const friendsSet: { [id: number]: IUser } = friends.reduce((acc, friend) => {
+        return { ...acc, [friend.id]: friend };
+      }, {});
 
-        return allUsers.data.filter((user: IUser) => {
-          if (friends.data) {
-            return !friends.data.find((friend) => friend.id === user.id);
-          }
-        });
-      });
+      const friendRequestsSet: { [id: number]: IUser } = friendRequests.reduce(
+        (acc, friendRequest) => {
+          const otherUserId =
+            friendRequest.sender.id === user?.id
+              ? friendRequest.recipient.id
+              : friendRequest.sender.id;
+          return {
+            ...acc,
+            [otherUserId]:
+              friendRequest.sender.id === user?.id ? friendRequest.recipient : friendRequest.sender,
+          };
+        },
+        {},
+      );
+
+      return allUsers.filter(
+        (u) => !friendsSet[u.id] && !friendRequestsSet[u.id] && u.id !== user?.id,
+      );
     };
 
     toBeFriends()
@@ -158,6 +175,7 @@ const FriendAddDrawer: FC<FriendAddDrawerProps> = ({ opened, close }) => {
                     radius='xl'
                     onClick={() => {
                       sendFriendRequest(user.id);
+                      close();
                     }}
                   >
                     <IconMoodPlus />

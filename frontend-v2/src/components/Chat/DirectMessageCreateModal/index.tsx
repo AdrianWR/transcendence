@@ -161,7 +161,7 @@ const DirectMessageCreateModal: FC<IDMModalProps> = ({ close }) => {
                   size={48}
                   mr={20}
                   className={styles['friend-avatar']}
-                  src={friend.avatarUrl || '/images/cat-pirate.jpg'}
+                  src={friend.avatarUrl}
                   alt='friend avatar'
                 />
               </Link>
