@@ -53,6 +53,8 @@ export class User extends BaseEntity {
   getAvatarUrl(): string | null {
     if (!this.avatar) return null;
 
+    if (this.avatar.startsWith('http')) return this.avatar;
+
     return `${process.env.BACKEND_URL}/${process.env.USER_PICTURE_PATH}/${this.avatar}`;
   }
 

@@ -4,7 +4,6 @@ en.subject.pdf
 /frontend-v2/node_modules
 /frontend/node_modules
 /backend/node_modules
-/frontend
 
 .env
 .DS_Store

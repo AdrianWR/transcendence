@@ -1,0 +1,11 @@
+.about-card {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(46, 41, 78, 0.8);
+  padding: 2.5rem;
+  border-radius: 0 9px 0 9px;
+  text-align: center;
+  transition: 0.3s;
+  border: 3px solid rgba(45, 45, 45, 0.0);
+  justify-content: space-between;
+}

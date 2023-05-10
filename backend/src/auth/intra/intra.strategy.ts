@@ -16,7 +16,7 @@ export type IntraUserProfile = {
   firstName: string;
   lastName: string;
   email: string;
-  picture: string;
+  avatar: string;
   accessToken?: string;
   refreshToken?: string;
 };
@@ -65,7 +65,7 @@ export class FortyTwoOauthStrategy extends PassportStrategy(
       email: user.data.email,
       firstName: user.data.first_name,
       lastName: user.data.last_name,
-      picture: user.data.image.link,
+      avatar: user.data.image.link,
     };
 
     done(null, profile);
