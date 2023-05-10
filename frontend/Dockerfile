@@ -1,61 +1,44 @@
-# Install dependencies only when needed
-FROM node:19-alpine AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
+# syntax=docker/dockerfile:1.4
+
+# 1. For build React app
+FROM node:lts AS development
+
+# Set working directory
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN \
-    if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then npm ci; \
-    elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
-    else echo "Lockfile not found." && exit 1; \
-    fi
+# 
+COPY package.json /app/package.json
+COPY package-lock.json /app/package-lock.json
 
+# Same as npm install
+RUN npm ci --omit=dev
 
-# Rebuild the source code only when needed
-FROM node:19-alpine AS builder
+COPY . /app
 
-ARG BACKEND_URL
-ARG GATEWAY_URL
+ENV CI=true
+ENV PORT=3000
 
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+CMD [ "npm", "start" ]
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED 1
+FROM development AS build
 
-RUN yarn build
+ARG REACT_APP_BACKEND_URL
 
-# If using npm comment out above and use below instead
-# RUN npm run build
+RUN npm run build
 
-# Production image, copy all the files and run next
-FROM node:19-alpine AS runner
-WORKDIR /app
+# 2. For Nginx setup
+FROM nginx:alpine
 
-ENV NODE_ENV production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
+# Copy config nginx
+COPY --from=build /app/.nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+WORKDIR /usr/share/nginx/html
 
-COPY --from=builder /app/public ./public
+# Remove default nginx static assets
+RUN rm -rf ./*
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy static assets from builder stage
+COPY --from=build /app/build .
 
-USER nextjs
-
-EXPOSE 3000
-
-ENV PORT 3000
-
-CMD ["node", "server.js"]
+# Containers run nginx with global directives and daemon off
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

@@ -32,7 +32,7 @@ services:
       - db
   frontend:
     build:
-      context: ./frontend-v2
+      context: ./frontend
       args:
         - REACT_APP_BACKEND_URL=http://localhost:8080
     image: frontend
