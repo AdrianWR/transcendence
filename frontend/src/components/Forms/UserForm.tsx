@@ -43,7 +43,7 @@ export const UserForm = (props: PaperProps) => {
             type='button'
             disabled={isLoading || mfaEnabled}
             onClick={() => {
-              handleSocialLogin('http://localhost:8080/auth/google');
+              handleSocialLogin(`${process.env.REACT_APP_BACKEND_URL}/auth/google`);
             }}
           >
             Login with Google
@@ -53,7 +53,7 @@ export const UserForm = (props: PaperProps) => {
             type='button'
             disabled={isLoading || mfaEnabled}
             onClick={() => {
-              handleSocialLogin('http://localhost:8080/auth/intra');
+              handleSocialLogin(`${process.env.REACT_APP_BACKEND_URL}/auth/intra`);
             }}
           >
             Login with 42

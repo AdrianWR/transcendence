@@ -2,13 +2,13 @@ import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import { Response as ResponseType } from 'express';
+import { CookieOptions } from 'express';
 import ms from 'ms';
 import authConfig from '../../config/auth.config';
 import { User } from '../../users/entities/user.entity';
 import { UsersService } from '../../users/users.service';
 import { AuthTokenDto } from '../types/auth-token.dto';
-import { JwtPayload } from '../types/auth.interface';
+import { JwtPayload, ResponseType } from '../types/auth.interface';
 
 @Injectable()
 export class JwtAuthService {
@@ -17,6 +17,15 @@ export class JwtAuthService {
     private jwtService: JwtService,
     private usersService: UsersService,
   ) {}
+
+  private domain = new URL(this.authConf.backend_url)?.hostname;
+
+  private cookieOptions: CookieOptions = {
+    domain: this.domain,
+    httpOnly: true,
+    sameSite: this.domain !== 'localhost' ? 'none' : 'lax',
+    secure: this.domain !== 'localhost',
+  };
 
   private async updateRefreshToken(user: User, refreshToken: string) {
     const hashedRefreshToken = await argon2.hash(refreshToken);
@@ -77,15 +86,11 @@ export class JwtAuthService {
   async storeTokensInCookie(res: ResponseType, authToken: AuthTokenDto) {
     res.cookie('accessToken', authToken.accessToken, {
       maxAge: +ms(this.authConf.jwt.access.expires_in),
-      domain: 'localhost',
-      httpOnly: true,
-      sameSite: 'lax',
+      ...this.cookieOptions,
     });
     res.cookie('refreshToken', authToken.refreshToken, {
       maxAge: +ms(this.authConf.jwt.refresh.expires_in),
-      domain: 'localhost',
-      httpOnly: true,
-      sameSite: 'lax',
+      ...this.cookieOptions,
     });
     return authToken;
   }

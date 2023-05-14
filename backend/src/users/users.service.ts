@@ -23,7 +23,22 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Game) private readonly matchRepository: Repository<Game>,
-  ) {}
+  ) {
+    // If the user picture path is defined, create the directory if it doesn't exist
+    if (!!process.env.USER_PICTURE_PATH) {
+      this.logger.warn(
+        'The user picture path is not defined. User pictures will not be saved.',
+      );
+    } else {
+      fsPromises
+        .mkdir(process.env.USER_PICTURE_PATH, { recursive: true })
+        .catch((err) => {
+          this.logger.error(
+            `Couldn't create user picture directory: ${err.message}`,
+          );
+        });
+    }
+  }
 
   private generateUsername(user: CreateUserDto) {
     return `${user?.email.substring(
