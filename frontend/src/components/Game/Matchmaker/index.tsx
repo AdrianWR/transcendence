@@ -13,7 +13,7 @@ import {
 } from '@mantine/core';
 import { IconMoodSad } from '@tabler/icons-react';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { IMatch } from '../../../context/GameContext';
 import { useSocket } from '../../../hooks/socket';
 import { useAuthContext } from '../../../hooks/useAuthContext';
@@ -71,11 +71,13 @@ const MatchCard: FC<MatchCardProps> = ({ match }) => {
         >
           Join
         </Button>
-        <Link to={`/game/${match.id}`}>
-          <Button color='lightBlue' disabled={!match.playerTwo}>
-            Watch
-          </Button>
-        </Link>
+        <Button
+          color='lightBlue'
+          disabled={!match.playerTwo}
+          onClick={() => navigate(`/game/${match.id}`)}
+        >
+          Watch
+        </Button>
       </Flex>
     </Card>
   );

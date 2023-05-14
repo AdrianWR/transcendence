@@ -24,7 +24,7 @@ const GameInstructions: FC = () => {
           opponent&apos;s paddle.
           <br />
           <br />
-          If you miss the ball, the opponent gets a point. The first player to reach 5 points wins
+          If you miss the ball, the opponent gets a point. The first player to reach 3 points wins
           the game.
           <br />
           <br />
