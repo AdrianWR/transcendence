@@ -21,6 +21,10 @@
         "value": "transcendence"
       },
       {
+        "name": "FRONTEND_URL",
+        "value": "https://transcendence.adrianroque.dev"
+      },
+      {
         "name": "INTRA_REDIRECT_URL",
         "value": "https://transcendence-api.adrianroque.dev/auth/intra/redirect"
       },

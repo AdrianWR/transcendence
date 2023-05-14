@@ -33,7 +33,7 @@ const Home: FCWithLayout = () => {
             my={48}
           />
           <Text color='white' size='xl'>
-            Ready for some fun? Click here to play our awesome game! Playy against other players,
+            Ready for some fun? Click here to play our awesome game! Play against other players,
             create your own room and invite your friends to play with you!
           </Text>
         </Link>

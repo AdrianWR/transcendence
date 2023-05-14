@@ -1,12 +1,6 @@
 resource "aws_cloudfront_distribution" "frontend" {
 
   origin {
-    # custom_origin_config {
-    #   http_port              = 80
-    #   https_port             = 443
-    #   origin_protocol_policy = "http-only"
-    #   origin_ssl_protocols   = ["TLSv1.2"]
-    # }
     domain_name = aws_s3_bucket.frontend.bucket_regional_domain_name
     origin_id   = var.frontend_domain
 
