@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
+import { existsSync, mkdirSync } from 'fs';
 import * as fsPromises from 'fs/promises';
 import { join } from 'path';
 import { Repository } from 'typeorm';
@@ -24,19 +25,9 @@ export class UsersService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Game) private readonly matchRepository: Repository<Game>,
   ) {
-    // If the user picture path is defined, create the directory if it doesn't exist
-    if (!!process.env.USER_PICTURE_PATH) {
-      this.logger.warn(
-        'The user picture path is not defined. User pictures will not be saved.',
-      );
-    } else {
-      fsPromises
-        .mkdir(process.env.USER_PICTURE_PATH, { recursive: true })
-        .catch((err) => {
-          this.logger.error(
-            `Couldn't create user picture directory: ${err.message}`,
-          );
-        });
+    const dir = join(__dirname, '../..', process.env.USER_PICTURE_PATH);
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true });
     }
   }
 
