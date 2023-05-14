@@ -51,10 +51,9 @@ module "backend" {
   intra_client_secret          = var.intra_client_secret
 }
 
-# module "frontend" {
-#   source = "./frontend"
+module "frontend" {
+  source = "./frontend"
 
-#   root_domain     = var.root_domain
-#   frontend_domain = var.frontend_domain
-#   backend_domain  = var.backend_domain
-# }
+  frontend_domain = var.frontend_domain
+  route53_zone_id = module.network.route53_zone_id
+}
