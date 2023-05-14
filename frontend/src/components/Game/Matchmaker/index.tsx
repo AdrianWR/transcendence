@@ -72,7 +72,9 @@ const MatchCard: FC<MatchCardProps> = ({ match }) => {
           Join
         </Button>
         <Link to={`/game/${match.id}`}>
-          <Button color='lightBlue'>Watch</Button>
+          <Button color='lightBlue' disabled={!match.playerTwo}>
+            Watch
+          </Button>
         </Link>
       </Flex>
     </Card>

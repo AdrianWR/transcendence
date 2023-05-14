@@ -85,12 +85,12 @@ export class JwtAuthService {
 
   async storeTokensInCookie(res: ResponseType, authToken: AuthTokenDto) {
     res.cookie('accessToken', authToken.accessToken, {
-      maxAge: +ms(this.authConf.jwt.access.expires_in),
       ...this.cookieOptions,
+      maxAge: +ms(this.authConf.jwt.access.expires_in),
     });
     res.cookie('refreshToken', authToken.refreshToken, {
-      maxAge: +ms(this.authConf.jwt.refresh.expires_in),
       ...this.cookieOptions,
+      maxAge: +ms(this.authConf.jwt.refresh.expires_in),
     });
     return authToken;
   }

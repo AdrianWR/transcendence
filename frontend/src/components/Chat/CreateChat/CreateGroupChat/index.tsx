@@ -46,8 +46,8 @@ const GroupChatCreateModal: FC<IGroupChatModalProps> = ({ close }) => {
   return (
     <form
       className={styles['create-group-chat-form']}
-      // onSubmit={(event) => handleSubmit(form.values, event)}
-      onSubmit={form.onSubmit((values, event) => handleSubmit(values, event))}
+      onSubmit={(event) => handleSubmit(form.values, event)}
+      // onSubmit={form.onSubmit((values, event) => handleSubmit(values, event))}
     >
       <TextInput
         withAsterisk
