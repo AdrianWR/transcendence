@@ -21,12 +21,20 @@
         "value": "transcendence"
       },
       {
+        "name": "BACKEND_URL",
+        "value": "https://transcendence-api.adrianroque.dev"
+      },
+      {
         "name": "FRONTEND_URL",
         "value": "https://transcendence.adrianroque.dev"
       },
       {
         "name": "INTRA_REDIRECT_URL",
         "value": "https://transcendence-api.adrianroque.dev/auth/intra/redirect"
+      },
+      {
+        "name": "GOOGLE_REDIRECT_URL",
+        "value": "https://transcendence-api.adrianroque.dev/auth/google/redirect"
       },
       {
         "name": "USER_PICTURE_PATH",
@@ -49,6 +57,14 @@
       {
         "name": "INTRA_SECRET",
         "valueFrom": "${intra_client_secret}"
+      },
+      {
+        "name": "GOOGLE_CLIENT_ID",
+        "valueFrom": "${google_client_id}"
+      },
+      {
+        "name": "GOOGLE_SECRET",
+        "valueFrom": "${google_client_secret}"
       },
       {
         "name": "JWT_ACCESS_SECRET",

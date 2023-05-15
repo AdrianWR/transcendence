@@ -23,6 +23,8 @@ data "aws_iam_policy_document" "ecs_secrets_manager_policy" {
       var.database_password_secret_arn,
       aws_secretsmanager_secret.intra_client_id.arn,
       aws_secretsmanager_secret.intra_client_secret.arn,
+      aws_secretsmanager_secret.google_client_id.arn,
+      aws_secretsmanager_secret.google_client_secret.arn,
       aws_secretsmanager_secret.jwt_access_secret.arn,
       aws_secretsmanager_secret.jwt_refresh_secret.arn,
     ]

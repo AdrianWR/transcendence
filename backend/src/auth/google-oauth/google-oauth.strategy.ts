@@ -10,7 +10,7 @@ export type GoogleUserProfile = {
   email: string;
   firstName: string;
   lastName: string;
-  picture: string;
+  avatar: string;
   accessToken?: string;
   refreshToken?: string;
 };
@@ -39,7 +39,7 @@ export class GoogleOauthStrategy extends PassportStrategy(Strategy, 'google') {
       email: emails[0].value,
       firstName: name.givenName,
       lastName: name.familyName,
-      picture: photos[0].value,
+      avatar: photos[0].value,
       accessToken,
       refreshToken,
     };

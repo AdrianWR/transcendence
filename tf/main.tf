@@ -49,6 +49,8 @@ module "backend" {
   backend_domain               = var.backend_domain
   intra_client_id              = var.intra_client_id
   intra_client_secret          = var.intra_client_secret
+  google_client_id             = var.google_client_id
+  google_client_secret         = var.google_client_secret
 }
 
 module "frontend" {

@@ -11,6 +11,7 @@ export default registerAs('auth', () => ({
   intra: {
     uid: process.env.INTRA_CLIENT_ID,
     secret: process.env.INTRA_SECRET,
+    redirect_url: process.env.INTRA_REDIRECT_URL,
   },
   jwt: {
     access: {

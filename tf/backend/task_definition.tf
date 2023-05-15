@@ -9,6 +9,8 @@ data "template_file" "task_definition" {
     cloudwatch_log_group         = aws_cloudwatch_log_group.backend.name
     intra_client_id              = aws_secretsmanager_secret_version.intra_client_id.arn
     intra_client_secret          = aws_secretsmanager_secret_version.intra_client_secret.arn
+    google_client_id             = aws_secretsmanager_secret_version.google_client_id.arn
+    google_client_secret         = aws_secretsmanager_secret_version.google_client_secret.arn
     jwt_access_secret            = aws_secretsmanager_secret_version.jwt_access_secret.arn
     jwt_refresh_secret           = aws_secretsmanager_secret_version.jwt_refresh_secret.arn
   }

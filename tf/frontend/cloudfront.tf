@@ -1,5 +1,12 @@
 resource "aws_cloudfront_distribution" "frontend" {
 
+  enabled             = true
+  default_root_object = "index.html"
+
+  aliases = [
+    var.frontend_domain,
+  ]
+
   origin {
     domain_name = aws_s3_bucket.frontend.bucket_regional_domain_name
     origin_id   = var.frontend_domain
@@ -9,12 +16,11 @@ resource "aws_cloudfront_distribution" "frontend" {
     }
   }
 
-  enabled             = true
-  default_root_object = "index.html"
-
-  aliases = [
-    var.frontend_domain,
-  ]
+  custom_error_response {
+    error_code         = 404
+    response_code      = 200
+    response_page_path = "/index.html"
+  }
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]

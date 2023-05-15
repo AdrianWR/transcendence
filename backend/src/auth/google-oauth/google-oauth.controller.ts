@@ -14,7 +14,6 @@ import { ConfigType } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import { Request as RequestType, Response as ResponseType } from 'express';
 import authConfig from '../../config/auth.config';
-import { UsersService } from '../../users/users.service';
 import { JwtAuthService } from '../jwt/jwt.service';
 import { GoogleOauthGuard } from './google-oauth.guard';
 import { GoogleOauthService } from './google-oauth.service';
@@ -27,7 +26,6 @@ export class GoogleOauthController {
     @Inject(authConfig.KEY) private authConf: ConfigType<typeof authConfig>,
     private googleOauthService: GoogleOauthService,
     private jwtAuthService: JwtAuthService,
-    private usersService: UsersService,
   ) {}
 
   @UseGuards(GoogleOauthGuard)
@@ -45,7 +43,7 @@ export class GoogleOauthController {
     const user = req.user as GoogleUserProfile;
     const tokens = await this.googleOauthService.googleSignIn(user);
     await this.jwtAuthService.storeTokensInCookie(res, tokens);
+
     res.redirect(`${this.authConf.frontend_url}/login/success`);
-    //return this.usersService.findOneByEmail(user.email);
   }
 }

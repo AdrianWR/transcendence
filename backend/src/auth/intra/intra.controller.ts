@@ -12,7 +12,6 @@ import { ConfigType } from '@nestjs/config';
 import { ApiOAuth2, ApiTags } from '@nestjs/swagger';
 import { Request as RequestType, Response as ResponseType } from 'express';
 import authConfig from '../../config/auth.config';
-import { UsersService } from '../../users/users.service';
 import { JwtAuthService } from '../jwt/jwt.service';
 import { FortyTwoOauthGuard } from './intra.guard';
 import { FortyTwoOauthService } from './intra.service';
@@ -26,7 +25,6 @@ export class FortyTwoOauthController {
     @Inject(authConfig.KEY) private authConf: ConfigType<typeof authConfig>,
     private jwtAuthService: JwtAuthService,
     private fortyTwoOauthService: FortyTwoOauthService,
-    private usersService: UsersService,
   ) {}
 
   @UseGuards(FortyTwoOauthGuard)

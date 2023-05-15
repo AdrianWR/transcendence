@@ -25,3 +25,13 @@ variable "intra_client_secret" {
   type        = string
   description = "Intra Client secret"
 }
+
+variable "google_client_id" {
+  type        = string
+  description = "Google Client ID"
+}
+
+variable "google_client_secret" {
+  type        = string
+  description = "Google Client secret"
+}

@@ -35,7 +35,7 @@ export class FortyTwoOauthStrategy extends PassportStrategy(
       tokenURL: 'https://api.intra.42.fr/oauth/token',
       clientID: authConf.intra.uid,
       clientSecret: authConf.intra.secret,
-      callbackURL: 'http://localhost:8080/auth/intra/redirect',
+      callbackURL: authConf.intra.redirect_url,
       proxy: true,
     });
   }

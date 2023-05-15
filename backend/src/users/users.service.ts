@@ -1,7 +1,6 @@
 import {
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -113,9 +112,7 @@ export class UsersService {
       try {
         await fsPromises.unlink(filePath);
       } catch (err) {
-        throw new InternalServerErrorException(
-          `Server could not delete ${filePath}`,
-        );
+        this.logger.warn(`Server could not delete ${filePath}; overwriting...`);
       }
     }
 
