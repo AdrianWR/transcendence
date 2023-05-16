@@ -11,28 +11,12 @@ type GameSketchProps = {
 };
 
 const GameSketch: FC<GameSketchProps> = ({ game, socket }) => {
-  const speed = 10;
   const defaultCanvas = {
     height: 400,
     width: 800,
   };
 
   const { user } = useAuthContext();
-
-  const moveUp = (player: IPlayer) => {
-    if (player.position.y > 0) {
-      return (player.position.y -= speed);
-    }
-    return player.position.y;
-  };
-
-  const moveDown = (player: IPlayer) => {
-    if (!game || !game.canvas) return;
-    if (player.position.y + player.length < game.canvas.height) {
-      return (player.position.y += speed);
-    }
-    return player.position.y;
-  };
 
   const activePlayer = useMemo(() => {
     if (game.playerOne?.id === user?.id) {
@@ -100,9 +84,9 @@ const GameSketch: FC<GameSketchProps> = ({ game, socket }) => {
     // if user is an active player, listen for key presses
     if (activePlayer) {
       if (p5.keyIsDown(p5.UP_ARROW)) {
-        socket.current?.emit('updateGame', moveUp(activePlayer));
+        socket.current?.emit('updateGame', 'up');
       } else if (p5.keyIsDown(p5.DOWN_ARROW)) {
-        socket.current?.emit('updateGame', moveDown(activePlayer));
+        socket.current?.emit('updateGame', 'down');
       }
     }
   };

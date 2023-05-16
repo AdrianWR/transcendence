@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial } from 'typeorm';
 import { Game, GameStatus } from './entities/game.entity';
 import { MatchService } from './match.service';
 
@@ -53,15 +51,14 @@ export class GameService {
   static BALL_DIAMETER = 20;
   static PLAYER_LENGTH = 100;
   static PLAYER_THICKNESS = 10;
+  static PLAYER_SPEED = 10;
   static MAX_SCORE = 3;
 
   // Data structure to store all the game states
   private gameMap = new Map<string, IGameState>();
 
   constructor(
-    @InjectRepository(Game) private readonly gameRepository: Repository<Game>,
     private matchService: MatchService,
-    private schedulerRegistry: SchedulerRegistry,
     private eventEmitter: EventEmitter2,
   ) {
     // Initialize the game map with all current games
@@ -119,7 +116,11 @@ export class GameService {
     return this.gameMap;
   }
 
-  async updateFromClient(gameId: string, userId: number, playerY: number) {
+  async updateFromClient(
+    gameId: string,
+    userId: number,
+    command: 'up' | 'down',
+  ) {
     // Get the game state
     const gameState = this.gameMap.get(gameId);
 
@@ -128,9 +129,36 @@ export class GameService {
 
     // If player One, update player One position
     if (gameState.playerOne?.id === userId) {
-      gameState.playerOne.position.y = playerY;
+      const playerY = gameState.playerOne.position.y;
+
+      if (command === 'up') {
+        gameState.playerOne.position.y =
+          playerY - GameService.PLAYER_SPEED < 0
+            ? 0
+            : playerY - GameService.PLAYER_SPEED;
+      } else if (command === 'down') {
+        gameState.playerOne.position.y =
+          playerY + GameService.PLAYER_SPEED >
+          GameService.CANVAS_HEIGHT - GameService.PLAYER_LENGTH
+            ? GameService.CANVAS_HEIGHT - GameService.PLAYER_LENGTH
+            : playerY + GameService.PLAYER_SPEED;
+      }
     } else if (gameState.playerTwo?.id === userId) {
-      gameState.playerTwo.position.y = playerY;
+      // If player Two, update player Two position
+      const playerY = gameState.playerTwo.position.y;
+
+      if (command === 'up') {
+        gameState.playerTwo.position.y =
+          playerY - GameService.PLAYER_SPEED < 0
+            ? 0
+            : playerY - GameService.PLAYER_SPEED;
+      } else if (command === 'down') {
+        gameState.playerTwo.position.y =
+          playerY + GameService.PLAYER_SPEED >
+          GameService.CANVAS_HEIGHT - GameService.PLAYER_LENGTH
+            ? GameService.CANVAS_HEIGHT - GameService.PLAYER_LENGTH
+            : playerY + GameService.PLAYER_SPEED;
+      }
     } else {
       return;
     }
