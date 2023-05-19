@@ -18,20 +18,20 @@ variable "frontend_domain" {
 
 variable "intra_client_id" {
   type        = string
-  description = "Intra Client ID"
+  description = "Intra client ID"
 }
 
 variable "intra_client_secret" {
   type        = string
-  description = "Intra Client secret"
+  description = "Intra client secret"
 }
 
 variable "google_client_id" {
   type        = string
-  description = "Google Client ID"
+  description = "Google client ID"
 }
 
 variable "google_client_secret" {
   type        = string
-  description = "Google Client secret"
+  description = "Google client secret"
 }
