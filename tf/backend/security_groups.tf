@@ -35,7 +35,6 @@ resource "aws_security_group" "ecs_service" {
     security_groups = [
       aws_security_group.load_balancer.id,
     ]
-    # cidr_blocks = ["0.0.0.0/0"] # remove this one later
   }
 
   ingress {
