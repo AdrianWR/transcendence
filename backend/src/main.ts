@@ -52,7 +52,8 @@ async function bootstrap() {
   );
 
   // Deploy app
-  const port = config.getOrThrow('APP_PORT');
+  const port = config.get<string>('APP_PORT', '8080');
   await app.listen(port);
 }
+
 bootstrap();

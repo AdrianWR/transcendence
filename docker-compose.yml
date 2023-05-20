@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  db:
+  postgres:
     image: postgres
-    container_name: db
+    container_name: postgres
     tty: true
     networks:
       - transcendence
@@ -29,7 +29,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      - postgres
   frontend:
     build:
       context: ./frontend

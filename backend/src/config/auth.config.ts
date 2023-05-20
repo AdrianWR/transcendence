@@ -1,8 +1,8 @@
 import { registerAs } from '@nestjs/config';
 
 export default registerAs('auth', () => ({
-  backend_url: process.env.BACKEND_URL,
-  frontend_url: process.env.FRONTEND_URL,
+  backend_url: process.env.BACKEND_URL || 'http://localhost:8080',
+  frontend_url: process.env.FRONTEND_URL || 'http://localhost:3000',
   google: {
     client_id: process.env.GOOGLE_CLIENT_ID,
     secret: process.env.GOOGLE_SECRET,
